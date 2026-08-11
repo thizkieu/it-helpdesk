@@ -13,14 +13,14 @@ flowchart LR
 
     subgraph IT Helpdesk System
         UC1(Tạo Ticket)
-        UC2(Xem & Bình luận Ticket của mình)
+        UC2(Xem & Bình luận Ticket)
         UC3(Đánh giá CSAT)
-        UC4(Tiếp nhận & Xử lý Ticket)
-        UC5(Thay đổi Status Ticket)
-        UC6(Phân công/Chuyển tuyến Ticket)
+        UC4(Tiếp nhận & Xử lý)
+        UC5(Đổi Trạng thái Ticket)
+        UC6(Phân công / Chuyển tuyến)
         UC7(Giám sát SLA)
-        UC8(Quản lý Danh mục & SLA)
-        UC9(Xem Dashboard & Báo cáo)
+        UC8(Quản lý Danh mục)
+        UC9(Xem Dashboard / Báo cáo)
     end
 
     User --> UC1
@@ -41,19 +41,19 @@ flowchart LR
 
 ```mermaid
 stateDiagram-v2
-    [*] --> New: End User tạo Ticket
-    New --> Assigned: IT Lead phân công
-    New --> Open: IT Agent tự nhận
-    Assigned --> InProgress: Agent bắt đầu xử lý
-    Open --> InProgress: Agent bắt đầu xử lý
-    InProgress --> PendingUser: Cần User cung cấp thêm thông tin
-    PendingUser --> InProgress: User đã phản hồi
-    InProgress --> Escalated: Vượt khả năng / Quá hạn SLA
-    Escalated --> InProgress: Cấp cao hơn xử lý xong / Chỉ đạo lại
-    InProgress --> Resolved: Đã xử lý xong (Fix)
-    Resolved --> Reopened: User báo chưa giải quyết được
-    Reopened --> InProgress: Agent tiếp tục xử lý
-    Resolved --> Closed: User xác nhận OK / Auto-close sau N ngày
+    [*] --> New: Tạo Ticket
+    New --> Assigned: Lead phân công
+    New --> Open: Agent tự nhận
+    Assigned --> InProgress: Bắt đầu xử lý
+    Open --> InProgress: Bắt đầu xử lý
+    InProgress --> PendingUser: Chờ User phản hồi
+    PendingUser --> InProgress: Đã phản hồi
+    InProgress --> Escalated: Quá hạn / Vượt khả năng
+    Escalated --> InProgress: Chỉ đạo lại
+    InProgress --> Resolved: Đã xử lý (Fix)
+    Resolved --> Reopened: Báo lỗi lại
+    Reopened --> InProgress: Tiếp tục xử lý
+    Resolved --> Closed: Xác nhận OK / Auto-close
     Closed --> [*]
 ```
 
@@ -66,25 +66,25 @@ sequenceDiagram
     participant UI as Angular (TicketComponent)
     participant API as ABP API Gateway
     participant App as TicketAppService
-    participant Domain as TicketManager (Domain)
+    participant Domain as TicketManager
     participant Repo as ITicketRepository
     participant DB as SQL Server
 
     User->>UI: Điền form & Bấm "Gửi Yêu Cầu"
-    UI->>API: POST /api/app/helpdesk/ticket (CreateTicketInput)
-    API->>App: CreateAsync(CreateTicketInput input)
+    UI->>API: POST /api/helpdesk/ticket
+    API->>App: CreateAsync(input)
     App->>App: Validate DTO (Required, MaxLength)
-    App->>Domain: CreateTicketAsync(input.Title, input.CategoryId...)
-    Note over Domain: Xử lý Business Rule: Tính Priority, SLA, gen TicketNo
+    App->>Domain: CreateTicketAsync(...)
+    Note over Domain: Xử lý logic: Tính Priority, SLA, gen TicketNo
     Domain-->>App: Trả về HelpdeskTicket Entity
     App->>Repo: InsertAsync(ticket)
-    Repo->>DB: Thực thi lệnh INSERT (EF Core UnitOfWork)
+    Repo->>DB: Thực thi INSERT (UnitOfWork)
     DB-->>Repo: Trả về Success
     Repo-->>App: Trả về Entity (kèm ID)
-    App->>App: ObjectMapper.Map<TicketDto>(ticket)
+    App->>App: Map sang TicketDto
     App-->>API: Trả về TicketDto
     API-->>UI: Response 200 OK + Data
-    UI-->>User: Hiển thị thông báo thành công & Mã Ticket
+    UI-->>User: Thông báo thành công & Mã Ticket
 ```
 
 ## 4. Sơ đồ Lớp (Class Diagram)
@@ -136,7 +136,7 @@ classDiagram
 erDiagram
     HelpdeskTicket ||--o{ HelpdeskTicketComment : "có nhiều"
     HelpdeskCategory ||--o{ HelpdeskTicket : "chứa"
-    HelpdeskPriority ||--o{ HelpdeskTicket : "định nghĩa SLA cho"
+    HelpdeskPriority ||--o{ HelpdeskTicket : "định nghĩa SLA"
     HelpdeskTeam ||--o{ HelpdeskTicket : "xử lý"
 
     HelpdeskTicket {
