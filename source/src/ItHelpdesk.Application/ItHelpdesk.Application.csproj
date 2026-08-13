@@ -1,0 +1,42 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\..\common.props" />
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <RootNamespace>ItHelpdesk</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Caching\**" />
+    <Compile Remove="LanguageImportExport\**" />
+    <Compile Remove="Languages\**" />
+    <Compile Remove="LanguageTexts\**" />
+    <EmbeddedResource Remove="Caching\**" />
+    <EmbeddedResource Remove="LanguageImportExport\**" />
+    <EmbeddedResource Remove="Languages\**" />
+    <EmbeddedResource Remove="LanguageTexts\**" />
+    <None Remove="Caching\**" />
+    <None Remove="LanguageImportExport\**" />
+    <None Remove="Languages\**" />
+    <None Remove="LanguageTexts\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ItHelpdesk.Domain\ItHelpdesk.Domain.csproj" />
+    <ProjectReference Include="..\ItHelpdesk.Application.Contracts\ItHelpdesk.Application.Contracts.csproj" />
+    <ProjectReference Include="..\ItHelpdesk.Provider\ItHelpdesk.Provider.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Volo.Abp.AutoMapper" Version="10.0.1" />
+    <PackageReference Include="Volo.Abp.PermissionManagement.Application" Version="10.0.0" />
+    <PackageReference Include="Volo.Abp.FeatureManagement.Application" Version="10.0.0" />
+    <PackageReference Include="Volo.Abp.SettingManagement.Application" Version="10.0.0" />
+    <PackageReference Include="Volo.Abp.Account.Application" Version="10.0.0" />
+    <PackageReference Include="Volo.Abp.Identity.Application" Version="10.0.0" />
+    <PackageReference Include="Volo.Abp.TenantManagement.Application" Version="10.0.0" />
+  </ItemGroup>
+
+</Project>

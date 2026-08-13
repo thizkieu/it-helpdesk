@@ -1,0 +1,110 @@
+<div class="card">
+    <div class="card-header">
+        <div class="row">
+            <div class="col col-md-6">
+                <h5 class="card-title">
+                    {{ '::Menu:LanguageTexts' | abpLocalization }}
+                </h5>
+            </div>
+            <div class="text-end col col-md-6">
+
+                <div class="text-lg-end pt-2">
+                    <button *abpPermission="'ItHelpdesk.LanguageTexts.Create'" class="btn btn-primary"
+                        (click)="create()">
+                        <i class="fa fa-plus me-1"></i> {{ '::New' | abpLocalization }}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <ngx-datatable [rows]="items.items" [count]="items.totalCount" [list]="list" default [columnMode]="'flex'">
+            <ngx-datatable-column [name]="'::Actions' | abpLocalization" [maxWidth]="150" [minWidth]="150"
+                [sortable]="false">
+                <ng-template let-row="row" ngx-datatable-cell-template>
+                    <div ngbDropdown container="body" class="d-inline-block">
+                        <button class="btn btn-primary btn-sm dropdown-toggle" data-toggle="dropdown"
+                            aria-haspopup="true" ngbDropdownToggle>
+                            <i class="fa fa-cog me-1"></i>{{ '::Actions' | abpLocalization }}
+                        </button>
+                        <div ngbDropdownMenu>
+                            <button *abpPermission="'ItHelpdesk.LanguageTexts.Edit'" ngbDropdownItem
+                                (click)="edit(row.id)">
+                                {{ '::Edit' | abpLocalization }}
+                            </button>
+                            <button *abpPermission="'ItHelpdesk.LanguageTexts.Delete'" ngbDropdownItem
+                                (click)="delete(row.id)">
+                                {{ '::Delete' | abpLocalization }}
+                            </button>
+                        </div>
+                    </div>
+                </ng-template>
+            </ngx-datatable-column>
+
+            <ngx-datatable-column [name]="'::Resource' | abpLocalization" prop="resourceName"
+                [flexGrow]="1"></ngx-datatable-column>
+            <ngx-datatable-column [name]="'::Culture' | abpLocalization" prop="cultureName" [flexGrow]="1">
+                <ng-template let-row="row" ngx-datatable-cell-template>
+                    {{ loadCultureNameByKey(row.cultureName) }}
+                </ng-template>
+            </ngx-datatable-column>
+            <ngx-datatable-column [name]="'::Key' | abpLocalization" prop="key" [flexGrow]="2"></ngx-datatable-column>
+            <ngx-datatable-column [name]="'::Value' | abpLocalization" prop="value"
+                [flexGrow]="4"></ngx-datatable-column>
+        </ngx-datatable>
+    </div>
+</div>
+
+<!-- Add the modal here -->
+<abp-modal [(visible)]="isModalOpen">
+    <ng-template #abpHeader>
+        <h3>{{ (selected.id ? '::Edit' : '::NewLanguageText' ) | abpLocalization }}</h3>
+    </ng-template>
+
+    <ng-template #abpBody>
+        <form [formGroup]="form" validateOnSubmit validateOnBlur (ngSubmit)="save()">
+            <div class="mt-2">
+                <label for="languageText-name">{{ '::Resource' | abpLocalization }}</label>
+                <span class="required"> * </span>
+                <input type="text" id="languageText-resource" class="form-control" formControlName="resourceName"
+                    readonly />
+            </div>
+
+            <div class="mt-2">
+                <label for="languageText-culture">{{ '::Culture' | abpLocalization }}</label>
+                <span class="required"> * </span>
+                <app-multiselect formControlName="cultureName" [items]="languageOptions" [single]="true">
+                </app-multiselect>
+                <div class="invalid-feedback d-block"
+                    *ngIf="form.get('cultureName')?.invalid && form.get('cultureName')?.touched">
+                    {{ '::Validation:Required' | abpLocalization }}
+                </div>
+            </div>
+
+            <div class="mt-2">
+                <label for="languageText-key">{{ '::Key' | abpLocalization }}</label>
+                <span class="required"> * </span>
+                <input type="text" id="languageText-key" class="form-control" formControlName="key" />
+            </div>
+
+            <div class="mt-3">
+                <label for="languageText-value">{{ '::Value' | abpLocalization }}</label>
+                <span class="required"> * </span>
+                <input type="text" id="languageText-value" class="form-control" formControlName="value" />
+            </div>
+
+        </form>
+    </ng-template>
+
+    <ng-template #abpFooter>
+        <button type="button" class="btn btn-secondary" abpClose>
+            {{ '::Close' | abpLocalization }}
+        </button>
+
+        <button class="btn btn-primary" (click)="save()" [disabled]="form.invalid">
+            <i class="fa fa-check mr-1"></i>
+            {{ '::Save' | abpLocalization }}
+        </button>
+    </ng-template>
+
+</abp-modal>

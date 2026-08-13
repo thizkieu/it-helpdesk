@@ -1,0 +1,151 @@
+/* You can add global styles to this file, and also import other style files */
+
+
+:root {
+  --lpx-theme-light-bg: url('assets/images/login/login-bg-img-light.svg');
+  --lpx-theme-dim-bg: url('assets/images/login/login-bg-img-dim.svg');
+  --lpx-theme-dark-bg: url('assets/images/login/login-bg-img-dark.svg');
+
+  --lpx-logo-icon: url('assets/images/logo/icon-lite.svg');
+  --lpx-logo-url: var(--lpx-logo-icon);
+  --lpx-logo: var(--lpx-logo-icon);
+
+  .abp-logo {
+    background-repeat: no-repeat;
+  }
+
+  .abp-support {
+    width: 178px;
+    height: 30px;
+    background-image: url('assets/images/getting-started/abp-support.svg');
+  }
+
+  .abp-community {
+    width: 215px;
+    height: 30px;
+    background-image: url('assets/images/getting-started/abp-community.svg');
+  }
+
+  .abp-blog {
+    width: 142px;
+    height: 30px;
+    background-image: url('assets/images/getting-started/abp-blog.svg');
+  }
+
+  .logo-x {
+    width: 20px;
+    height: 20px;
+    background-image: url('assets/images/getting-started/x.svg');
+  }
+}
+
+.required {
+  color: red;
+}
+
+/* Search container */
+.abp-search-panel {
+  background: #fff;
+  padding: 8px 12px;
+  border-radius: 6px;
+}
+
+/* Search input */
+.abp-search-input {
+  height: 36px;
+  padding-left: 34px;
+  font-size: 14px;
+}
+
+/* Icon inside input */
+.abp-search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 13px;
+  color: #adb5bd;
+}
+
+/* Buttons */
+.btn-sm {
+  height: 36px;
+  padding: 0 12px;
+  font-size: 13px;
+}
+
+/* Panel */
+.abp-search-panel {
+  background: #fff;
+  padding: 8px 12px;
+  border-radius: 6px;
+}
+
+/* Search input */
+.abp-search-input {
+  height: 36px;
+  padding-left: 34px;
+  font-size: 14px;
+}
+
+.abp-search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 13px;
+  color: #adb5bd;
+}
+
+/* Advanced filter animation */
+.abp-filter-advanced {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  // transform: translateY(-4px);
+  /* 👇 giảm padding ảo */
+  margin-top: 4px;
+  transition:
+    max-height 0.25s ease,
+    opacity 0.2s ease,
+    transform 0.25s ease;
+}
+
+.abp-filter-advanced.show {
+  max-height: 140px;
+  /* 👈 giảm từ 200 */
+  opacity: 1;
+  // transform: translateY(0);
+  overflow: visible;
+}
+
+/* Labels */
+.form-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: #6c757d;
+}
+
+/* Buttons */
+.btn-sm {
+  height: 36px;
+  padding: 0 12px;
+  font-size: 13px;
+}
+
+.abp-filter-advanced .form-control,
+.abp-filter-advanced .form-select {
+  height: 34px;
+  /* nhỏ hơn search 1 chút */
+  font-size: 13px;
+}
+
+.abp-filter-advanced .form-label {
+  margin-bottom: 2px;
+  /* 👈 giảm khoảng cách label-input */
+}
+
+/* ABP Angular 10 – custom force modal wider */
+.custom-width-modal .modal-dialog {
+  max-width: 95vw !important;
+}

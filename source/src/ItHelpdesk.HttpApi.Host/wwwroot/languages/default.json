@@ -1,0 +1,26 @@
+﻿{
+  "languages": [
+    {
+      "name": "English",
+      "cultureName": "en",
+      "isEnabled": true
+    },
+    {
+      "name": "Tiếng Việt",
+      "cultureName": "vi",
+      "isEnabled": true
+    }
+  ],
+  "texts": [
+    {
+      "languageName": "en",
+      "key": "Hello",
+      "value": "Hello"
+    },
+    {
+      "languageName": "vi",
+      "key": "Hello",
+      "value": "Xin chào"
+    }
+  ]
+}

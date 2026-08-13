@@ -1,0 +1,58 @@
+{
+  "id": "86bd56c1-691b-40cb-950c-d7b4b0afb8ac",
+  "creationTime": "12/08/2025 03:28:18 +00:00",
+  "template": "app",
+  "versions": {
+    "AbpFramework": "10.0.0",
+    "AbpStudio": "2.0.2",
+    "TargetDotnetFramework": "net10.0"
+  },
+  "modules": {
+    "ItHelpdesk": {
+      "path": "ItHelpdesk.abpmdl"
+    }
+  },
+  "runProfiles": {
+    "Default": {
+      "path": "etc/abp-studio/run-profiles/Default.abprun.json"
+    }
+  },
+  "options": {
+    "httpRequests": {
+      "ignoredUrls": []
+    }
+  },
+  "creatingStudioConfiguration": {
+    "template": "app",
+    "createdAbpStudioVersion": "2.0.2",
+    "creationTool": "ABP Studio UI",
+    "tiered": "false",
+    "runInstallLibs": "true",
+    "useLocalReferences": "false",
+    "multiTenancy": "true",
+    "includeTests": "false",
+    "kubernetesConfiguration": "false",
+    "uiFramework": "angular",
+    "mobileFramework": "none",
+    "distributedEventBus": "none",
+    "databaseProvider": "ef",
+    "runDbMigrator": "true",
+    "databaseManagementSystem": "sqlserver",
+    "separateTenantSchema": "false",
+    "createInitialMigration": "true",
+    "theme": "leptonx-lite",
+    "themeStyle": "",
+    "themeMenuPlacement": "",
+    "progressiveWebApp": "false",
+    "runProgressiveWebAppSupport": "false",
+    "publicWebsite": "false",
+    "socialLogin": "false",
+    "sampleCrudPage": "true",
+    "selectedLanguages": [
+      "Vietnamese",
+      "English"
+    ],
+    "defaultLanguage": "Vietnamese",
+    "createCommand": "abp new ItHelpdesk -t app --ui-framework angular --database-provider ef --database-management-system sqlserver --theme leptonx-lite --no-tests --without-cms-kit --sample-crud-page --dont-run-bundling --no-social-logins -no-gdpr -no-openiddict-admin-ui -no-audit-logging -no-file-management -no-language-management -no-text-template-management"
+  }
+}

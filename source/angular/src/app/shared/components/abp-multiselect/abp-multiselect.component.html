@@ -1,0 +1,13 @@
+<div class="custom-multiselect-form-control ">
+    <ng-multiselect-dropdown 
+        [settings]="settings" 
+        [data]="items" 
+        [disabled]="disabled" 
+        [(ngModel)]="value"
+        [ngModelOptions]="{ standalone: true }" 
+        (ngModelChange)="handleChange($event)" 
+        class="abp-form-control"
+        [ngClass]="{ 'ms-padded': padded }"
+        [placeholder]="lh.l(placeholderKey)">
+    </ng-multiselect-dropdown>
+</div>

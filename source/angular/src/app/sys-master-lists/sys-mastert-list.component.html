@@ -1,0 +1,269 @@
+<div class="card">
+    <!-- HEADER -->
+    <div class="card-header">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <h5 class="card-title mb-0">
+                    {{ '::Menu:SysMasterLists' | abpLocalization }}
+                </h5>
+            </div>
+
+            <div class="col-md-6 text-end">
+                <button *abpPermission="'ItHelpdesk.SysMasterLists.Create'" class="btn btn-primary"
+                    (click)="create()">
+                    <i class="fa fa-plus me-1"></i>
+                    {{ '::New' | abpLocalization }}
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- BODY -->
+    <div class="card-body">
+
+        <!-- SEARCH + FILTER PANEL -->
+        <form [formGroup]="searchForm" (ngSubmit)="search()" class="abp-search-panel mb-3">
+
+            <!-- TOP ROW -->
+            <div class="d-flex align-items-center gap-2">
+
+                <!-- Search input -->
+                <div class="position-relative flex-grow-1">
+                    <i class="fa fa-search abp-search-icon"></i>
+                    <input type="text" class="form-control abp-search-input" formControlName="keyword"
+                        [placeholder]="'::Search' | abpLocalization" />
+                </div>
+
+                <!-- Filter toggle -->
+                <button type="button" class="btn btn-outline-secondary btn-sm" (click)="toggleFilter()">
+                    <i class="fa fa-filter"></i>
+                </button>
+
+                <!-- Search -->
+                <button type="submit" class="btn btn-primary btn-sm">
+                    {{ '::Search' | abpLocalization }}
+                </button>
+            </div>
+
+            <!-- ADVANCED FILTER -->
+            <div class="abp-filter-advanced" [class.show]="showFilter">
+
+                <div class="row g-2 mt-2">
+
+                    <!-- Status -->
+                    <div class="col-md-4">
+                        <label class="form-label" for="search-status">
+                            {{ '::Status' | abpLocalization }}
+                        </label>
+                        <app-multiselect id="search-status" formControlName="status" [items]="statusOptions"
+                            [single]="false" [itemsShowLimit]="2" [padded]="false">
+                        </app-multiselect>
+                    </div>
+
+                    <!-- Group -->
+                    <div class="col-md-6">
+                        <label class="form-label" for="search-masterListGroupCde">
+                            {{ '::MasterListGroupCde' | abpLocalization }}
+                        </label>
+                        <app-multiselect id="search-masterListGroupCde" formControlName="groupCode"
+                            [items]="groupCdeOptions" [single]="false" [padded]="false">
+                        </app-multiselect>
+                    </div>
+
+                    <!-- Reset -->
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="button" class="btn btn-outline-secondary btn-sm w-100" (click)="reset()">
+                            <i class="fa fa-refresh me-1"></i>
+                            {{ '::Reset' | abpLocalization }}
+                        </button>
+                    </div>
+
+                </div>
+
+            </div>
+        </form>
+
+        <!-- TABLE -->
+        <ngx-datatable [rows]="items.items" [count]="items.totalCount" [list]="list" default [columnMode]="'flex'"
+            [limit]="pageSize" [offset]="pageIndex" [externalPaging]="true" (page)="onPage($event)">
+
+            <ngx-datatable-column [name]="'::Actions' | abpLocalization" [maxWidth]="150" [minWidth]="150"
+                [sortable]="false">
+
+                <ng-template let-row="row" ngx-datatable-cell-template>
+                    <div ngbDropdown container="body">
+                        <button class="btn btn-primary btn-sm dropdown-toggle" ngbDropdownToggle>
+                            <i class="fa fa-cog me-1"></i>
+                            {{ '::Actions' | abpLocalization }}
+                        </button>
+
+                        <div ngbDropdownMenu>
+                            <button *abpPermission="'ItHelpdesk.SysMasterLists.Edit'" ngbDropdownItem
+                                (click)="edit(row.masterListID)">
+                                {{ '::Edit' | abpLocalization }}
+                            </button>
+
+                            <button *abpPermission="'ItHelpdesk.SysMasterLists.Delete'" ngbDropdownItem
+                                (click)="delete(row.masterListID, row.rowVersion)">
+                                {{ '::Delete' | abpLocalization }}
+                            </button>
+                        </div>
+                    </div>
+                </ng-template>
+            </ngx-datatable-column>
+
+            <ngx-datatable-column [name]="'::MasterListCode' | abpLocalization" prop="masterListCode" [flexGrow]="1">
+            </ngx-datatable-column>
+
+            <ngx-datatable-column [name]="'::MasterListGroupCde' | abpLocalization" prop="masterListGroupCde"
+                [flexGrow]="1">
+            </ngx-datatable-column>
+
+            <ngx-datatable-column [name]="'::MasterListCdeName' | abpLocalization" prop="masterListCdeName"
+                [flexGrow]="1" [sortable]="false">
+            </ngx-datatable-column>
+
+            <ngx-datatable-column [name]="'::MastListDefaultValue' | abpLocalization" prop="mastListDefaultValue"
+                [flexGrow]="2" [sortable]="false">
+            </ngx-datatable-column>
+
+            <ngx-datatable-column [name]="'::Status' | abpLocalization" [sortable]="false" [width]="110">
+                <ng-template let-row="row" ngx-datatable-cell-template>
+                    <span class="badge" [ngClass]="row.isActive ? 'bg-success' : 'bg-secondary'">
+                        {{ row.isActive ? ('::Active' | abpLocalization) : ('::Inactive' | abpLocalization) }}
+                    </span>
+                </ng-template>
+            </ngx-datatable-column>
+
+        </ngx-datatable>
+    </div>
+</div>
+
+<!-- Add the modal here -->
+<abp-modal [(visible)]="isModalOpen" [options]="modalOptions">
+    <ng-template #abpHeader>
+        <h3>{{ (selected.masterListID ? '::Edit' : '::NewSysMasterList' ) | abpLocalization }}</h3>
+    </ng-template>
+
+    <ng-template #abpBody>
+        <form [formGroup]="form" validateOnSubmit validateOnBlur (ngSubmit)="save()">
+
+            <!-- ROW 1 -->
+            <div class="row g-2 mt-2">
+                <div class="col-md-6">
+                    <label for="sysMasterList-masterListCode">{{ '::MasterListCode' | abpLocalization }}</label>
+                    <span class="required"> * </span>
+                    <input type="text" id="sysMasterList-masterListCode" class="form-control"
+                        formControlName="masterListCode" />
+                </div>
+
+                <div class="col-md-6">
+                    <label for="sysMasterList-masterListGroupCde">{{ '::MasterListGroupCde' | abpLocalization }}</label>
+                    <span class="required"> * </span>
+                    <app-multiselect id="sysMasterList-masterListGroupCde" formControlName="masterListGroupCde"
+                        [items]="groupCdeOptions" [single]="true">
+                    </app-multiselect>
+                </div>
+            </div>
+
+            <!-- ROW 2 -->
+            <div class="row g-2 mt-2">
+                <div class="col-md-6">
+                    <label for="sysMasterList-masterListCdeName">{{ '::MasterListCdeName' | abpLocalization }}</label>
+                    <span class="required"> * </span>
+                    <input type="text" id="sysMasterList-masterListCdeName" class="form-control"
+                        formControlName="masterListCdeName" />
+                </div>
+
+                <div class="col-md-6">
+                    <label for="sysMasterList-mastListDefaultValue">{{ '::MastListDefaultValue' | abpLocalization
+                        }}</label>
+                    <input type="text" id="sysMasterList-mastListDefaultValue" class="form-control"
+                        formControlName="mastListDefaultValue" />
+                </div>
+            </div>
+
+            <!-- ROW 3 -->
+            <div class="row g-2 mt-2">
+                <div class="col-md-12">
+                    <label for="sysMasterList-description">{{ '::Description' | abpLocalization
+                        }}</label>
+                    <textarea id="sysMasterList-description" class="form-control" formControlName="description"
+                        rows="3"> </textarea>
+                </div>
+            </div>
+
+            <!-- ROW 4 -->
+            <div class="row g-2 mt-2">
+                <div class="col-md-6">
+                    <label for="sysMasterList-mastListExtendValue1">{{ '::MastListExtendValue1' | abpLocalization
+                        }}</label>
+                    <input type="text" id="sysMasterList-mastListExtendValue1" class="form-control"
+                        formControlName="mastListExtendValue1" />
+                </div>
+
+                <div class="col-md-6">
+                    <label for="sysMasterList-mastListExtendValue2">{{ '::MastListExtendValue2' | abpLocalization
+                        }}</label>
+                    <input type="text" id="sysMasterList-mastListExtendValue2" class="form-control"
+                        formControlName="mastListExtendValue2" />
+                </div>
+            </div>
+
+            <!-- ROW 5 -->
+            <div class="row g-2 mt-2">
+                <div class="col-md-6">
+                    <label for="sysMasterList-mastListExtendValue3">{{ '::MastListExtendValue3' | abpLocalization
+                        }}</label>
+                    <input type="text" id="sysMasterList-mastListExtendValue3" class="form-control"
+                        formControlName="mastListExtendValue3" />
+                </div>
+
+                <div class="col-md-6">
+                    <label for="sysMasterList-mastListExtendValue4">{{ '::MastListExtendValue4' | abpLocalization
+                        }}</label>
+                    <input type="text" id="sysMasterList-mastListExtendValue4" class="form-control"
+                        formControlName="mastListExtendValue4" />
+                </div>
+            </div>
+
+            <!-- ROW 6 -->
+            <div class="row g-2 mt-2">
+                <div class="col-md-6">
+                    <label for="sysMasterList-mastListExtendValue5">{{ '::MastListExtendValue5' | abpLocalization
+                        }}</label>
+                    <input type="text" id="sysMasterList-mastListExtendValue5" class="form-control"
+                        formControlName="mastListExtendValue5" />
+                </div>
+
+                <div class="col-md-3">
+                    <label for="sysMasterList-orderNo">{{ '::OrderNo' | abpLocalization
+                        }}</label>
+                    <input type="number" id="sysMasterList-orderNo" class="form-control" formControlName="orderNo" />
+                </div>
+
+                <div class="col-md-3 d-flex align-items-end">
+                    <div class="form-check">
+                        <input type="checkbox" id="sysMasterList-status" class="form-check-input"
+                            formControlName="isActive" />
+                        <label class="form-check-label" for="sysMasterList-status">
+                            {{ '::Status' | abpLocalization }}
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </ng-template>
+
+    <ng-template #abpFooter>
+        <button type="button" class="btn btn-secondary" abpClose>
+            {{ '::Close' | abpLocalization }}
+        </button>
+
+        <button class="btn btn-primary" (click)="save()" [disabled]="form.invalid">
+            <i class="fa fa-check mr-1"></i>
+            {{ '::Save' | abpLocalization }}
+        </button>
+    </ng-template>
+
+</abp-modal>

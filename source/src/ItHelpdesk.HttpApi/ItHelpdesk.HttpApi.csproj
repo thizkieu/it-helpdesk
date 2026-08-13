@@ -1,0 +1,32 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\..\common.props" />
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <RootNamespace>ItHelpdesk</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Controllers\LanguageController.cs" />
+    <Compile Remove="Controllers\LanguageTextController.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ItHelpdesk.Application.Contracts\ItHelpdesk.Application.Contracts.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Volo.Abp.PermissionManagement.HttpApi" Version="10.0.0" />
+    <PackageReference Include="Volo.Abp.FeatureManagement.HttpApi" Version="10.0.0" />
+    <PackageReference Include="Volo.Abp.SettingManagement.HttpApi" Version="10.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Volo.Abp.Identity.HttpApi" Version="10.0.0" />
+    <PackageReference Include="Volo.Abp.Account.HttpApi" Version="10.0.0" />
+    <PackageReference Include="Volo.Abp.TenantManagement.HttpApi" Version="10.0.0" />
+  </ItemGroup>
+
+</Project>

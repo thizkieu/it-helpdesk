@@ -1,0 +1,43 @@
+{
+  "applications": {
+    "ItHelpdesk.HttpApi.Host": {
+      "type": "dotnet-project",
+      "launchUrl": "https://localhost:44304",
+      "path": "../../../src/ItHelpdesk.HttpApi.Host/ItHelpdesk.HttpApi.Host.csproj",
+      "kubernetesService": ".*-httpapihost$",
+      "healthCheckEndpoint": "/health-status",
+      "healthUiEndpoint": "/health-ui",
+      "execution": {
+        "order": 4
+      }
+    },
+    "ItHelpdesk.Angular": {
+      "type": "cli",
+      "workingDirectory": "../../../angular",
+      "startCommand": "./start.ps1",
+      "launchUrl": "http://localhost:4200",
+      "kubernetesService": ".*-angular$",
+      "execution": {
+        "order": 2
+      },
+      "stopCommand": null
+    }
+  },
+  "containers": {
+    "serviceName": "ItHelpdesk-Containers"
+  },
+  "tasks": {
+    "Initialize Solution": {
+      "type": "cli",
+      "runOnSolutionOpen": true,
+      "startCommand": "etc/scripts/initialize-solution.ps1",
+      "workingDirectory": "../../../"
+    },
+    "Migrate Database": {
+      "type": "cli",
+      "runOnSolutionOpen": false,
+      "startCommand": "etc/scripts/migrate-database.ps1",
+      "workingDirectory": "../../../"
+    }
+  }
+}

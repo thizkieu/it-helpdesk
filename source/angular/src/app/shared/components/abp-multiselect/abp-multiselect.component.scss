@@ -1,0 +1,17 @@
+:host ::ng-deep .multiselect-dropdown .dropdown-btn .selected-item-container .selected-item {
+  border: 1px solid #337ab7;
+  margin-right: 4px;
+  background: #337ab7;
+  padding: 0 5px;
+  color: #fff;
+  border-radius: 2px;
+  float: left;
+  max-width: 100% !important; //không cho text nhảy dòng
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+:host ::ng-deep .ms-padded .dropdown-btn {
+  padding: 0.675rem !important;
+}
