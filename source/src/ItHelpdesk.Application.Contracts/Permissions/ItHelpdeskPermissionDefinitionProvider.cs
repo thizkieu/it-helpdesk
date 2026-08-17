@@ -33,6 +33,29 @@ public class ItHelpdeskPermissionDefinitionProvider : PermissionDefinitionProvid
 
         //Define your own permissions here. Example:
         //myGroup.AddPermission(ItHelpdeskPermissions.MyPermission1, L("Permission:MyPermission1"));
+        // Category Permissions
+        var categoryPermission = myGroup.AddPermission(ItHelpdeskPermissions.Categories.Default, L("Permission:Categories"));
+        categoryPermission.AddChild(ItHelpdeskPermissions.Categories.Create, L("Permission:Categories.Create"));
+        categoryPermission.AddChild(ItHelpdeskPermissions.Categories.Edit, L("Permission:Categories.Edit"));
+        categoryPermission.AddChild(ItHelpdeskPermissions.Categories.Delete, L("Permission:Categories.Delete"));
+
+        // Service Permissions
+        var servicePermission = myGroup.AddPermission(ItHelpdeskPermissions.Services.Default, L("Permission:Services"));
+        servicePermission.AddChild(ItHelpdeskPermissions.Services.Create, L("Permission:Services.Create"));
+        servicePermission.AddChild(ItHelpdeskPermissions.Services.Edit, L("Permission:Services.Edit"));
+        servicePermission.AddChild(ItHelpdeskPermissions.Services.Delete, L("Permission:Services.Delete"));
+
+        // Priority Permissions
+        var priorityPermission = myGroup.AddPermission(ItHelpdeskPermissions.Priorities.Default, L("Permission:Priorities"));
+        priorityPermission.AddChild(ItHelpdeskPermissions.Priorities.Create, L("Permission:Priorities.Create"));
+        priorityPermission.AddChild(ItHelpdeskPermissions.Priorities.Edit, L("Permission:Priorities.Edit"));
+        priorityPermission.AddChild(ItHelpdeskPermissions.Priorities.Delete, L("Permission:Priorities.Delete"));
+
+        // Team Permissions
+        var teamPermission = myGroup.AddPermission(ItHelpdeskPermissions.Teams.Default, L("Permission:Teams"));
+        teamPermission.AddChild(ItHelpdeskPermissions.Teams.Create, L("Permission:Teams.Create"));
+        teamPermission.AddChild(ItHelpdeskPermissions.Teams.Edit, L("Permission:Teams.Create")); // Sửa lại key cho đúng nếu cần
+        teamPermission.AddChild(ItHelpdeskPermissions.Teams.Delete, L("Permission:Teams.Delete"));
     }
 
     private static LocalizableString L(string name)

@@ -55,4 +55,17 @@
     <None Remove="Logs\**" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Include="..\..\..\..\ithelpdesk-robot.png" Link="wwwroot\images\ithelpdesk\ithelpdesk-robot.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="C:\Users\LENOVO\Downloads\ithelpdesk-logo.png" Link="wwwroot\images\ithelpdesk\ithelpdesk-logo.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="wwwroot\images\ithelpdesk\" />
+  </ItemGroup>
+
 </Project>

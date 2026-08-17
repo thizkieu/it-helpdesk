@@ -3,11 +3,11 @@ using Volo.Abp.Domain.Entities.Auditing;
 
 namespace ItHelpdesk.Services
 {
-    public class HelpdeskService : FullAuditedEntity<Guid>
+    public class Service : FullAuditedEntity<long>
     {
         public string Code { get; set; }
         public string Name { get; set; }
-        public Guid CategoryId { get; set; } // Khóa ngoại trỏ về HelpdeskCategory
+        public long CategoryId { get; set; } 
         public string Description { get; set; }
         public bool IsActive { get; set; }
     }

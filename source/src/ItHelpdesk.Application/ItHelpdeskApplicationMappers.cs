@@ -127,3 +127,66 @@ public partial class ItHelpdesk_DeleteSysMasterListDto_To_SysMasterListDeleteReq
     public override partial void Map(DeleteSysMasterListDto source, SysMasterListDeleteRequest destination);
 }
 #endregion
+#region Categories
+[Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Target)]
+public partial class ItHelpdeskCategoryToCategoryDtoMapper : MapperBase<Categories.Category, Categories.CategoryDto>
+{
+    public override partial Categories.CategoryDto Map(Categories.Category source);
+    public override partial void Map(Categories.Category source, Categories.CategoryDto destination);
+}
+
+[Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Target)]
+public partial class ItHelpdeskCreateUpdateCategoryDtoToCategoryMapper : MapperBase<Categories.CreateUpdateCategoryDto, Categories.Category>
+{
+    public override partial Categories.Category Map(Categories.CreateUpdateCategoryDto source);
+    public override partial void Map(Categories.CreateUpdateCategoryDto source, Categories.Category destination);
+}
+#endregion
+
+#region Services
+[Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Target)]
+public partial class ItHelpdeskServiceToServiceDtoMapper : MapperBase<Services.Service, Services.ServiceDto>
+{
+    public override partial Services.ServiceDto Map(Services.Service source);
+    public override partial void Map(Services.Service source, Services.ServiceDto destination);
+}
+
+[Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Target)]
+public partial class ItHelpdeskCreateUpdateServiceDtoToServiceMapper : MapperBase<Services.CreateUpdateServiceDto, Services.Service>
+{
+    public override partial Services.Service Map(Services.CreateUpdateServiceDto source);
+    public override partial void Map(Services.CreateUpdateServiceDto source, Services.Service destination);
+}
+#endregion
+
+#region Priorities
+[Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Target)]
+public partial class ItHelpdeskPriorityToPriorityDtoMapper : MapperBase<Priorities.Priority, Priorities.PriorityDto>
+{
+    public override partial Priorities.PriorityDto Map(Priorities.Priority source);
+    public override partial void Map(Priorities.Priority source, Priorities.PriorityDto destination);
+}
+
+[Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Target)]
+public partial class ItHelpdeskCreateUpdatePriorityDtoToPriorityMapper : MapperBase<Priorities.CreateUpdatePriorityDto, Priorities.Priority>
+{
+    public override partial Priorities.Priority Map(Priorities.CreateUpdatePriorityDto source);
+    public override partial void Map(Priorities.CreateUpdatePriorityDto source, Priorities.Priority destination);
+}
+#endregion
+
+#region Teams
+[Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Target)]
+public partial class ItHelpdeskTeamToTeamDtoMapper : MapperBase<Teams.Team, Teams.TeamDto>
+{
+    public override partial Teams.TeamDto Map(Teams.Team source);
+    public override partial void Map(Teams.Team source, Teams.TeamDto destination);
+}
+
+[Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Target)]
+public partial class ItHelpdeskCreateUpdateTeamDtoToTeamMapper : MapperBase<Teams.CreateUpdateTeamDto, Teams.Team>
+{
+    public override partial Teams.Team Map(Teams.CreateUpdateTeamDto source);
+    public override partial void Map(Teams.CreateUpdateTeamDto source, Teams.Team destination);
+}
+#endregion

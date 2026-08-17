@@ -1,13 +1,14 @@
 ﻿using System;
 using Volo.Abp.Domain.Entities.Auditing;
 
-namespace ItHelpdesk.Teams
+namespace ItHelpdesk.Categories
 {
-    public class HelpdeskTeam : FullAuditedEntity<Guid>
+    public class Category : FullAuditedEntity<long>
     {
         public string Code { get; set; }
         public string Name { get; set; }
-        public Guid? ManagerId { get; set; } // Trỏ về User làm trưởng nhóm
+        public long? ParentId { get; set; }
         public bool IsActive { get; set; }
-    }
+        public long? DefaultTeamId { get; set; }
+    } 
 }

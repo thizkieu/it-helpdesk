@@ -1,151 +1,684 @@
 /* You can add global styles to this file, and also import other style files */
 
 
+/* =========================================================
+   1. GLOBAL VARIABLES & LOGO CONFIGURATION
+   ========================================================= */
+
 :root {
   --lpx-theme-light-bg: url('assets/images/login/login-bg-img-light.svg');
   --lpx-theme-dim-bg: url('assets/images/login/login-bg-img-dim.svg');
   --lpx-theme-dark-bg: url('assets/images/login/login-bg-img-dark.svg');
 
-  --lpx-logo-icon: url('assets/images/logo/icon-lite.svg');
+  /* =======================================================
+     ITHELPDESK LOGO
+     ======================================================= */
+
+  --lpx-logo-icon: url('assets/images/logo/ithelpdesk-logo.png');
   --lpx-logo-url: var(--lpx-logo-icon);
   --lpx-logo: var(--lpx-logo-icon);
-
-  .abp-logo {
-    background-repeat: no-repeat;
-  }
-
-  .abp-support {
-    width: 178px;
-    height: 30px;
-    background-image: url('assets/images/getting-started/abp-support.svg');
-  }
-
-  .abp-community {
-    width: 215px;
-    height: 30px;
-    background-image: url('assets/images/getting-started/abp-community.svg');
-  }
-
-  .abp-blog {
-    width: 142px;
-    height: 30px;
-    background-image: url('assets/images/getting-started/abp-blog.svg');
-  }
-
-  .logo-x {
-    width: 20px;
-    height: 20px;
-    background-image: url('assets/images/getting-started/x.svg');
-  }
 }
+
+
+/* =========================================================
+   ABP LOGO
+   ========================================================= */
+
+.abp-logo {
+  background-image: var(--lpx-logo) !important;
+
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+  background-size: contain !important;
+
+  width: 230px !important;
+  height: 65px !important;
+
+  display: block;
+}
+
+
+/* =========================================================
+   ABP GETTING STARTED
+   ========================================================= */
+
+.abp-support {
+  width: 178px;
+  height: 30px;
+  background-image: url('assets/images/getting-started/abp-support.svg');
+}
+
+.abp-community {
+  width: 215px;
+  height: 30px;
+  background-image: url('assets/images/getting-started/abp-community.svg');
+}
+
+.abp-blog {
+  width: 142px;
+  height: 30px;
+  background-image: url('assets/images/getting-started/abp-blog.svg');
+}
+
+.logo-x {
+  width: 20px;
+  height: 20px;
+  background-image: url('assets/images/getting-started/x.svg');
+}
+
+
+/* =========================================================
+   REQUIRED FIELD
+   ========================================================= */
 
 .required {
-  color: red;
+  color: #ef4444;
+  font-weight: bold;
 }
 
-/* Search container */
+
+/* =========================================================
+   2. PREMIUM UI - GIAO DIỆN CHUNG
+   ========================================================= */
+
+
+/* Card & Modal */
+
+.card,
+.modal-content {
+  border-radius: 16px !important;
+
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.05) !important;
+
+  border:
+    1px solid rgba(226, 232, 240, 0.8) !important;
+
+  background: #ffffff;
+}
+
+
+.card-header {
+  background: transparent !important;
+
+  border-bottom:
+    1px dashed #e2e8f0 !important;
+}
+
+
+/* =========================================================
+   PRIMARY BUTTON
+   ========================================================= */
+
+.btn-primary {
+  background:
+    linear-gradient(135deg,
+      #4f46e5 0%,
+      #7c3aed 100%) !important;
+
+  border: none !important;
+
+  font-weight: 600;
+
+  border-radius: 8px;
+
+  transition:
+    all 0.3s ease !important;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 8px 20px rgba(124, 58, 237, 0.4) !important;
+}
+
+
+/* =========================================================
+   MINIMAL ACTION BUTTON
+   ========================================================= */
+
+.btn-light.dropdown-toggle {
+  background: #f8fafc;
+
+  border:
+    1px solid #e2e8f0;
+
+  border-radius: 8px;
+
+  font-weight: 500;
+
+  transition:
+    all 0.2s;
+}
+
+.btn-light.dropdown-toggle:hover {
+  background: #f1f5f9;
+
+  border-color: #cbd5e1;
+}
+
+
+/* =========================================================
+   DATATABLE
+   ========================================================= */
+
+.ngx-datatable.bootstrap .datatable-body-row {
+  border-bottom:
+    1px solid #f1f5f9;
+
+  transition:
+    background-color 0.2s ease;
+}
+
+.ngx-datatable.bootstrap .datatable-body-row:hover {
+  background-color:
+    #f8fafc !important;
+}
+
+
+/* =========================================================
+   3. SEARCH & FILTER
+   ========================================================= */
+
 .abp-search-panel {
   background: #fff;
+
   padding: 8px 12px;
-  border-radius: 6px;
+
+  border-radius: 8px;
+
+  border:
+    1px solid #e2e8f0;
 }
 
-/* Search input */
+
 .abp-search-input {
-  height: 36px;
-  padding-left: 34px;
+  height: 38px;
+
+  padding-left: 36px;
+
   font-size: 14px;
+
+  border-radius: 8px;
 }
 
-/* Icon inside input */
-.abp-search-icon {
-  position: absolute;
-  left: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 13px;
-  color: #adb5bd;
-}
-
-/* Buttons */
-.btn-sm {
-  height: 36px;
-  padding: 0 12px;
-  font-size: 13px;
-}
-
-/* Panel */
-.abp-search-panel {
-  background: #fff;
-  padding: 8px 12px;
-  border-radius: 6px;
-}
-
-/* Search input */
-.abp-search-input {
-  height: 36px;
-  padding-left: 34px;
-  font-size: 14px;
-}
 
 .abp-search-icon {
   position: absolute;
-  left: 12px;
+
+  left: 14px;
   top: 50%;
-  transform: translateY(-50%);
-  font-size: 13px;
-  color: #adb5bd;
+
+  transform:
+    translateY(-50%);
+
+  font-size: 14px;
+
+  color: #94a3b8;
 }
 
-/* Advanced filter animation */
+
 .abp-filter-advanced {
   max-height: 0;
+
   opacity: 0;
+
   overflow: hidden;
-  // transform: translateY(-4px);
-  /* 👇 giảm padding ảo */
+
   margin-top: 4px;
+
   transition:
     max-height 0.25s ease,
     opacity 0.2s ease,
     transform 0.25s ease;
 }
 
+
 .abp-filter-advanced.show {
   max-height: 140px;
-  /* 👈 giảm từ 200 */
+
   opacity: 1;
-  // transform: translateY(0);
+
   overflow: visible;
 }
 
-/* Labels */
+
 .form-label {
-  font-size: 12px;
-  font-weight: 500;
-  color: #6c757d;
+  font-size: 13px;
+
+  font-weight: 600;
+
+  color: #475569;
 }
 
-/* Buttons */
+
 .btn-sm {
   height: 36px;
-  padding: 0 12px;
+
+  padding:
+    0 14px;
+
   font-size: 13px;
+
+  border-radius: 6px;
 }
+
 
 .abp-filter-advanced .form-control,
 .abp-filter-advanced .form-select {
-  height: 34px;
-  /* nhỏ hơn search 1 chút */
+  height: 36px;
+
   font-size: 13px;
+
+  border-radius: 8px;
 }
+
 
 .abp-filter-advanced .form-label {
-  margin-bottom: 2px;
-  /* 👈 giảm khoảng cách label-input */
+  margin-bottom: 4px;
 }
 
-/* ABP Angular 10 – custom force modal wider */
+
+/* =========================================================
+   4. MODAL & AVATAR
+   ========================================================= */
+
 .custom-width-modal .modal-dialog {
   max-width: 95vw !important;
+}
+
+
+.avatar-initials {
+  display: inline-flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  width: 36px;
+  height: 36px;
+
+  border-radius: 10px;
+
+  background: #e0e7ff;
+
+  color: #4f46e5;
+
+  font-weight: 700;
+
+  font-size: 14px;
+
+  margin-right: 12px;
+}
+
+
+/* =========================================================
+   5. ITHELPDESK LOGIN - ROBOT
+   ========================================================= */
+
+
+/*
+   Container bên trái của màn hình Login
+*/
+
+.auth-illustration {
+  text-align: center;
+
+  flex: 1;
+
+  position: relative;
+
+  z-index: 2;
+}
+
+
+/*
+   Robot wrapper
+*/
+
+.robot-wrapper {
+  position: relative;
+
+  display: inline-block;
+
+  margin-bottom: 15px;
+}
+
+
+/*
+   Robot ItHelpdesk
+*/
+
+.robot-img {
+  width: 360px;
+
+  max-width: 100%;
+
+  height: auto;
+
+  display: block;
+
+  object-fit: contain;
+
+  filter:
+    drop-shadow(0 15px 25px rgba(70, 110, 200, 0.15));
+
+  transition:
+    transform 0.3s ease;
+}
+
+
+/*
+   Hiệu ứng nhẹ khi rê chuột
+*/
+
+.robot-img:hover {
+  transform:
+    translateY(-5px);
+}
+
+
+/*
+   Badge CHÀO MỪNG
+*/
+
+.welcome-badge {
+  position: absolute;
+
+  top: 0;
+
+  left: 18%;
+
+  z-index: 5;
+
+  background:
+    linear-gradient(135deg,
+      #dce9ff,
+      #eef5ff);
+
+  color: #1854b8;
+
+  padding:
+    7px 16px;
+
+  border-radius: 14px;
+
+  font-size: 13px;
+
+  font-weight: 700;
+
+  white-space: nowrap;
+
+  box-shadow:
+    0 6px 18px rgba(60, 100, 180, 0.12);
+
+  border:
+    1px solid rgba(255, 255, 255, 0.8);
+}
+
+
+/*
+   Text bên dưới robot
+*/
+
+.auth-greeting {
+  margin-top: 5px;
+
+  font-size: 28px;
+
+  line-height: 1.35;
+
+  font-weight: 800;
+
+  color: #14213d;
+
+  text-align: center;
+}
+
+
+/* =========================================================
+   6. ITHELPDESK LOGIN - GLASS CARD
+   ========================================================= */
+
+.auth-glass-card {
+  background:
+    rgba(255, 255, 255, 0.72);
+
+  backdrop-filter:
+    blur(18px);
+
+  -webkit-backdrop-filter:
+    blur(18px);
+
+  border:
+    1px solid rgba(255, 255, 255, 0.85);
+
+  border-radius: 24px;
+
+  padding: 40px;
+
+  width: 100%;
+
+  max-width: 420px;
+
+  box-shadow:
+    0 25px 60px rgba(50, 80, 150, 0.12);
+
+  position: relative;
+
+  z-index: 3;
+}
+
+
+/* =========================================================
+   7. ITHELPDESK INPUT
+   ========================================================= */
+
+.custom-input {
+  width: 100%;
+
+  background:
+    rgba(241, 245, 249, 0.85);
+
+  border:
+    1px solid transparent;
+
+  border-radius: 12px;
+
+  padding:
+    12px 16px 12px 40px;
+
+  font-size: 14px;
+
+  color: #334155;
+
+  transition:
+    all 0.2s ease;
+
+  outline: none;
+}
+
+
+.custom-input::placeholder {
+  color: #94a3b8;
+}
+
+
+.custom-input:focus {
+  background: #ffffff;
+
+  border-color:
+    #6366f1;
+
+  outline: none;
+
+  box-shadow:
+    0 0 0 4px rgba(99, 102, 241, 0.1);
+}
+
+
+/* =========================================================
+   INPUT ICON
+   ========================================================= */
+
+.input-icon {
+  position: absolute;
+
+  left: 14px;
+
+  top: 50%;
+
+  transform:
+    translateY(-50%);
+
+  color: #94a3b8;
+
+  z-index: 2;
+}
+
+
+/* =========================================================
+   FORGOT PASSWORD
+   ========================================================= */
+
+.forgot-pwd {
+  font-size: 12px;
+
+  color: #64748b;
+
+  text-decoration: none;
+
+  transition:
+    color 0.2s ease;
+}
+
+
+.forgot-pwd:hover {
+  color: #4f46e5;
+
+  text-decoration: underline;
+}
+
+
+/* =========================================================
+   LOGIN BUTTON
+   ========================================================= */
+
+.btn-login {
+  background:
+    linear-gradient(135deg,
+      #86a8ff 0%,
+      #668ef2 45%,
+      #7187e8 100%);
+
+  color: white;
+
+  border: none;
+
+  border-radius: 20px;
+
+  padding: 12px;
+
+  font-weight: 700;
+
+  letter-spacing: 0.5px;
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+
+  width: 100%;
+
+  margin-top: 10px;
+
+  cursor: pointer;
+}
+
+
+.btn-login:hover {
+  transform:
+    translateY(-2px);
+
+  box-shadow:
+    0 8px 20px rgba(79, 70, 229, 0.3);
+}
+
+
+.btn-login:active {
+  transform:
+    translateY(0);
+}
+
+
+/* =========================================================
+   8. LOGIN RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 991px) {
+
+  .auth-glass-card {
+    max-width: 400px;
+
+    padding: 32px;
+  }
+
+  .robot-img {
+    width: 300px;
+  }
+
+  .auth-greeting {
+    font-size: 24px;
+  }
+}
+
+
+@media (max-width: 767px) {
+
+  .auth-illustration {
+    display: none !important;
+  }
+
+  .auth-glass-card {
+    width: calc(100% - 30px);
+
+    max-width: 430px;
+
+    margin: 20px auto;
+
+    padding: 30px 24px;
+
+    border-radius: 22px;
+  }
+
+  .abp-logo {
+    width: 210px !important;
+
+    height: 58px !important;
+  }
+}
+
+
+/* =========================================================
+   9. EXTRA LOGIN ANIMATION
+   ========================================================= */
+
+@keyframes ithelpdeskFloat {
+
+  0%,
+  100% {
+    transform:
+      translateY(0);
+  }
+
+  50% {
+    transform:
+      translateY(-7px);
+  }
+}
+
+
+.robot-wrapper .robot-img {
+  animation:
+    ithelpdeskFloat 4s ease-in-out infinite;
 }

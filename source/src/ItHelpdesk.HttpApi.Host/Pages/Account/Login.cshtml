@@ -1,0 +1,256 @@
+﻿@page
+@model Volo.Abp.Account.Web.Pages.Account.LoginModel
+@{
+    // Tắt giao diện mặc định của ABP để làm trang full màn hình
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Đăng nhập - ItHelpdesk</title>
+    <!-- Import Bootstrap & FontAwesome -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+            body {
+                margin: 0;
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            }
+
+            .auth-page-wrapper {
+                min-height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background: #f4f7fe;
+                position: relative;
+                overflow: hidden;
+            }
+
+                /* Hiệu ứng trang trí nền mượt hơn */
+                .auth-page-wrapper::before {
+                    content: '';
+                    position: absolute;
+                    border-radius: 50%;
+                    z-index: 0;
+                    width: 400px;
+                    height: 400px;
+                    background: #e0e7ff;
+                    top: -100px;
+                    left: -100px;
+                    filter: blur(40px);
+                    opacity: 0.7;
+                }
+
+                .auth-page-wrapper::after {
+                    content: '';
+                    position: absolute;
+                    border-radius: 50%;
+                    z-index: 0;
+                    width: 300px;
+                    height: 300px;
+                    background: #fee2e2;
+                    bottom: -50px;
+                    right: -50px;
+                    filter: blur(40px);
+                    opacity: 0.7;
+                }
+
+            .auth-container {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 100px; /* Tăng khoảng cách */
+                z-index: 1;
+                max-width: 1100px;
+                width: 100%;
+                padding: 20px;
+            }
+
+            .auth-illustration {
+                text-align: center;
+                flex: 1;
+                position: relative;
+            }
+
+            .robot-wrapper {
+                position: relative;
+                display: inline-block;
+                margin-bottom: 30px;
+                padding-top: 35px; /* Tạo khoảng không an toàn phía trên để robot bay lên */
+                padding-bottom: 15px; /* Đảm bảo bóng đổ ở dưới không bị lẹm */
+            }
+
+            /* Hiệu ứng trôi lơ lửng cho Robot */
+            @@keyframes floatRobot {
+                0% {
+                    transform: translateY(0px);
+                }
+
+                50% {
+                    transform: translateY(-15px);
+                }
+
+                100% {
+                    transform: translateY(0px);
+                }
+            }
+
+            .robot-img {
+                max-width: 380px; /* To hơn xíu cho nổi bật */
+                animation: floatRobot 4s ease-in-out infinite;
+                filter: drop-shadow(0 15px 25px rgba(70, 110, 200, 0.2)); /* Bóng đổ nhẹ ở dưới */
+            }
+
+            .auth-greeting {
+                font-weight: 800;
+                color: #1e293b;
+                font-size: 32px;
+                line-height: 1.4;
+                margin-top: 10px;
+            }
+
+            /* Nâng cấp form Glassmorphism */
+            .auth-glass-card {
+                background: rgba(255, 255, 255, 0.85);
+                backdrop-filter: blur(20px);
+                border: 1px solid rgba(255, 255, 255, 0.9);
+                border-radius: 30px;
+                padding: 50px 40px;
+                width: 100%;
+                max-width: 450px;
+                box-shadow: 0 30px 60px rgba(50, 80, 150, 0.08); /* Bóng đổ mềm hơn */
+            }
+
+            /* Nâng cấp Input */
+            .custom-input {
+                width: 100%;
+                background: #f8fafc;
+                border: 1.5px solid transparent;
+                border-radius: 16px;
+                padding: 14px 16px 14px 45px;
+                font-size: 15px;
+                color: #334155;
+                transition: all 0.3s;
+            }
+
+                .custom-input:focus {
+                    background: #ffffff;
+                    border-color: #6366f1;
+                    outline: none;
+                    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
+                }
+
+            .input-icon {
+                position: absolute;
+                left: 16px;
+                top: 50%;
+                transform: translateY(-50%);
+                color: #94a3b8;
+                z-index: 2;
+                font-size: 16px;
+            }
+
+            .forgot-pwd {
+                font-size: 13px;
+                color: #64748b;
+                text-decoration: none;
+                font-weight: 500;
+                transition: color 0.2s;
+            }
+
+                .forgot-pwd:hover {
+                    color: #4f46e5;
+                }
+
+            /* Nút đăng nhập Gradient nổi bật */
+            .btn-login {
+                background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+                color: white;
+                border: none;
+                border-radius: 24px;
+                padding: 14px;
+                font-weight: 700;
+                letter-spacing: 0.5px;
+                transition: all 0.3s ease;
+                width: 100%;
+                margin-top: 15px;
+                font-size: 16px;
+                box-shadow: 0 10px 20px rgba(79, 70, 229, 0.2);
+            }
+
+                .btn-login:hover {
+                    transform: translateY(-3px);
+                    box-shadow: 0 15px 25px rgba(79, 70, 229, 0.4);
+                }
+
+            /* Chỉnh logo xíu */
+            .logo-img {
+                width: 220px;
+                height: auto;
+                margin-bottom: 10px;
+            }
+
+    </style>
+</head>
+<body>
+    <div class="auth-page-wrapper">
+        <div class="auth-container">
+
+            <!-- Cột trái: Illustration -->
+            <div class="auth-illustration d-none d-md-block">
+                <div class="robot-wrapper">
+                    <!-- Ảnh Robot: Giữ nguyên link localhost -->
+                    <img src="http://localhost:4200/assets/images/login/ithelpdesk-robot.png"
+                         alt="Robot"
+                         class="robot-img" />
+                </div>
+                <h2 class="auth-greeting">Chào bạn đến với<br>hệ thống hỗ trợ!</h2>
+            </div>
+
+            <!-- Cột phải: Form Đăng nhập kết nối với ABP -->
+            <div class="auth-glass-card">
+                <div class="text-center mb-4">
+                    <!-- Logo: Giữ nguyên link localhost -->
+                    <img src="http://localhost:4200/assets/images/logo/ithelpdesk-logo.png"
+                         alt="ItHelpdesk"
+                         class="logo-img" />
+                    <h5 class="text-dark mt-3 fw-bold">Đăng Nhập</h5>
+                </div>
+
+                <!-- Form gửi dữ liệu về ABP -->
+                <form method="post" class="mt-4">
+                    <input type="hidden" name="returnUrl" value="@Model.ReturnUrl" />
+                    <input type="hidden" name="returnUrlHash" />
+
+                    @if (!ViewData.ModelState.IsValid)
+                    {
+                        <div class="alert alert-danger p-2" style="font-size: 13px;">
+                            Sai tài khoản hoặc mật khẩu!
+                        </div>
+                    }
+
+                    <div class="form-group mb-3 position-relative">
+                        <i class="fas fa-user input-icon"></i>
+                        <input asp-for="LoginInput.UserNameOrEmailAddress" class="custom-input" placeholder="Tên đăng nhập" required />
+                    </div>
+
+                    <div class="form-group mb-2 position-relative">
+                        <i class="fas fa-lock input-icon"></i>
+                        <input asp-for="LoginInput.Password" type="password" class="custom-input" placeholder="Mật khẩu" required />
+                    </div>
+
+                    <div class="text-end mb-4">
+                        <a href="/Account/ForgotPassword" class="forgot-pwd">Quên mật khẩu?</a>
+                    </div>
+
+                    <button type="submit" name="Action" value="Login" class="btn-login">ĐĂNG NHẬP</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

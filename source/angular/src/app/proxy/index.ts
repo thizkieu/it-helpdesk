@@ -1,4 +1,8 @@
 import * as Books from './books';
+import * as Categories from './categories';
 import * as LocalizationManagement from './localization-management';
+import * as Priorities from './priorities';
+import * as Services from './services';
 import * as SysMasterLists from './sys-master-lists';
-export { Books, LocalizationManagement, SysMasterLists };
+import * as Teams from './teams';
+export { Books, Categories, LocalizationManagement, Priorities, Services, SysMasterLists, Teams };

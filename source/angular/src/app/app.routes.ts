@@ -29,6 +29,26 @@ export const APP_ROUTES: Routes = [
     canActivate: [authGuard, permissionGuard],
   },
   {
+    path: 'categories',
+    loadComponent: () => import('./categories/category.component').then(c => c.CategoryComponent),
+    canActivate: [authGuard, permissionGuard],
+  },
+  {
+    path: 'services',
+    loadComponent: () => import('./services/service.component').then(c => c.ServiceComponent),
+    canActivate: [authGuard, permissionGuard],
+  },
+  {
+    path: 'priorities',
+    loadComponent: () => import('./priorities/priority.component').then(c => c.PriorityComponent),
+    canActivate: [authGuard, permissionGuard],
+  },
+  {
+    path: 'teams',
+    loadComponent: () => import('./teams/team.component').then(c => c.TeamComponent),
+    canActivate: [authGuard, permissionGuard],
+  },
+  {
     path: 'language-texts',
     loadComponent: () => import('./language-management/language-texts/language-text.component').then(c => c.LanguageTextComponent),
     canActivate: [authGuard, permissionGuard],

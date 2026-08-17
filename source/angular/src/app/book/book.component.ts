@@ -1,8 +1,8 @@
 import {
   FormGroup,
-  FormBuilder, 
-  Validators, 
-  FormsModule, 
+  FormBuilder,
+  Validators,
+  FormsModule,
   ReactiveFormsModule
 } from '@angular/forms';
 import { Component, inject, OnInit } from '@angular/core';
@@ -11,9 +11,9 @@ import { NgbDatepickerModule, NgbDateStruct, NgbDropdownModule } from '@ng-boots
 import { NgxDatatableModule } from '@swimlane/ngx-datatable';
 import {
   ListService,
-  PagedResultDto, 
-  LocalizationPipe, 
-  PermissionDirective, 
+  PagedResultDto,
+  LocalizationPipe,
+  PermissionDirective,
   AutofocusDirective
 } from '@abp/ng.core';
 import {
@@ -54,13 +54,17 @@ export class BookComponent implements OnInit {
   private confirmation = inject(ConfirmationService);
 
   book = { items: [], totalCount: 0 } as PagedResultDto<BookDto>;
-  selectedBook = {} as BookDto; // declare selectedBook
-  form: FormGroup;
+  selectedBook = {} as BookDto;
+
+  // FIX LỖI 1: Thêm dấu '!' để báo với TypeScript là form sẽ được khởi tạo sau
+  form!: FormGroup;
+
   bookTypes = bookTypeOptions;
   isModalOpen = false;
 
   ngOnInit() {
-    const bookStreamCreator = query => this.bookService.getList(query);
+    // FIX LỖI 2: Thêm kiểu dữ liệu ': any' cho tham số query
+    const bookStreamCreator = (query: any) => this.bookService.getList(query);
 
     this.list.hookToQuery(bookStreamCreator).subscribe(response => {
       this.book = response;

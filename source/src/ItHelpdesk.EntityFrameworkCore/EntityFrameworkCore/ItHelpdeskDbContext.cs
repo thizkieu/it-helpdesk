@@ -40,8 +40,10 @@ public class ItHelpdeskDbContext :
     public DbSet<LanguageText> LanguageTexts { get; set; }
     public DbSet<Employee> Employees { get; set; }
     public DbSet<SysMasterList> SysMasterLists { get; set; }
-    public DbSet<Categories.HelpdeskCategory> HelpdeskCategories { get; set; }
-    public DbSet<Priorities.HelpdeskPriority> HelpdeskPriorities { get; set; }
+    public DbSet<Categories.Category> Categories { get; set; }
+    public DbSet<Priorities.Priority> Priorities { get; set; }
+    public DbSet<Services.Service> Services { get; set; }
+    public DbSet<Teams.Team> Teams { get; set; }
     #region Entities from the modules
 
     /* Notice: We only implemented IIdentityProDbContext and ISaasDbContext
@@ -99,6 +101,30 @@ public class ItHelpdeskDbContext :
                 ItHelpdeskConsts.DbSchema);
             b.ConfigureByConvention(); //auto configure for the base class props
             b.Property(x => x.Name).IsRequired().HasMaxLength(128);
+        });
+
+        builder.Entity<Categories.Category>(b =>
+        {
+            b.ToTable(ItHelpdeskConsts.DbTablePrefix + "Categories", ItHelpdeskConsts.DbSchema);
+            b.ConfigureByConvention(); // Dòng này cực kỳ quan trọng trong ABP
+        });
+
+        builder.Entity<Priorities.Priority>(b =>
+        {
+            b.ToTable(ItHelpdeskConsts.DbTablePrefix + "Priorities", ItHelpdeskConsts.DbSchema);
+            b.ConfigureByConvention();
+        });
+
+        builder.Entity<Services.Service>(b =>
+        {
+            b.ToTable(ItHelpdeskConsts.DbTablePrefix + "Services", ItHelpdeskConsts.DbSchema);
+            b.ConfigureByConvention();
+        });
+
+        builder.Entity<Teams.Team>(b =>
+        {
+            b.ToTable(ItHelpdeskConsts.DbTablePrefix + "Teams", ItHelpdeskConsts.DbSchema);
+            b.ConfigureByConvention();
         });
 
         builder.ApplyConfiguration(new LanguageEfCoreMapping());

@@ -24,6 +24,51 @@ function configureRoutes() {
       layout: eLayoutType.application,
       requiredPolicy: 'ItHelpdesk.Books',
     },
+        {
+      path: '/sys-master-lists',
+      name: '::Menu:SysMasterLists',
+      iconClass: 'fa fa-language',
+      layout: eLayoutType.application,
+      parentName: 'AbpUiNavigation::Menu:Administration',
+      requiredPolicy: 'ItHelpdesk.SysMasterLists',
+      order: 101,
+    },
+    {
+      path: '/categories',
+      name: '::Menu:Categories',
+      iconClass: 'fas fa-list',
+      layout: eLayoutType.application,
+      parentName: 'AbpUiNavigation::Menu:Administration',
+      requiredPolicy: 'ItHelpdesk.Categories', // Đã fix tên phân quyền
+      order: 102,
+    },
+    {
+      path: '/services',
+      name: '::Menu:Services',
+      iconClass: 'fas fa-concierge-bell',
+      layout: eLayoutType.application,
+      parentName: 'AbpUiNavigation::Menu:Administration',
+      requiredPolicy: 'ItHelpdesk.Services',
+      order: 103,
+    },
+    {
+      path: '/priorities',
+      name: '::Menu:Priorities',
+      iconClass: 'fas fa-sort-amount-up',
+      layout: eLayoutType.application,
+      parentName: 'AbpUiNavigation::Menu:Administration',
+      requiredPolicy: 'ItHelpdesk.Priorities',
+      order: 104,
+    },
+    {
+      path: '/teams',
+      name: '::Menu:Teams',
+      iconClass: 'fas fa-users',
+      layout: eLayoutType.application,
+      parentName: 'AbpUiNavigation::Menu:Administration',
+      requiredPolicy: 'ItHelpdesk.Teams',
+      order: 105,
+    },
     {
       path: '/language-texts',
       name: '::Menu:LanguageTexts',
@@ -33,15 +78,7 @@ function configureRoutes() {
       requiredPolicy: 'ItHelpdesk.LanguageTexts',
       order: 100,
     },
-    {
-      path: '/sys-master-lists',
-      name: '::Menu:SysMasterLists',
-      iconClass: 'fa fa-language',
-      layout: eLayoutType.application,
-      parentName: 'AbpUiNavigation::Menu:Administration',
-      requiredPolicy: 'ItHelpdesk.SysMasterLists',
-      order: 101,
-    },
+
   ]);
 }
 
