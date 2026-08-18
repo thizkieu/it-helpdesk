@@ -82,6 +82,8 @@ export class SysMasterListComponent implements OnInit {
 
   // #region Xử lý load danh sách
 
+  // #region Xử lý load danh sách
+
   ngOnInit() {
     this.buildSearchForm();
     this.loadData();
@@ -89,6 +91,8 @@ export class SysMasterListComponent implements OnInit {
   }
 
   loadData() {
+    // TẠM THỜI KHÓA GỌI API ĐỂ TRÁNH HIỆN POPUP LỖI KHÓ CHỊU (Chờ xin file SQL)
+    /* 
     let searchValue = this.searchForm?.value;
     this.service
       .getList({
@@ -102,7 +106,11 @@ export class SysMasterListComponent implements OnInit {
         this.items.items = res.items;
         this.items.totalCount = res.totalCount;
       });
+    */
   }
+
+  // ... (giữ nguyên các hàm khác ở giữa) ...
+
 
   onPage(event: any) {
     this.pageIndex = event.offset; // offset = pageIndex
@@ -251,15 +259,20 @@ export class SysMasterListComponent implements OnInit {
   // #region Xử lý một số tab vụ liên quan đến drop down
 
   loadSelect() {
+    // TẠM THỜI KHÓA GỌI API ĐỂ TRÁNH HIỆN POPUP LỖI KHÓ CHỊU (Chờ xin file SQL)
+    /*
     this.service.getAllCde('').subscribe(res => {
       this.groupCdeOptions = res.map(g => ({
         id: g.masterListCode,
         text: g.masterListCdeName,
       }));
     });
+    */
 
+    // Dòng này không gọi API nên cứ giữ lại cho giao diện khỏi lỗi
     this.statusOptions = buildStatusOptions(this.lh);
   }
+
 
   loadGroupCdeByKey(key: string) {
     let groupCde = this.groupCdeOptions.find(x => x.id == key)?.text;

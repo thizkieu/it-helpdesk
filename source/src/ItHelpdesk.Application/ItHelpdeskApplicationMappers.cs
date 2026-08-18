@@ -190,3 +190,18 @@ public partial class ItHelpdeskCreateUpdateTeamDtoToTeamMapper : MapperBase<Team
     public override partial void Map(Teams.CreateUpdateTeamDto source, Teams.Team destination);
 }
 #endregion
+#region Tickets
+[Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Target)]
+public partial class ItHelpdeskTicketToTicketDtoMapper : MapperBase<Tickets.Ticket, Tickets.TicketDto>
+{
+    public override partial Tickets.TicketDto Map(Tickets.Ticket source);
+    public override partial void Map(Tickets.Ticket source, Tickets.TicketDto destination);
+}
+
+[Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Target)]
+public partial class ItHelpdeskCreateUpdateTicketDtoToTicketMapper : MapperBase<Tickets.CreateUpdateTicketDto, Tickets.Ticket>
+{
+    public override partial Tickets.Ticket Map(Tickets.CreateUpdateTicketDto source);
+    public override partial void Map(Tickets.CreateUpdateTicketDto source, Tickets.Ticket destination);
+}
+#endregion

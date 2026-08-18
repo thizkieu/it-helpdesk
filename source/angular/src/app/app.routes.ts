@@ -58,4 +58,19 @@ export const APP_ROUTES: Routes = [
     loadComponent: () => import('./sys-master-lists/sys-mastert-list.component').then(c => c.SysMasterListComponent),
     canActivate: [authGuard, permissionGuard],
   },
+  {
+    path: 'tickets/create',
+    loadComponent: () => import('./tickets/create-ticket.component').then(c => c.CreateTicketComponent),
+    canActivate: [authGuard, permissionGuard], 
+  },
+  {
+  path: 'tickets/my-tickets',
+  loadComponent: () => import('./tickets/my-tickets.component').then(c => c.MyTicketsComponent),
+  canActivate: [authGuard, permissionGuard],
+},
+{
+  path: 'tickets/detail/:id',
+  loadComponent: () => import('./tickets/ticket-detail.component').then(c => c.TicketDetailComponent),
+  canActivate: [authGuard, permissionGuard], 
+},
 ];

@@ -1,0 +1,157 @@
+/* =========================================================================
+   1. TIÊU ĐỀ TRANG
+   ========================================================================= */
+.page-title {
+    color: #ffffff !important;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+    font-size: 1.85rem;
+    letter-spacing: -0.01em;
+}
+
+/* =========================================================================
+   2. KHUNG CHÚA VÀ Ô TÌM KIẾM LIỀN KHỐI (NO SPLIT BORDER)
+   ========================================================================= */
+.custom-bordered-card {
+    border: 2px solid #cbd5e1 !important;
+    border-radius: 1rem !important;
+    background-color: #ffffff !important;
+}
+
+/* Khung tìm kiếm nguyên khối */
+.custom-search-box {
+    border: 2px solid #cbd5e1 !important;
+    border-radius: 50rem !important;
+    /* Bo tròn mượt mà dạng capsule */
+    background-color: #f8fafc !important;
+    transition: all 0.2s ease-in-out;
+
+    &:focus-within {
+        border-color: #ec4899 !important;
+        /* Đổi viền sang hồng khi focus */
+        background-color: #ffffff !important;
+        box-shadow: 0 0 0 0.2rem rgba(236, 72, 153, 0.2) !important;
+    }
+
+    input {
+        color: #0f172a !important;
+        font-weight: 500;
+
+        &::placeholder {
+            color: #94a3b8;
+        }
+    }
+}
+
+.custom-bordered-select {
+    border: 2px solid #cbd5e1 !important;
+    background-color: #f8fafc !important;
+    color: #0f172a !important;
+    font-weight: 500;
+    transition: all 0.2s ease-in-out;
+
+    &:focus {
+        border-color: #ec4899 !important;
+        background-color: #ffffff !important;
+        box-shadow: 0 0 0 0.2rem rgba(236, 72, 153, 0.2) !important;
+    }
+}
+
+/* =========================================================================
+   3. MÀU SẮC CHỮ VÀ NÚT BẤM
+   ========================================================================= */
+.text-pink {
+    color: #ec4899 !important;
+}
+
+.text-purple-accent {
+    color: #7c3aed !important;
+    transition: color 0.2s ease;
+
+    &:hover {
+        color: #6d28d9 !important;
+        text-decoration: underline !important;
+    }
+}
+
+.text-muted-dark {
+    color: #475569 !important;
+}
+
+.table-row-title {
+    color: #0f172a !important;
+}
+
+.cute-badge-pill {
+    background-color: #fce7f3 !important;
+    color: #db2777 !important;
+    padding: 0.45rem 0.85rem;
+    font-weight: 700;
+    border-radius: 50rem;
+    font-size: 0.8rem;
+    border: 1px solid #fbcfe8 !important;
+}
+
+.premium-btn-submit {
+    background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%) !important;
+    border: none !important;
+    box-shadow: 0 4px 12px rgba(236, 72, 153, 0.35);
+    transition: all 0.2s ease-in-out;
+
+    &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(236, 72, 153, 0.45);
+        color: #ffffff !important;
+    }
+}
+
+.cute-outline-btn {
+    border: 2px solid #8b5cf6 !important;
+    color: #7c3aed !important;
+    background-color: transparent !important;
+    transition: all 0.2s ease;
+
+    &:hover {
+        background-color: #8b5cf6 !important;
+        color: #ffffff !important;
+        box-shadow: 0 3px 10px rgba(139, 92, 246, 0.25);
+    }
+}
+
+/* =========================================================================
+   4. BADGE TRẠNG THÁI (ĐỒNG NHẤT 100%)
+   ========================================================================= */
+::ng-deep ngx-datatable {
+    .datatable-header-cell {
+        color: #0f172a !important;
+        font-weight: 700 !important;
+    }
+
+    .status-badge {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 0.4rem 0.9rem !important;
+        font-size: 0.8125rem !important;
+        font-weight: 600 !important;
+        border-radius: 50rem !important;
+        line-height: 1 !important;
+        white-space: nowrap !important;
+        min-width: 95px !important;
+        text-align: center !important;
+
+        &.status-new {
+            background-color: #0d6efd !important;
+            color: #ffffff !important;
+        }
+
+        &.status-in-progress {
+            background-color: #ffc107 !important;
+            color: #1e293b !important;
+        }
+
+        &.status-completed {
+            background-color: #198754 !important;
+            color: #ffffff !important;
+        }
+    }
+}

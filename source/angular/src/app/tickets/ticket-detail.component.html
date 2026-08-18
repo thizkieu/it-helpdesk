@@ -1,0 +1,145 @@
+<div class="ticket-page-wrapper" *ngIf="!isLoading && ticket">
+    <div class="container-fluid">
+
+        <!-- HEADER SECTION -->
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+            <div>
+                <span class="badge cute-badge-pill mb-2">
+                    <i class="fas fa-paw me-1"></i> Chi Tiết Yêu Cầu • IT Helpdesk
+                </span>
+                <div class="text-light opacity-75 small mb-1 d-flex align-items-center">
+                    <a routerLink="/tickets/my-tickets" class="text-decoration-none text-purple-accent fw-medium">
+                        <i class="fas fa-arrow-left me-1"></i> Quay lại
+                    </a>
+                    <span class="mx-2 opacity-25">|</span>
+                    <span class="fw-bold text-pink">{{ ticket.ticketNo }}</span>
+                </div>
+                <h2 class="fw-bold page-title mb-0">
+                    {{ ticket.title }}
+                    <span
+                        class="badge rounded-pill bg-primary bg-opacity-75 text-white fs-6 align-middle ms-2">Mới</span>
+                </h2>
+            </div>
+            <div class="d-flex gap-2">
+                <button class="btn cute-outline-btn rounded-pill px-4 fw-semibold"><i class="fas fa-edit me-1"></i>
+                    Sửa</button>
+                <button class="btn premium-btn-submit rounded-pill px-4 text-white fw-semibold"><i
+                        class="fas fa-check-circle me-1"></i> Đóng yêu cầu</button>
+            </div>
+        </div>
+
+        <!-- MAIN CONTENT -->
+        <div class="row g-4">
+            <!-- CỘT TRÁI: Nội dung chi tiết & Bình luận -->
+            <div class="col-lg-8">
+                <!-- Card Nội dung -->
+                <div class="card premium-glass-card border-0 shadow-lg mb-4">
+                    <div class="card-body p-4 p-md-5">
+                        <div class="d-flex align-items-center mb-4">
+                            <div class="avatar bg-purple-soft text-white rounded-circle d-flex justify-content-center align-items-center me-3 shadow-sm"
+                                style="width: 48px; height: 48px; font-size: 1.2rem;">
+                                <i class="fas fa-paw"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-1 fw-bold text-white fs-5">Nguyễn Thúy Kiều</h6>
+                                <small class="text-muted"><i class="far fa-clock me-1"></i> {{ ticket.creationTime |
+                                    date:'dd/MM/yyyy HH:mm' }}</small>
+                            </div>
+                        </div>
+                        <h6 class="fw-bold text-pink border-bottom border-secondary border-opacity-25 pb-3 mb-3">Mô tả
+                            chi tiết</h6>
+                        <p class="text-light opacity-85" style="line-height: 1.7; font-size: 1.05rem;">
+                            {{ ticket.description || 'Chưa có mô tả chi tiết cho yêu cầu này.' }}
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Card Thảo luận & Bình luận (Comments) -->
+                <div class="card premium-glass-card border-0 shadow-lg">
+                    <div class="card-body p-4 p-md-5">
+                        <h5 class="fw-bold text-white mb-4"><i class="fas fa-comments text-info me-2"></i>Thảo luận &
+                            Trao đổi</h5>
+
+                        <!-- Ô nhập bình luận -->
+                        <div class="d-flex gap-3 mb-4 pb-4 border-bottom border-secondary border-opacity-25">
+                            <div class="avatar bg-primary text-white rounded-circle d-flex justify-content-center align-items-center flex-shrink-0 shadow-sm"
+                                style="width: 42px; height: 42px;">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <textarea class="form-control premium-input shadow-none p-3" rows="3"
+                                    [(ngModel)]="newCommentContent"
+                                    placeholder="Nhập phản hồi của bạn ở đây nhé..."></textarea>
+                                <div class="d-flex justify-content-end mt-3">
+                                    <button class="btn premium-btn-submit rounded-pill px-4 text-white fw-semibold"
+                                        (click)="sendComment()" [disabled]="!newCommentContent">
+                                        <i class="fas fa-paper-plane me-1"></i> Gửi đi
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Danh sách hiển thị Comment -->
+                        <div class="comment-list" *ngIf="comments.length > 0">
+                            <div class="comment-item mb-4" *ngFor="let comment of comments">
+                                <div class="d-flex gap-3">
+                                    <div class="avatar bg-info bg-opacity-75 text-white rounded-circle d-flex justify-content-center align-items-center flex-shrink-0"
+                                        style="width: 42px; height: 42px;">
+                                        <i class="fas"
+                                            [ngClass]="comment.isInternal ? 'fa-user-shield' : 'fa-headset'"></i>
+                                    </div>
+                                    <div class="comment-bubble mystical-bubble p-3 rounded-4 flex-grow-1 shadow-sm">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <span class="fw-bold text-purple-accent">
+                                                {{ comment.isInternal ? 'Ghi chú nội bộ' : 'Hỗ trợ viên' }}
+                                            </span>
+                                            <small class="text-muted" style="font-size: 0.75rem;">{{
+                                                comment.creationTime | date:'dd/MM/yyyy HH:mm' }}</small>
+                                        </div>
+                                        <p class="mb-0 text-light opacity-75" style="line-height: 1.5;">{{
+                                            comment.content }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Trạng thái trống -->
+                        <div class="text-center text-muted py-5" *ngIf="comments.length === 0">
+                            <i class="fas fa-cat fa-3x mb-3 text-secondary opacity-50 bounce-icon"></i>
+                            <p class="mb-0 text-light opacity-50">Chưa có cuộc trò chuyện nào diễn ra ở đây cả...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CỘT PHẢI: Thông tin chung -->
+            <div class="col-lg-4">
+                <div class="card premium-glass-card border-0 shadow-lg mb-4">
+                    <div class="card-body p-4">
+                        <h6 class="fw-bold text-pink border-bottom border-secondary border-opacity-25 pb-3 mb-4"><i
+                                class="fas fa-info-circle me-2"></i>Thông tin chung</h6>
+
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="text-muted small text-uppercase">Mã Ticket</span>
+                            <span class="fw-bold text-light bg-dark bg-opacity-50 px-2 py-1 rounded">{{ ticket.ticketNo
+                                }}</span>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="text-muted small text-uppercase">Trạng thái</span>
+                            <span class="badge rounded-pill bg-secondary bg-opacity-75 text-white px-3 py-2">{{
+                                ticket.status }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading State -->
+<div class="text-center py-5 min-vh-100 d-flex justify-content-center align-items-center" *ngIf="isLoading">
+    <div class="spinner-border text-pink" role="status" style="width: 3rem; height: 3rem;">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+</div>

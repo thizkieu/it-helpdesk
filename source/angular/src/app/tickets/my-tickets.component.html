@@ -1,0 +1,94 @@
+<div class="ticket-page-wrapper">
+  <div class="container-fluid">
+
+    <!-- Tiêu đề trang -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+      <div>
+        <span class="badge cute-badge-pill mb-2">
+          <i class="fas fa-paw me-1"></i> Quản Lý Yêu Cầu • IT Helpdesk
+        </span>
+        <h2 class="fw-bold page-title mb-0">Yêu Cầu Của Tôi</h2>
+      </div>
+      <div>
+        <a routerLink="/tickets/new" class="btn premium-btn-submit rounded-pill px-4 text-white fw-semibold">
+          <i class="fas fa-plus me-2"></i> Tạo yêu cầu mới
+        </a>
+      </div>
+    </div>
+
+    <!-- KHUNG TÌM KIẾM & LỌC -->
+    <div class="card custom-bordered-card shadow-lg mb-4 p-3 p-md-4">
+      <div class="row align-items-center g-3">
+        <div class="col-md-5">
+          <!-- Ô TÌM KIẾM LIỀN KHỐI (LIỀN 1 KHUNG MỊN) -->
+          <div class="custom-search-box d-flex align-items-center px-3 py-1">
+            <i class="fas fa-search text-pink me-2"></i>
+            <input type="text" class="form-control border-0 bg-transparent shadow-none py-1 ps-0"
+              placeholder="Tìm kiếm theo tiêu đề..." [(ngModel)]="filters.filterText" (input)="onSearchInput()" />
+          </div>
+        </div>
+        <div class="col-md-4">
+          <!-- Dropdown lọc trạng thái -->
+          <select class="form-select custom-bordered-select py-2 shadow-none rounded-4" [(ngModel)]="filters.status"
+            (change)="onFilterChange()">
+            <option [ngValue]="null">-- Tất cả trạng thái --</option>
+            <option [ngValue]="1">Mới</option>
+            <option [ngValue]="3">Đang xử lý</option>
+            <option [ngValue]="6">Đã xử lý</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- BẢNG DANH SÁCH CHÍNH -->
+    <div class="card custom-bordered-card shadow-lg overflow-hidden">
+      <div class="card-body p-0">
+        <ngx-datatable [rows]="data.items" [count]="data.totalCount" [list]="list" default>
+
+          <ngx-datatable-column [name]="'::TicketNo' | abpLocalization" prop="ticketNo">
+            <ng-template let-row="row" ngx-datatable-cell-template>
+              <a [routerLink]="['/tickets/detail', row.id]" class="fw-bold text-decoration-none text-purple-accent">
+                {{ row.ticketNo }}
+              </a>
+            </ng-template>
+          </ngx-datatable-column>
+
+          <ngx-datatable-column [name]="'::TicketSubject' | abpLocalization" prop="title">
+            <ng-template let-row="row" ngx-datatable-cell-template>
+              <span class="table-row-title fw-medium">{{ row.title }}</span>
+            </ng-template>
+          </ngx-datatable-column>
+
+          <ngx-datatable-column [name]="'::Status' | abpLocalization" prop="status">
+            <ng-template let-row="row" ngx-datatable-cell-template>
+              <span class="status-badge" [ngClass]="{
+                  'status-new': row.status === 1,
+                  'status-in-progress': row.status === 3,
+                  'status-completed': row.status === 6
+                }">
+                {{ '::Enum:TicketStatus.' + row.status | abpLocalization }}
+              </span>
+            </ng-template>
+          </ngx-datatable-column>
+
+          <ngx-datatable-column [name]="'::CreationTime' | abpLocalization" prop="creationTime">
+            <ng-template let-row="row" ngx-datatable-cell-template>
+              <span class="small text-muted-dark">{{ row.creationTime | date:'dd/MM/yyyy HH:mm' }}</span>
+            </ng-template>
+          </ngx-datatable-column>
+
+          <ngx-datatable-column name="Thao tác" [sortable]="false">
+            <ng-template let-row="row" ngx-datatable-cell-template>
+              <a [routerLink]="['/tickets/detail', row.id]"
+                class="btn btn-sm cute-outline-btn rounded-pill px-4 fw-semibold">
+                <i class="fas fa-paw me-1"></i> Chi tiết
+              </a>
+            </ng-template>
+          </ngx-datatable-column>
+
+        </ngx-datatable>
+      </div>
+    </div>
+
+  </div>
+</div>

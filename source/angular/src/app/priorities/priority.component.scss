@@ -1,0 +1,217 @@
+/* =========================================================================
+   STYLE TRANG QUẢN TRỊ ĐỘ ƯU TIÊN (PRIORITIES) - MATURE DARK MODE
+   ========================================================================= */
+
+$bg-card: rgba(30, 41, 59, 0.75); 
+$border-glass: rgba(255, 255, 255, 0.08);
+$text-main: #f8fafc;
+$text-muted: #94a3b8;
+$primary-color: #4f46e5; // Indigo trầm chuyên nghiệp
+
+/* FIX LỖI SÁT KHUNG LỀ */
+.admin-page-container {
+    padding: 1.5rem; 
+    background: transparent;
+    min-height: 100vh;
+}
+
+/* KHUNG CARD CHÍNH */
+.card-admin-main {
+    background: $bg-card !important;
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid $border-glass !important;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important;
+    
+    .card-header {
+        background: transparent !important;
+        border-bottom: 1px solid $border-glass !important;
+    }
+}
+
+/* Giúp khung bên trong không phá layout bảng khi resize */
+.card-body {
+    width: 100%;
+    overflow: hidden; 
+}
+
+/* HIỆU ỨNG TEXT */
+.title-gradient {
+    color: $text-main;
+    letter-spacing: 0.5px;
+}
+.text-muted-custom { color: $text-muted; }
+
+/* ICON HEADER */
+.header-icon-box {
+    width: 48px;
+    height: 48px;
+    background: rgba(79, 70, 229, 0.1);
+    border: 1px solid rgba(79, 70, 229, 0.2);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    color: #818cf8;
+    box-shadow: 0 0 20px rgba(79, 70, 229, 0.15);
+}
+
+/* NÚT BẤM CHÍNH */
+.btn-action-primary {
+    background-color: $primary-color !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    color: white !important;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3);
+
+    &:hover {
+        background-color: #4338ca !important;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(79, 70, 229, 0.4);
+    }
+}
+
+/* BẢNG DATATABLE */
+::ng-deep ngx-datatable.admin-datatable {
+    background: transparent !important;
+    color: $text-main !important;
+
+    .datatable-header {
+        background: rgba(15, 23, 42, 0.4) !important;
+        border-bottom: 1px solid $border-glass !important;
+
+        .datatable-header-cell {
+            color: $text-muted !important;
+            font-weight: 600 !important;
+            font-size: 0.8rem !important;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 1.2rem 1.5rem !important;
+        }
+    }
+
+    .datatable-body-row {
+        background: transparent !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.03) !important;
+        transition: background-color 0.2s ease;
+
+        &:hover { background-color: rgba(255, 255, 255, 0.04) !important; }
+
+        .datatable-body-cell {
+            padding: 1.2rem 1.5rem !important;
+            display: flex;
+            align-items: center;
+        }
+    }
+
+    .datatable-footer {
+        background: rgba(15, 23, 42, 0.4) !important;
+        border-top: 1px solid $border-glass !important;
+        color: $text-muted !important;
+        
+        .datatable-pager li.active a {
+            background-color: $primary-color !important;
+            color: white !important;
+        }
+    }
+}
+
+/* AVATAR MÃ ĐỘ ƯU TIÊN */
+.priority-avatar-square {
+    width: 38px;
+    height: 38px;
+    background: linear-gradient(135deg, #1e293b, #0f172a);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #94a3b8;
+    font-weight: 700;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+}
+
+/* DROPDOWN */
+.btn-action-dropdown {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid $border-glass !important;
+    color: $text-main !important;
+    font-size: 0.85rem;
+    &:hover { background: rgba(255, 255, 255, 0.1) !important; }
+}
+
+.dropdown-menu-admin {
+    background: #1e293b !important;
+    border: 1px solid $border-glass !important;
+    button {
+        color: $text-main !important;
+        &:hover { background: rgba(255, 255, 255, 0.05) !important; }
+    }
+}
+
+/* TRẠNG THÁI (STATUS BADGE) - NEON TỐI */
+.admin-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+
+    .status-dot { width: 6px; height: 6px; border-radius: 50%; box-shadow: 0 0 8px currentColor; }
+
+    &.badge-active {
+        background-color: rgba(16, 185, 129, 0.1);
+        color: #34d399;
+        border: 1px solid rgba(16, 185, 129, 0.2);
+        .status-dot { background-color: #34d399; }
+    }
+
+    &.badge-inactive {
+        background-color: rgba(239, 68, 68, 0.1);
+        color: #f87171;
+        border: 1px solid rgba(239, 68, 68, 0.2);
+        .status-dot { background-color: #f87171; }
+    }
+}
+
+/* MODAL & FORM (Ép màu Dark Mode cho ABP Modal) */
+::ng-deep .modal-content {
+    background: #1e293b !important;
+    border: 1px solid $border-glass !important;
+    border-radius: 20px !important;
+    box-shadow: 0 25px 50px rgba(0,0,0,0.5) !important;
+}
+
+.admin-input {
+    background: rgba(15, 23, 42, 0.6) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    color: $text-main !important;
+    border-radius: 10px !important;
+    padding: 0.75rem 1rem;
+
+    &:focus {
+        border-color: #6366f1 !important;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15) !important;
+    }
+}
+
+.status-toggle-wrapper {
+    background: rgba(15, 23, 42, 0.4);
+    border: 1px solid $border-glass;
+}
+
+.admin-switch {
+    width: 3rem;
+    height: 1.5rem;
+    cursor: pointer;
+    background-color: rgba(255, 255, 255, 0.2) !important;
+    border: none !important;
+
+    &:checked {
+        background-color: $primary-color !important;
+    }
+}

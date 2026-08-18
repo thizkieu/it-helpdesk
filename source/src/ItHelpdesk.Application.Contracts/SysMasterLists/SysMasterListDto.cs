@@ -4,9 +4,9 @@ namespace ItHelpdesk.SysMasterLists
 {
     public class SysMasterListDto
     {
-        public long MasterListID { get; set; }
-        public string MasterListCode { get; set; }
-        public string MasterListGroupCde { get; set; }
+        public long? MasterListID { get; set; }
+        public string? MasterListCode { get; set; }
+        public string? MasterListGroupCde { get; set; }
         public string? MasterListCdeName { get; set; }
         public string? MastListDefaultValue { get; set; }
         public string? MastListExtendValue1 { get; set; }
@@ -20,12 +20,12 @@ namespace ItHelpdesk.SysMasterLists
         public bool? IsDeleted { get; set; }
         public string? TenantId { get; set; }
         public string? RowVersion { get; set; }
-        public string CreateBy { get; set; }
+        public string? CreateBy { get; set; }
         public DateTime CreateDate { get; set; }
         public string? ModifiedBy { get; set; }
         public DateTime? ModifiedDate { get; set; }
-        public int TotalRows { get; set; }
-        public int TotalPages { get; set; }
-        public int RowIndex { get; set; }
+        public int? TotalRows { get; set; }
+        public int? TotalPages { get; set; }
+        public int? RowIndex { get; set; }
     }
 }

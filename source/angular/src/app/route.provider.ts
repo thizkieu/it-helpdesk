@@ -18,13 +18,28 @@ function configureRoutes() {
       layout: eLayoutType.application,
     },
     {
+      path: '/tickets/create',
+      name: '::Menu:Tickets',
+      iconClass: 'fas fa-ticket-alt',
+      order: 2,
+      layout: eLayoutType.application,
+    },
+    {
+      path: '/tickets/my-tickets',
+      name: '::Menu:MyTickets',
+      iconClass: 'fas fa-tasks',
+      order: 3,
+      layout: eLayoutType.application,
+    },
+        {
       path: '/books',
       name: '::Menu:Books',
       iconClass: 'fas fa-book',
       layout: eLayoutType.application,
+      order: 4,
       requiredPolicy: 'ItHelpdesk.Books',
     },
-        {
+    {
       path: '/sys-master-lists',
       name: '::Menu:SysMasterLists',
       iconClass: 'fa fa-language',
@@ -39,7 +54,7 @@ function configureRoutes() {
       iconClass: 'fas fa-list',
       layout: eLayoutType.application,
       parentName: 'AbpUiNavigation::Menu:Administration',
-      requiredPolicy: 'ItHelpdesk.Categories', // Đã fix tên phân quyền
+      requiredPolicy: 'ItHelpdesk.Categories',
       order: 102,
     },
     {

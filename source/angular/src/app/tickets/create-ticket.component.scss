@@ -1,0 +1,150 @@
+:host {
+    display: block;
+    width: 100%;
+    min-height: 100vh;
+    background: radial-gradient(circle at 50% 10%, #1e1b4b 0%, #0c0f1d 100%) !important;
+}
+
+.ticket-page-wrapper {
+    background: transparent;
+}
+
+.page-title {
+    color: #ffffff !important;
+    text-shadow: 0 0 20px rgba(192, 132, 252, 0.4);
+}
+
+.page-subtitle {
+    color: #cbd5e1 !important;
+    font-size: 0.95rem;
+}
+
+.cute-badge-pill {
+    background: rgba(244, 114, 182, 0.15) !important;
+    color: #f472b6 !important;
+    border: 1px dashed rgba(244, 114, 182, 0.45);
+    border-radius: 50rem;
+    padding: 6px 16px;
+    font-size: 0.85rem;
+}
+
+.premium-glass-card {
+    background: rgba(23, 28, 48, 0.85) !important;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 24px !important;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6) !important;
+}
+
+.cute-label {
+    color: #e2e8f0 !important;
+    font-size: 0.85rem;
+    letter-spacing: 0.3px;
+}
+
+.premium-input {
+    background-color: rgba(15, 23, 42, 0.8) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    color: #f8fafc !important;
+    border-radius: 14px !important;
+    transition: all 0.3s ease;
+
+    &:focus {
+        background-color: rgba(15, 23, 42, 0.95) !important;
+        border-color: #c084fc !important;
+        box-shadow: 0 0 15px rgba(192, 132, 252, 0.35) !important;
+        color: #ffffff !important;
+        outline: none;
+    }
+
+    &::placeholder {
+        color: #64748b !important;
+    }
+
+    option {
+        background-color: #0f172a;
+        color: #f8fafc;
+    }
+}
+
+// Khu vực upload có con mèo dễ thương
+.upload-zone {
+    background-color: rgba(15, 23, 42, 0.5);
+    border: 2px dashed rgba(244, 114, 182, 0.3);
+    transition: all 0.3s ease;
+    cursor: pointer;
+
+    &:hover {
+        background-color: rgba(15, 23, 42, 0.8);
+        border-color: #f472b6;
+        box-shadow: 0 0 15px rgba(244, 114, 182, 0.2);
+
+        .upload-icon-circle {
+            background-color: rgba(244, 114, 182, 0.25);
+            transform: scale(1.05);
+        }
+    }
+
+    .upload-input {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        cursor: pointer;
+        z-index: 10;
+    }
+
+    .upload-icon-circle {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background-color: rgba(244, 114, 182, 0.15);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
+}
+
+@keyframes bounceCat {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-5px);
+    }
+}
+
+.bounce-icon {
+    display: inline-block;
+    animation: bounceCat 2s infinite ease-in-out;
+}
+
+.premium-btn-submit {
+    background: linear-gradient(135deg, #c084fc 0%, #ec4899 100%) !important;
+    border: none !important;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 20px rgba(236, 72, 153, 0.35) !important;
+
+    &:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 25px rgba(236, 72, 153, 0.5) !important;
+        filter: brightness(1.1);
+    }
+
+    &:disabled {
+        opacity: 0.5;
+    }
+}
+
+.text-pink {
+    color: #f472b6 !important;
+}

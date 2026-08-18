@@ -23,7 +23,6 @@ namespace ItHelpdesk.Services
             DeletePolicyName = ItHelpdeskPermissions.Services.Delete;
         }
 
-        // Ghi đè hàm này để thanh tìm kiếm trên giao diện Angular có thể hoạt động
         protected override async Task<IQueryable<Service>> CreateFilteredQueryAsync(GetServiceListInput input)
         {
             var query = await base.CreateFilteredQueryAsync(input);

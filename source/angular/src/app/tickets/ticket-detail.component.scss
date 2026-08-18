@@ -1,0 +1,140 @@
+:host {
+    display: block;
+    width: 100%;
+}
+
+::ng-deep {
+    .ticket-page-wrapper {
+       
+        background: radial-gradient(circle at 50% 10%, #1e1b4b 0%, #0c0f1d 100%) !important;
+        margin: -2rem !important;
+        padding: 2.5rem 1.5rem !important;
+        min-height: calc(100vh + 4rem) !important;
+
+        .page-title,
+        h2,
+        h5,
+        h6 {
+            color: #ffffff !important;
+        }
+
+        .text-muted {
+            color: #cbd5e1 !important;
+        }
+
+        .cute-badge-pill {
+            background: rgba(244, 114, 182, 0.15) !important;
+            color: #f472b6 !important;
+            border: 1px dashed rgba(244, 114, 182, 0.45) !important;
+            border-radius: 50rem !important;
+            padding: 6px 16px !important;
+            font-size: 0.85rem !important;
+        }
+
+        .card,
+        .premium-glass-card {
+            background: rgba(23, 28, 48, 0.85) !important;
+            backdrop-filter: blur(20px) !important;
+            -webkit-backdrop-filter: blur(20px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            border-radius: 24px !important;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6) !important;
+        }
+
+        .premium-input {
+            background-color: rgba(15, 23, 42, 0.8) !important;
+            border: 1px solid rgba(255, 255, 255, 0.12) !important;
+            color: #f8fafc !important;
+            border-radius: 14px !important;
+        }
+
+        .premium-input:focus {
+            background-color: rgba(15, 23, 42, 0.95) !important;
+            border-color: #c084fc !important;
+            box-shadow: 0 0 15px rgba(192, 132, 252, 0.35) !important;
+            color: #ffffff !important;
+            outline: none !important;
+        }
+
+        .premium-input::placeholder {
+            color: #64748b !important;
+        }
+
+        .premium-btn-submit {
+            background: linear-gradient(135deg, #c084fc 0%, #ec4899 100%) !important;
+            border: none !important;
+            color: white !important;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 20px rgba(236, 72, 153, 0.35) !important;
+
+            &:hover:not(:disabled) {
+                transform: translateY(-2px);
+                box-shadow: 0 12px 25px rgba(236, 72, 153, 0.5) !important;
+                filter: brightness(1.1);
+            }
+
+            &:disabled {
+                opacity: 0.5;
+            }
+        }
+
+        .cute-outline-btn {
+            color: #c084fc !important;
+            border: 1px solid rgba(192, 132, 252, 0.4) !important;
+            background: rgba(192, 132, 252, 0.05) !important;
+            transition: all 0.2s ease;
+
+            &:hover {
+                background: linear-gradient(135deg, #c084fc 0%, #ec4899 100%) !important;
+                border-color: transparent !important;
+                color: white !important;
+                box-shadow: 0 4px 12px rgba(236, 72, 153, 0.3) !important;
+            }
+        }
+
+        .mystical-bubble {
+            background: rgba(30, 41, 59, 0.8) !important;
+            border: 1px solid rgba(255, 255, 255, 0.05) !important;
+            position: relative;
+
+            &::before {
+                content: '';
+                position: absolute;
+                top: 15px;
+                left: -8px;
+                border-style: solid;
+                border-width: 8px 10px 8px 0;
+                border-color: transparent rgba(30, 41, 59, 0.8) transparent transparent;
+            }
+        }
+
+        @keyframes bounceCat {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-5px);
+            }
+        }
+
+        .bounce-icon {
+            display: inline-block;
+            animation: bounceCat 2s infinite ease-in-out;
+        }
+
+        .text-pink {
+            color: #f472b6 !important;
+        }
+
+        .text-purple-accent {
+            color: #c084fc !important;
+        }
+
+        .bg-purple-soft {
+            background-color: #c084fc !important;
+        }
+    }
+}

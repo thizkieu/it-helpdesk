@@ -1,11 +1,13 @@
 using ItHelpdesk.Books;
+using ItHelpdesk.Categories;
 using ItHelpdesk.Employees;
 using ItHelpdesk.LocalizationManagement.Languages;
 using ItHelpdesk.LocalizationManagement.LanguageTexts;
+using ItHelpdesk.Priorities;
+using ItHelpdesk.Services;
 using ItHelpdesk.SysMasterLists;
+using ItHelpdesk.Tickets;
 
-//using ItHelpdesk.Languages;
-//using ItHelpdesk.LanguageTexts;
 using Microsoft.EntityFrameworkCore;
 using Volo.Abp.AuditLogging.EntityFrameworkCore;
 using Volo.Abp.BackgroundJobs.EntityFrameworkCore;
@@ -33,8 +35,9 @@ public class ItHelpdeskDbContext :
     ITenantManagementDbContext,
     IIdentityDbContext
 {
-    /* Add DbSet properties for your Aggregate Roots / Entities here. */
-
+    /* =========================================================
+       1. CÁC BẢNG CUSTOM CỦA BẠN
+       ========================================================= */
     public DbSet<Book> Books { get; set; }
     public DbSet<Language> Languages { get; set; }
     public DbSet<LanguageText> LanguageTexts { get; set; }
@@ -44,18 +47,13 @@ public class ItHelpdeskDbContext :
     public DbSet<Priorities.Priority> Priorities { get; set; }
     public DbSet<Services.Service> Services { get; set; }
     public DbSet<Teams.Team> Teams { get; set; }
-    #region Entities from the modules
+    public DbSet<Ticket> Tickets { get; set; }
+    public DbSet<TicketComment> TicketComments { get; set; }
 
-    /* Notice: We only implemented IIdentityProDbContext and ISaasDbContext
-     * and replaced them for this DbContext. This allows you to perform JOIN
-     * queries for the entities of these modules over the repositories easily. You
-     * typically don't need that for other modules. But, if you need, you can
-     * implement the DbContext interface of the needed module and use ReplaceDbContext
-     * attribute just like IIdentityProDbContext and ISaasDbContext.
-     *
-     * More info: Replacing a DbContext of a module ensures that the related module
-     * uses this DbContext on runtime. Otherwise, it will use its own DbContext class.
-     */
+    /* =========================================================
+       2. CÁC BẢNG MẶC ĐỊNH CỦA ABP (BẮT BUỘC PHẢI CÓ ĐỂ KHÔNG LỖI)
+       ========================================================= */
+    #region Entities from the modules
 
     // Identity
     public DbSet<IdentityUser> Users { get; set; }
@@ -84,7 +82,6 @@ public class ItHelpdeskDbContext :
         base.OnModelCreating(builder);
 
         /* Include modules to your migration db context */
-
         builder.ConfigurePermissionManagement();
         builder.ConfigureSettingManagement();
         builder.ConfigureBackgroundJobs();
@@ -95,18 +92,18 @@ public class ItHelpdeskDbContext :
         builder.ConfigureTenantManagement();
         builder.ConfigureBlobStoring();
 
+        // Cấu hình các bảng của bạn
         builder.Entity<Book>(b =>
         {
-            b.ToTable(ItHelpdeskConsts.DbTablePrefix + "Books",
-                ItHelpdeskConsts.DbSchema);
-            b.ConfigureByConvention(); //auto configure for the base class props
+            b.ToTable(ItHelpdeskConsts.DbTablePrefix + "Books", ItHelpdeskConsts.DbSchema);
+            b.ConfigureByConvention();
             b.Property(x => x.Name).IsRequired().HasMaxLength(128);
         });
 
         builder.Entity<Categories.Category>(b =>
         {
             b.ToTable(ItHelpdeskConsts.DbTablePrefix + "Categories", ItHelpdeskConsts.DbSchema);
-            b.ConfigureByConvention(); // Dòng này cực kỳ quan trọng trong ABP
+            b.ConfigureByConvention();
         });
 
         builder.Entity<Priorities.Priority>(b =>
@@ -127,10 +124,33 @@ public class ItHelpdeskDbContext :
             b.ConfigureByConvention();
         });
 
+        builder.Entity<Ticket>(b =>
+        {
+            b.ToTable(ItHelpdeskConsts.DbTablePrefix + "Tickets", ItHelpdeskConsts.DbSchema);
+            b.ConfigureByConvention();
+
+            b.Property(x => x.TicketNo).IsRequired().HasMaxLength(50);
+            b.Property(x => x.Title).IsRequired().HasMaxLength(255);
+            b.Property(x => x.Description).IsRequired();
+
+            b.HasIndex(x => x.TicketNo).IsUnique();
+
+            b.HasOne<Categories.Category>().WithMany().HasForeignKey(x => x.CategoryId).IsRequired();
+            b.HasOne<Priorities.Priority>().WithMany().HasForeignKey(x => x.PriorityId).IsRequired();
+            b.HasOne<Services.Service>().WithMany().HasForeignKey(x => x.ServiceId).IsRequired();
+        });
+        builder.Entity<TicketComment>(b =>
+        {
+            b.ToTable(ItHelpdeskConsts.DbTablePrefix + "TicketComments", ItHelpdeskConsts.DbSchema);
+            b.ConfigureByConvention(); // Ép ABP tự động tạo các cột hệ thống (Id, CreationTime...)
+
+            // Cấu hình khóa ngoại liên kết với bảng Tickets
+            b.HasOne<Ticket>().WithMany().HasForeignKey(x => x.TicketId).IsRequired();
+        });
+
         builder.ApplyConfiguration(new LanguageEfCoreMapping());
         builder.ApplyConfiguration(new LanguageTextEfCoreMapping());
         builder.ApplyConfiguration(new EmployeeEfCoreMapping());
         builder.ApplyConfiguration(new SysMasterListEfCoreMapping());
-
     }
 }

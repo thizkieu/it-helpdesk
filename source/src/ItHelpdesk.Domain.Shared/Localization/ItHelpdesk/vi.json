@@ -94,6 +94,32 @@
     "Permission:Teams": "Quản lý nhóm kỹ thuật",
     "Permission:Teams.Create": "Tạo mới nhóm kỹ thuật",
     "Permission:Teams.Edit": "Chỉnh sửa nhóm kỹ thuật",
-    "Permission:Teams.Delete": "Xóa nhóm kỹ thuật"
+    "Permission:Teams.Delete": "Xóa nhóm kỹ thuật",
+
+    "Menu:Tickets": "Tạo Yêu cầu hỗ trợ",
+    "CreateNewTicket": "Tạo Yêu cầu mới",
+    "CreateTicketDescription": "Vui lòng cung cấp chi tiết sự cố để đội ngũ kỹ thuật có thể hỗ trợ bạn nhanh nhất.",
+    "TicketSubject": "Tiêu đề yêu cầu",
+    "TicketSubjectPlaceholder": "Tóm tắt ngắn gọn vấn đề bạn đang gặp phải...",
+    "TicketDescription": "Mô tả chi tiết",
+    "TicketDescriptionPlaceholder": "Mô tả rõ tình trạng lỗi, các bước tái hiện, hoặc thông báo lỗi bạn nhận được...",
+    "SubmitTicket": "Gửi Yêu Cầu",
+    "Attachments": "File đính kèm (Ảnh lỗi, log...)",
+    "DragAndDropOrClick": "Kéo thả file vào đây hoặc Click để chọn",
+    "MaxFileSizeLimit": "Hỗ trợ JPG, PNG, PDF, DOCX (Max 5MB)",
+    "Permission:Tickets": "Quản lý Yêu cầu (Ticket)",
+    "Permission:Tickets.Create": "Tạo Yêu cầu",
+    "Permission:Tickets.Edit": "Cập nhật Yêu cầu",
+    "Permission:Tickets.Delete": "Xóa Yêu cầu",
+
+    "Menu:MyTickets": "Danh sách yêu cầu của tôi",
+    "TicketNo": "Mã yêu cầu",
+    "Enum:TicketStatus.1": "Mới",
+    "Enum:TicketStatus.2": "Đã phân công",
+    "Enum:TicketStatus.3": "Đang xử lý",
+    "Enum:TicketStatus.4": "Chờ phản hồi",
+    "Enum:TicketStatus.5": "Vượt cấp",
+    "Enum:TicketStatus.6": "Đã xử lý",
+    "Enum:TicketStatus.7": "Đóng"
   }
 }

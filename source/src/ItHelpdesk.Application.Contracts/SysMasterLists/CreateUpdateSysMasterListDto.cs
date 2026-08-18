@@ -2,8 +2,8 @@
 {
     public class CreateUpdateSysMasterListDto
     {
-        public long MasterListID { get; set; }
-        public string MasterListCode { get; set; }
+        public long? MasterListID { get; set; }
+        public string? MasterListCode { get; set; }
         public string? MasterListGroupCde { get; set; }
         public string? MasterListCdeName { get; set; }
         public string? MastListDefaultValue { get; set; }

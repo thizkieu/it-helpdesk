@@ -1,6 +1,6 @@
 
 export interface CreateUpdateSysMasterListDto {
-  masterListID: number;
+  masterListID?: number;
   masterListCode?: string;
   masterListGroupCde?: string;
   masterListCdeName?: string;
@@ -17,7 +17,7 @@ export interface CreateUpdateSysMasterListDto {
 }
 
 export interface DeleteSysMasterListDto {
-  masterListID: number;
+  masterListID?: number;
   rowVersion?: string;
 }
 
@@ -25,12 +25,12 @@ export interface GetSysMasterListInput {
   keyWord?: string;
   status?: string;
   masterListGroupCde?: string;
-  pageIndex: number;
-  pageSize: number;
+  pageIndex?: number;
+  pageSize?: number;
 }
 
 export interface SysMasterListDto {
-  masterListID: number;
+  masterListID?: number;
   masterListCode?: string;
   masterListGroupCde?: string;
   masterListCdeName?: string;
@@ -50,7 +50,7 @@ export interface SysMasterListDto {
   createDate?: string;
   modifiedBy?: string;
   modifiedDate?: string;
-  totalRows: number;
-  totalPages: number;
-  rowIndex: number;
+  totalRows?: number;
+  totalPages?: number;
+  rowIndex?: number;
 }
