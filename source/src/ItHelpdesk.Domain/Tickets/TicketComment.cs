@@ -3,21 +3,16 @@ using Volo.Abp.Domain.Entities.Auditing;
 
 namespace ItHelpdesk.Tickets
 {
-    // Kế thừa FullAuditedEntity để tự động lưu người tạo (CreatorId) và thời gian tạo (CreationTime)
-    public class TicketComment : FullAuditedEntity<long>
+    public class TicketComment : CreationAuditedEntity<long> // Đã đổi sang long
     {
         public long TicketId { get; set; }
         public string Content { get; set; }
-
-        // Phân loại comment: Nội bộ (Internal) chỉ IT thấy, hoặc Công khai (External) User cũng thấy
         public bool IsInternal { get; set; }
 
-        public TicketComment()
-        {
-        }
+        protected TicketComment() { }
 
-        public TicketComment(long id, long ticketId, string content, bool isInternal = false)
-            : base(id)
+        // Bỏ Guid id
+        public TicketComment(long ticketId, string content, bool isInternal = false)
         {
             TicketId = ticketId;
             Content = content;

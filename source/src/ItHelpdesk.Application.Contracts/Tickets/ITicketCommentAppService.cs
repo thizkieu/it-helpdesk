@@ -7,6 +7,5 @@ namespace ItHelpdesk.Tickets
     public interface ITicketCommentAppService : IApplicationService
     {
         Task<List<TicketCommentDto>> GetListByTicketIdAsync(long ticketId);
-        Task<TicketCommentDto> CreateAsync(CreateTicketCommentDto input);
     }
 }

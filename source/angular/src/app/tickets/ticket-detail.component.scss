@@ -5,7 +5,6 @@
 
 ::ng-deep {
     .ticket-page-wrapper {
-       
         background: radial-gradient(circle at 50% 10%, #1e1b4b 0%, #0c0f1d 100%) !important;
         margin: -2rem !important;
         padding: 2.5rem 1.5rem !important;
@@ -136,5 +135,48 @@
         .bg-purple-soft {
             background-color: #c084fc !important;
         }
+    }
+
+    .cute-upload-btn {
+        color: #c084fc !important;
+        border: 1px dashed rgba(192, 132, 252, 0.5) !important;
+        background: rgba(192, 132, 252, 0.05) !important;
+        border-radius: 50rem !important;
+        padding: 6px 16px !important;
+        font-size: 0.85rem !important;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        cursor: pointer;
+
+        &:hover {
+            background: linear-gradient(135deg, #c084fc 0%, #ec4899 100%) !important;
+            border-color: transparent !important;
+            color: white !important;
+            box-shadow: 0 4px 12px rgba(236, 72, 153, 0.3) !important;
+
+            .text-pink {
+                color: white !important;
+            }
+        }
+    }
+
+    /* Style tùy chỉnh cho Modal Phân công */
+    .modal-backdrop {
+        background-color: rgba(15, 23, 42, 0.75) !important;
+        backdrop-filter: blur(4px);
+    }
+
+    .modal-content.premium-glass-card {
+        background: linear-gradient(135deg, rgba(30, 27, 75, 0.95) 0%, rgba(15, 23, 42, 0.95) 100%) !important;
+        backdrop-filter: blur(16px);
+        border: 1px solid rgba(192, 132, 252, 0.2) !important;
+        box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.6) !important;
+        border-radius: 1rem;
+    }
+
+    .modal-header,
+    .modal-footer {
+        border-color: rgba(255, 255, 255, 0.1) !important;
     }
 }

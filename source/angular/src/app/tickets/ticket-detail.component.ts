@@ -2,8 +2,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { TicketService, TicketDto } from '@proxy/tickets';
-import { TicketCommentService, TicketCommentDto } from '@proxy/tickets'; 
+import { TicketService, TicketDto, TicketTimelineDto } from '@proxy/tickets';
 import { CoreModule } from '@abp/ng.core';
 import { ThemeSharedModule } from '@abp/ng.theme.shared';
 
@@ -17,29 +16,31 @@ import { ThemeSharedModule } from '@abp/ng.theme.shared';
 export class TicketDetailComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private ticketService = inject(TicketService);
-  private commentService = inject(TicketCommentService);
 
   ticketId: number = 0;
   ticket: TicketDto | null = null;
-  comments: TicketCommentDto[] = [];
+  timeline: TicketTimelineDto[] = [];
   newCommentContent: string = '';
-  
+
+  // Biến dùng để lưu tên file hiển thị trực quan lên giao diện
+  selectedFileName: string | null = null;
+
   isLoading = true;
-  isSubmitting = false; // Thêm cờ chống spam click
+  isSubmitting = false;
 
   ngOnInit(): void {
     const idParam = this.route.snapshot.paramMap.get('id');
     if (idParam) {
       this.ticketId = Number(idParam);
       this.loadTicketDetail();
-      this.loadComments();
+      this.loadTimeline();
     }
   }
 
   loadTicketDetail(): void {
     this.isLoading = true;
     this.ticketService.get(this.ticketId).subscribe({
-      next: (res: any) => {
+      next: (res: TicketDto) => {
         this.ticket = res;
         this.isLoading = false;
       },
@@ -50,13 +51,13 @@ export class TicketDetailComponent implements OnInit {
     });
   }
 
-  loadComments(): void {
-    this.commentService.getListByTicketId(this.ticketId).subscribe({
-      next: (res: any) => {
-        this.comments = res?.items || res || [];
+  loadTimeline(): void {
+    this.ticketService.getTimeline(this.ticketId).subscribe({
+      next: (res: TicketTimelineDto[]) => {
+        this.timeline = res || [];
       },
       error: (err: any) => {
-        console.error('Lỗi khi tải danh sách bình luận:', err);
+        console.error('Lỗi khi tải lịch sử timeline:', err);
       }
     });
   }
@@ -64,22 +65,101 @@ export class TicketDetailComponent implements OnInit {
   sendComment(): void {
     if (!this.newCommentContent || !this.newCommentContent.trim() || this.isSubmitting) return;
 
-    this.isSubmitting = true; 
-    const input = {
-      ticketId: this.ticketId,
-      content: this.newCommentContent,
-      isInternal: false
-    };
+    this.isSubmitting = true;
 
-    this.commentService.create(input).subscribe({
+    this.ticketService.addComment(this.ticketId, this.newCommentContent, false).subscribe({
       next: () => {
         this.newCommentContent = '';
         this.isSubmitting = false;
-        this.loadComments();
+        this.loadTimeline();
       },
       error: (err: any) => {
         console.error('Lỗi khi gửi bình luận:', err);
-        this.isSubmitting = false; 
+        this.isSubmitting = false;
+      }
+    });
+  }
+
+  onFileSelected(event: any): void {
+    const file: File = event.target.files[0];
+    if (!file) return;
+
+    if (file.size > 10 * 1024 * 1024) {
+      alert('File quá lớn! Vui lòng chọn file dưới 10MB.');
+      return;
+    }
+
+    // Hiển thị tên file lên giao diện ngay lập tức
+    this.selectedFileName = file.name;
+
+    const reader = new FileReader();
+    reader.onload = (e: any) => {
+      const base64String = e.target.result.split(',')[1];
+
+      // Đóng gói thành Object (DTO) để gửi qua Request Body
+      const input = {
+        ticketId: this.ticketId,
+        fileName: file.name,
+        base64Content: base64String,
+        contentType: file.type
+      };
+
+      this.isSubmitting = true;
+      this.ticketService.uploadAttachment(input).subscribe({
+        next: () => {
+          this.loadTimeline();
+          this.isSubmitting = false;
+          // Có thể reset lại tên file sau khi upload xong hoặc giữ lại thông báo thành công
+          setTimeout(() => {
+            this.selectedFileName = null;
+          }, 3000);
+        },
+        error: (err: any) => {
+          console.error('Lỗi upload:', err);
+          alert('Upload thất bại, vui lòng kiểm tra lại!');
+          this.isSubmitting = false;
+          this.selectedFileName = null;
+        }
+      });
+    };
+    reader.readAsDataURL(file);
+  }
+
+  // Biến quản lý trạng thái hiển thị modal
+  isAssignModalOpen: boolean = false;
+  assigneeInputId: string = '';
+  teamInputId: string = '';
+
+  openAssignModal(): void {
+    this.isAssignModalOpen = true;
+  }
+
+  closeAssignModal(): void {
+    this.isAssignModalOpen = false;
+  }
+
+  submitAssign(): void {
+    const input = {
+      ticketId: this.ticketId,
+      assigneeId: this.assigneeInputId ? this.assigneeInputId.trim() : undefined,
+      teamId: this.teamInputId ? Number(this.teamInputId) : undefined
+    };
+
+    this.isSubmitting = true;
+    this.ticketService.assignTicket(input).subscribe({
+      next: () => {
+        alert('Phân công thành công!');
+        this.loadTicketDetail();
+        this.loadTimeline();
+        this.isSubmitting = false;
+        this.assigneeInputId = '';
+        this.teamInputId = '';
+        this.isAssignModalOpen = false; // Đóng modal
+      },
+      error: (err: any) => {
+        console.error('Lỗi phân công:', err);
+        alert('Phân công thất bại, vui lòng kiểm tra lại!');
+        this.isSubmitting = false;
       }
     });
   }

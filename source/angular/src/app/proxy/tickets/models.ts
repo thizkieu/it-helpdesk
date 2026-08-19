@@ -1,10 +1,10 @@
 import type { AuditedEntityDto, FullAuditedEntityDto, PagedAndSortedResultRequestDto } from '@abp/ng.core';
 import type { TicketStatus } from './ticket-status.enum';
 
-export interface CreateTicketCommentDto {
+export interface AssignTicketDto {
   ticketId: number;
-  content: string;
-  isInternal: boolean;
+  assigneeId?: string;
+  teamId?: number;
 }
 
 export interface CreateUpdateTicketDto {
@@ -18,6 +18,9 @@ export interface CreateUpdateTicketDto {
 export interface GetTicketListDto extends PagedAndSortedResultRequestDto {
   filter?: string;
   status?: number;
+  assigneeId?: string;
+  teamId?: number;
+  unassigned?: boolean;
 }
 
 export interface TicketCommentDto extends AuditedEntityDto<number> {
@@ -38,4 +41,20 @@ export interface TicketDto extends FullAuditedEntityDto<number> {
   teamId?: number;
   dueDate?: string;
   resolvedAt?: string;
+}
+
+export interface TicketTimelineDto {
+  type?: string;
+  content?: string;
+  isInternal: boolean;
+  creationTime?: string;
+  creatorId?: string;
+  creatorName?: string;
+}
+
+export interface UploadAttachmentDto {
+  ticketId: number;
+  fileName: string;
+  base64Content: string;
+  contentType: string;
 }

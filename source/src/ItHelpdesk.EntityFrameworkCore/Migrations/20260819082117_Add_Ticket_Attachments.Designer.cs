@@ -4,6 +4,7 @@ using ItHelpdesk.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Volo.Abp.EntityFrameworkCore;
 
@@ -12,9 +13,11 @@ using Volo.Abp.EntityFrameworkCore;
 namespace ItHelpdesk.Migrations
 {
     [DbContext(typeof(ItHelpdeskDbContext))]
-    partial class ItHelpdeskDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260819082117_Add_Ticket_Attachments")]
+    partial class Add_Ticket_Attachments
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

@@ -1,4 +1,4 @@
-import type { CreateTicketCommentDto, TicketCommentDto } from './models';
+import type { TicketCommentDto } from './models';
 import { RestService, Rest } from '@abp/ng.core';
 import { Injectable, inject } from '@angular/core';
 
@@ -8,15 +8,6 @@ import { Injectable, inject } from '@angular/core';
 export class TicketCommentService {
   private restService = inject(RestService);
   apiName = 'Default';
-  
-
-  create = (input: CreateTicketCommentDto, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, TicketCommentDto>({
-      method: 'POST',
-      url: '/api/app/ticket-comment',
-      body: input,
-    },
-    { apiName: this.apiName,...config });
   
 
   getListByTicketId = (ticketId: number, config?: Partial<Rest.Config>) =>

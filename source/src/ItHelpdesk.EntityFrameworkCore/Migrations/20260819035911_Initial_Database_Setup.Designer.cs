@@ -4,6 +4,7 @@ using ItHelpdesk.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Volo.Abp.EntityFrameworkCore;
 
@@ -12,9 +13,11 @@ using Volo.Abp.EntityFrameworkCore;
 namespace ItHelpdesk.Migrations
 {
     [DbContext(typeof(ItHelpdeskDbContext))]
-    partial class ItHelpdeskDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260819035911_Initial_Database_Setup")]
+    partial class Initial_Database_Setup
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -865,50 +868,6 @@ namespace ItHelpdesk.Migrations
                     b.HasIndex("TicketId");
 
                     b.ToTable("AppTicketActivities", (string)null);
-                });
-
-            modelBuilder.Entity("ItHelpdesk.Tickets.TicketAttachment", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
-
-                    b.Property<string>("BlobName")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
-                    b.Property<string>("ContentType")
-                        .IsRequired()
-                        .HasMaxLength(128)
-                        .HasColumnType("nvarchar(128)");
-
-                    b.Property<DateTime>("CreationTime")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("CreationTime");
-
-                    b.Property<Guid?>("CreatorId")
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("CreatorId");
-
-                    b.Property<string>("FileName")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
-                    b.Property<long>("Size")
-                        .HasColumnType("bigint");
-
-                    b.Property<long>("TicketId")
-                        .HasColumnType("bigint");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("TicketId");
-
-                    b.ToTable("AppTicketAttachments", (string)null);
                 });
 
             modelBuilder.Entity("ItHelpdesk.Tickets.TicketComment", b =>
@@ -2821,15 +2780,6 @@ namespace ItHelpdesk.Migrations
                     b.HasOne("ItHelpdesk.Services.Service", null)
                         .WithMany()
                         .HasForeignKey("ServiceId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("ItHelpdesk.Tickets.TicketAttachment", b =>
-                {
-                    b.HasOne("ItHelpdesk.Tickets.Ticket", null)
-                        .WithMany()
-                        .HasForeignKey("TicketId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

@@ -3792,6 +3792,123 @@
               "name": "ITicketAppService",
               "methods": [
                 {
+                  "name": "ChangeStatusAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "ticketId",
+                      "typeAsString": "System.Int64, System.Private.CoreLib",
+                      "type": "System.Int64",
+                      "typeSimple": "number",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "newStatus",
+                      "typeAsString": "ItHelpdesk.Tickets.TicketStatus, ItHelpdesk.Domain.Shared",
+                      "type": "ItHelpdesk.Tickets.TicketStatus",
+                      "typeSimple": "enum",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "comment",
+                      "typeAsString": "System.String, System.Private.CoreLib",
+                      "type": "System.String",
+                      "typeSimple": "string",
+                      "isOptional": true,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                },
+                {
+                  "name": "AddCommentAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "ticketId",
+                      "typeAsString": "System.Int64, System.Private.CoreLib",
+                      "type": "System.Int64",
+                      "typeSimple": "number",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "content",
+                      "typeAsString": "System.String, System.Private.CoreLib",
+                      "type": "System.String",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "isInternal",
+                      "typeAsString": "System.Boolean, System.Private.CoreLib",
+                      "type": "System.Boolean",
+                      "typeSimple": "boolean",
+                      "isOptional": true,
+                      "defaultValue": false
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                },
+                {
+                  "name": "GetTimelineAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "ticketId",
+                      "typeAsString": "System.Int64, System.Private.CoreLib",
+                      "type": "System.Int64",
+                      "typeSimple": "number",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Collections.Generic.List<ItHelpdesk.Tickets.TicketTimelineDto>",
+                    "typeSimple": "[ItHelpdesk.Tickets.TicketTimelineDto]"
+                  }
+                },
+                {
+                  "name": "UploadAttachmentAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "input",
+                      "typeAsString": "ItHelpdesk.Tickets.UploadAttachmentDto, ItHelpdesk.Application.Contracts",
+                      "type": "ItHelpdesk.Tickets.UploadAttachmentDto",
+                      "typeSimple": "ItHelpdesk.Tickets.UploadAttachmentDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                },
+                {
+                  "name": "AssignTicketAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "input",
+                      "typeAsString": "ItHelpdesk.Tickets.AssignTicketDto, ItHelpdesk.Application.Contracts",
+                      "type": "ItHelpdesk.Tickets.AssignTicketDto",
+                      "typeSimple": "ItHelpdesk.Tickets.AssignTicketDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                },
+                {
                   "name": "GetAsync",
                   "parametersOnMethod": [
                     {
@@ -3924,6 +4041,271 @@
               },
               "allowAnonymous": null,
               "implementFrom": "Volo.Abp.Application.Services.ICreateAppService<ItHelpdesk.Tickets.TicketDto,ItHelpdesk.Tickets.CreateUpdateTicketDto>"
+            },
+            "UploadAttachmentAsyncByInput": {
+              "uniqueName": "UploadAttachmentAsyncByInput",
+              "name": "UploadAttachmentAsync",
+              "httpMethod": "POST",
+              "url": "api/app/ticket/upload-attachment",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "ItHelpdesk.Tickets.UploadAttachmentDto, ItHelpdesk.Application.Contracts",
+                  "type": "ItHelpdesk.Tickets.UploadAttachmentDto",
+                  "typeSimple": "ItHelpdesk.Tickets.UploadAttachmentDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "ItHelpdesk.Tickets.UploadAttachmentDto",
+                  "typeSimple": "ItHelpdesk.Tickets.UploadAttachmentDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "ItHelpdesk.Tickets.ITicketAppService"
+            },
+            "ChangeStatusAsyncByTicketIdAndNewStatusAndComment": {
+              "uniqueName": "ChangeStatusAsyncByTicketIdAndNewStatusAndComment",
+              "name": "ChangeStatusAsync",
+              "httpMethod": "POST",
+              "url": "api/app/ticket/change-status/{ticketId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "ticketId",
+                  "typeAsString": "System.Int64, System.Private.CoreLib",
+                  "type": "System.Int64",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "newStatus",
+                  "typeAsString": "ItHelpdesk.Tickets.TicketStatus, ItHelpdesk.Domain.Shared",
+                  "type": "ItHelpdesk.Tickets.TicketStatus",
+                  "typeSimple": "enum",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "comment",
+                  "typeAsString": "System.String, System.Private.CoreLib",
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": true,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "ticketId",
+                  "name": "ticketId",
+                  "jsonName": null,
+                  "type": "System.Int64",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "newStatus",
+                  "name": "newStatus",
+                  "jsonName": null,
+                  "type": "ItHelpdesk.Tickets.TicketStatus",
+                  "typeSimple": "enum",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "comment",
+                  "name": "comment",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "ItHelpdesk.Tickets.ITicketAppService"
+            },
+            "AddCommentAsyncByTicketIdAndContentAndIsInternal": {
+              "uniqueName": "AddCommentAsyncByTicketIdAndContentAndIsInternal",
+              "name": "AddCommentAsync",
+              "httpMethod": "POST",
+              "url": "api/app/ticket/comment/{ticketId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "ticketId",
+                  "typeAsString": "System.Int64, System.Private.CoreLib",
+                  "type": "System.Int64",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "content",
+                  "typeAsString": "System.String, System.Private.CoreLib",
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "isInternal",
+                  "typeAsString": "System.Boolean, System.Private.CoreLib",
+                  "type": "System.Boolean",
+                  "typeSimple": "boolean",
+                  "isOptional": true,
+                  "defaultValue": false
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "ticketId",
+                  "name": "ticketId",
+                  "jsonName": null,
+                  "type": "System.Int64",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "content",
+                  "name": "content",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "isInternal",
+                  "name": "isInternal",
+                  "jsonName": null,
+                  "type": "System.Boolean",
+                  "typeSimple": "boolean",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "ItHelpdesk.Tickets.ITicketAppService"
+            },
+            "GetTimelineAsyncByTicketId": {
+              "uniqueName": "GetTimelineAsyncByTicketId",
+              "name": "GetTimelineAsync",
+              "httpMethod": "GET",
+              "url": "api/app/ticket/timeline/{ticketId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "ticketId",
+                  "typeAsString": "System.Int64, System.Private.CoreLib",
+                  "type": "System.Int64",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "ticketId",
+                  "name": "ticketId",
+                  "jsonName": null,
+                  "type": "System.Int64",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Collections.Generic.List<ItHelpdesk.Tickets.TicketTimelineDto>",
+                "typeSimple": "[ItHelpdesk.Tickets.TicketTimelineDto]"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "ItHelpdesk.Tickets.ITicketAppService"
+            },
+            "AssignTicketAsyncByInput": {
+              "uniqueName": "AssignTicketAsyncByInput",
+              "name": "AssignTicketAsync",
+              "httpMethod": "POST",
+              "url": "api/app/ticket/assign-ticket",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "ItHelpdesk.Tickets.AssignTicketDto, ItHelpdesk.Application.Contracts",
+                  "type": "ItHelpdesk.Tickets.AssignTicketDto",
+                  "typeSimple": "ItHelpdesk.Tickets.AssignTicketDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "ItHelpdesk.Tickets.AssignTicketDto",
+                  "typeSimple": "ItHelpdesk.Tickets.AssignTicketDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "ItHelpdesk.Tickets.ITicketAppService"
             },
             "UpdateAsyncByIdAndInput": {
               "uniqueName": "UpdateAsyncByIdAndInput",
@@ -4099,6 +4481,42 @@
                 },
                 {
                   "nameOnMethod": "input",
+                  "name": "AssigneeId",
+                  "jsonName": null,
+                  "type": "System.Guid?",
+                  "typeSimple": "string?",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "input"
+                },
+                {
+                  "nameOnMethod": "input",
+                  "name": "TeamId",
+                  "jsonName": null,
+                  "type": "System.Int64?",
+                  "typeSimple": "number?",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "input"
+                },
+                {
+                  "nameOnMethod": "input",
+                  "name": "Unassigned",
+                  "jsonName": null,
+                  "type": "System.Boolean?",
+                  "typeSimple": "boolean?",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "input"
+                },
+                {
+                  "nameOnMethod": "input",
                   "name": "Sorting",
                   "jsonName": null,
                   "type": "System.String",
@@ -4171,23 +4589,6 @@
                     "type": "System.Collections.Generic.List<ItHelpdesk.Tickets.TicketCommentDto>",
                     "typeSimple": "[ItHelpdesk.Tickets.TicketCommentDto]"
                   }
-                },
-                {
-                  "name": "CreateAsync",
-                  "parametersOnMethod": [
-                    {
-                      "name": "input",
-                      "typeAsString": "ItHelpdesk.Tickets.CreateTicketCommentDto, ItHelpdesk.Application.Contracts",
-                      "type": "ItHelpdesk.Tickets.CreateTicketCommentDto",
-                      "typeSimple": "ItHelpdesk.Tickets.CreateTicketCommentDto",
-                      "isOptional": false,
-                      "defaultValue": null
-                    }
-                  ],
-                  "returnValue": {
-                    "type": "ItHelpdesk.Tickets.TicketCommentDto",
-                    "typeSimple": "ItHelpdesk.Tickets.TicketCommentDto"
-                  }
                 }
               ]
             }
@@ -4226,43 +4627,6 @@
               "returnValue": {
                 "type": "System.Collections.Generic.List<ItHelpdesk.Tickets.TicketCommentDto>",
                 "typeSimple": "[ItHelpdesk.Tickets.TicketCommentDto]"
-              },
-              "allowAnonymous": null,
-              "implementFrom": "ItHelpdesk.Tickets.ITicketCommentAppService"
-            },
-            "CreateAsyncByInput": {
-              "uniqueName": "CreateAsyncByInput",
-              "name": "CreateAsync",
-              "httpMethod": "POST",
-              "url": "api/app/ticket-comment",
-              "supportedVersions": [],
-              "parametersOnMethod": [
-                {
-                  "name": "input",
-                  "typeAsString": "ItHelpdesk.Tickets.CreateTicketCommentDto, ItHelpdesk.Application.Contracts",
-                  "type": "ItHelpdesk.Tickets.CreateTicketCommentDto",
-                  "typeSimple": "ItHelpdesk.Tickets.CreateTicketCommentDto",
-                  "isOptional": false,
-                  "defaultValue": null
-                }
-              ],
-              "parameters": [
-                {
-                  "nameOnMethod": "input",
-                  "name": "input",
-                  "jsonName": null,
-                  "type": "ItHelpdesk.Tickets.CreateTicketCommentDto",
-                  "typeSimple": "ItHelpdesk.Tickets.CreateTicketCommentDto",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "Body",
-                  "descriptorName": ""
-                }
-              ],
-              "returnValue": {
-                "type": "ItHelpdesk.Tickets.TicketCommentDto",
-                "typeSimple": "ItHelpdesk.Tickets.TicketCommentDto"
               },
               "allowAnonymous": null,
               "implementFrom": "ItHelpdesk.Tickets.ITicketCommentAppService"
@@ -8675,7 +9039,7 @@
         }
       ]
     },
-    "ItHelpdesk.Tickets.CreateTicketCommentDto": {
+    "ItHelpdesk.Tickets.AssignTicketDto": {
       "baseType": null,
       "isEnum": false,
       "enumNames": null,
@@ -8695,11 +9059,11 @@
           "regex": null
         },
         {
-          "name": "Content",
+          "name": "AssigneeId",
           "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": true,
+          "type": "System.Guid?",
+          "typeSimple": "string?",
+          "isRequired": false,
           "minLength": null,
           "maxLength": null,
           "minimum": null,
@@ -8707,10 +9071,10 @@
           "regex": null
         },
         {
-          "name": "IsInternal",
+          "name": "TeamId",
           "jsonName": null,
-          "type": "System.Boolean",
-          "typeSimple": "boolean",
+          "type": "System.Int64?",
+          "typeSimple": "number?",
           "isRequired": false,
           "minLength": null,
           "maxLength": null,
@@ -8813,6 +9177,42 @@
           "jsonName": null,
           "type": "System.Int32?",
           "typeSimple": "number?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "AssigneeId",
+          "jsonName": null,
+          "type": "System.Guid?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "TeamId",
+          "jsonName": null,
+          "type": "System.Int64?",
+          "typeSimple": "number?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Unassigned",
+          "jsonName": null,
+          "type": "System.Boolean?",
+          "typeSimple": "boolean?",
           "isRequired": false,
           "minLength": null,
           "maxLength": null,
@@ -9031,6 +9431,144 @@
       ],
       "genericArguments": null,
       "properties": null
+    },
+    "ItHelpdesk.Tickets.TicketTimelineDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "Type",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Content",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "IsInternal",
+          "jsonName": null,
+          "type": "System.Boolean",
+          "typeSimple": "boolean",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "CreationTime",
+          "jsonName": null,
+          "type": "System.DateTime",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "CreatorId",
+          "jsonName": null,
+          "type": "System.Guid?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "CreatorName",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "ItHelpdesk.Tickets.UploadAttachmentDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "TicketId",
+          "jsonName": null,
+          "type": "System.Int64",
+          "typeSimple": "number",
+          "isRequired": true,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "FileName",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": true,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Base64Content",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": true,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "ContentType",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": true,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
     },
     "Volo.Abp.Account.ChangePasswordInput": {
       "baseType": null,

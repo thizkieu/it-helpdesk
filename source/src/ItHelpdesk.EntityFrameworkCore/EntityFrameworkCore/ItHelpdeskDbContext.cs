@@ -49,6 +49,8 @@ public class ItHelpdeskDbContext :
     public DbSet<Teams.Team> Teams { get; set; }
     public DbSet<Ticket> Tickets { get; set; }
     public DbSet<TicketComment> TicketComments { get; set; }
+    public DbSet<TicketActivity> TicketActivities { get; set; }
+    public DbSet<TicketAttachment> TicketAttachments { get; set; }
 
     /* =========================================================
        2. CÁC BẢNG MẶC ĐỊNH CỦA ABP (BẮT BUỘC PHẢI CÓ ĐỂ KHÔNG LỖI)
@@ -148,6 +150,36 @@ public class ItHelpdeskDbContext :
             b.HasOne<Ticket>().WithMany().HasForeignKey(x => x.TicketId).IsRequired();
         });
 
+        builder.Entity<TicketActivity>(b =>
+        {
+            // Đặt tên bảng theo chuẩn của ABP (có Prefix)
+            b.ToTable(ItHelpdeskConsts.DbTablePrefix + "TicketActivities", ItHelpdeskConsts.DbSchema);
+
+            // Tự động map các trường kế thừa của ABP (Id, CreationTime, CreatorId)
+            b.ConfigureByConvention();
+
+            // Ràng buộc độ dài để tối ưu Database
+            b.Property(x => x.ActivityType).IsRequired().HasMaxLength(128);
+            b.Property(x => x.Description).IsRequired().HasMaxLength(2000);
+            b.Property(x => x.OldValue).HasMaxLength(1000);
+            b.Property(x => x.NewValue).HasMaxLength(1000);
+
+            // Đánh index cho TicketId để sau này truy vấn Timeline cực nhanh
+            b.HasIndex(x => x.TicketId);
+        });
+
+        builder.Entity<TicketAttachment>(b =>
+        {
+            b.ToTable(ItHelpdeskConsts.DbTablePrefix + "TicketAttachments", ItHelpdeskConsts.DbSchema);
+            b.ConfigureByConvention();
+
+            b.Property(x => x.FileName).IsRequired().HasMaxLength(255);
+            b.Property(x => x.BlobName).IsRequired().HasMaxLength(255);
+            b.Property(x => x.ContentType).HasMaxLength(128);
+
+            // Khóa ngoại liên kết với bảng Tickets
+            b.HasOne<Ticket>().WithMany().HasForeignKey(x => x.TicketId).IsRequired();
+        });
         builder.ApplyConfiguration(new LanguageEfCoreMapping());
         builder.ApplyConfiguration(new LanguageTextEfCoreMapping());
         builder.ApplyConfiguration(new EmployeeEfCoreMapping());

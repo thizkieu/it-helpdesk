@@ -120,6 +120,27 @@
     "Enum:TicketStatus.4": "Chờ phản hồi",
     "Enum:TicketStatus.5": "Vượt cấp",
     "Enum:TicketStatus.6": "Đã xử lý",
-    "Enum:TicketStatus.7": "Đóng"
+    "Enum:TicketStatus.7": "Đóng",
+
+    "Menu:TicketDetail": "Chi tiết yêu cầu",
+    "Action:StartProcessing": "Bắt đầu xử lý",
+    "Action:MarkAsResolved": "Đánh dấu đã giải quyết",
+    "Action:CloseTicket": "Đóng Ticket",
+
+    "Comment:AddTitle": "Thêm bình luận / Ghi chú",
+    "Comment:Placeholder": "Nhập nội dung phản hồi hoặc ghi chú xử lý...",
+    "Comment:InternalNote": "Ghi chú nội bộ (Chỉ Team IT thấy)",
+    "Comment:SubmitButton": "Gửi bình luận",
+
+    "Ticket:ClassificationInfo": "Thông tin phân loại",
+    "Ticket:CreationDate": "Ngày tạo:",
+    "Ticket:Category": "Danh mục",
+    "Ticket:Priority": "Độ ưu tiên",
+    "Ticket:Service": "Dịch vụ",
+
+    "Timeline:Title": "Lịch sử & Trao đổi",
+    "Timeline:NoData": "Chưa có trao đổi nào.",
+    "Timeline:System": "Hệ thống",
+    "Timeline:InternalBadge": "Ghi chú nội bộ"
   }
 }
