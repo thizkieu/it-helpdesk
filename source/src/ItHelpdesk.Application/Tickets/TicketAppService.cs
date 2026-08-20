@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
+using ItHelpdesk.Permissions;
 using Volo.Abp.Application.Services;
 using Volo.Abp.BlobStoring;
 using Volo.Abp.Domain.Repositories;
@@ -10,6 +12,7 @@ using Volo.Abp.Identity;
 
 namespace ItHelpdesk.Tickets
 {
+    [Authorize(ItHelpdeskPermissions.Tickets.Default)]
     public class TicketAppService : CrudAppService<
         Ticket,
         TicketDto,
@@ -37,6 +40,12 @@ namespace ItHelpdesk.Tickets
             _userRepository = userRepository;
             _blobContainer = blobContainer;
             _attachmentRepository = attachmentRepository;
+
+            GetPolicyName = ItHelpdeskPermissions.Tickets.Default;
+            GetListPolicyName = ItHelpdeskPermissions.Tickets.Default;
+            CreatePolicyName = ItHelpdeskPermissions.Tickets.Create;
+            UpdatePolicyName = ItHelpdeskPermissions.Tickets.Edit;
+            DeletePolicyName = ItHelpdeskPermissions.Tickets.Delete;
         }
 
         public override async Task<TicketDto> CreateAsync(CreateUpdateTicketDto input)
@@ -45,7 +54,8 @@ namespace ItHelpdesk.Tickets
             ticket.TicketNo = "TK-" + DateTime.Now.ToString("yyyyMMddHHmmss");
             ticket.Status = TicketStatus.New;
 
-            // Bắt buộc autoSave: true để Database sinh ID trả về cho Ticket
+            CalculateSla(ticket);
+
             await Repository.InsertAsync(ticket, autoSave: true);
 
             var activity = new TicketActivity(
@@ -58,18 +68,38 @@ namespace ItHelpdesk.Tickets
             return MapToGetOutputDto(ticket);
         }
 
-        // =========================================================
-        // UPLOAD FILE ĐÍNH KÈM
-        // =========================================================
+        private void CalculateSla(Ticket ticket)
+        {
+            var now = DateTime.Now;
+
+            switch (ticket.PriorityId)
+            {
+                case 1:
+                    ticket.TargetResponseTime = now.AddHours(2);
+                    ticket.TargetResolutionTime = now.AddHours(8);
+                    break;
+                case 2:
+                    ticket.TargetResponseTime = now.AddHours(4);
+                    ticket.TargetResolutionTime = now.AddDays(1);
+                    break;
+                case 3:
+                    ticket.TargetResponseTime = now.AddHours(8);
+                    ticket.TargetResolutionTime = now.AddDays(3);
+                    break;
+                default:
+                    ticket.TargetResponseTime = now.AddDays(1);
+                    ticket.TargetResolutionTime = now.AddDays(5);
+                    break;
+            }
+        }
+
         public async Task UploadAttachmentAsync(UploadAttachmentDto input)
         {
             var bytes = Convert.FromBase64String(input.Base64Content);
             var blobName = $"{Guid.NewGuid()}_{input.FileName}";
 
-            // Lưu file vào Blob Storing
             await _blobContainer.SaveAsync(blobName, bytes);
 
-            // Lưu metadata vào bảng TicketAttachments
             var attachment = new TicketAttachment(
                 input.TicketId,
                 input.FileName,
@@ -79,7 +109,6 @@ namespace ItHelpdesk.Tickets
             );
             await _attachmentRepository.InsertAsync(attachment, autoSave: true);
 
-            // Ghi log vào Timeline
             var activity = new TicketActivity(
                 input.TicketId,
                 activityType: "FileUploaded",
@@ -88,9 +117,6 @@ namespace ItHelpdesk.Tickets
             await _ticketActivityRepository.InsertAsync(activity);
         }
 
-        // =========================================================
-        // WORKFLOW & HISTORY: LOGIC CHUYỂN TRẠNG THÁI
-        // =========================================================
         public async Task ChangeStatusAsync(long ticketId, TicketStatus newStatus, string? comment = null)
         {
             var ticket = await Repository.GetAsync(ticketId);
@@ -99,6 +125,12 @@ namespace ItHelpdesk.Tickets
 
             var oldStatus = ticket.Status;
             ticket.Status = newStatus;
+
+            if ((newStatus == TicketStatus.Resolved || newStatus == TicketStatus.Closed) && !ticket.ResolvedAt.HasValue)
+            {
+                ticket.ResolvedAt = DateTime.Now;
+            }
+
             await Repository.UpdateAsync(ticket);
 
             var activity = new TicketActivity(
@@ -121,9 +153,6 @@ namespace ItHelpdesk.Tickets
             }
         }
 
-        // =========================================================
-        // COMMENT: LOGIC THÊM BÌNH LUẬN ĐỘC LẬP
-        // =========================================================
         public async Task AddCommentAsync(long ticketId, string content, bool isInternal = false)
         {
             var ticketComment = new TicketComment(
@@ -141,20 +170,13 @@ namespace ItHelpdesk.Tickets
             await _ticketActivityRepository.InsertAsync(activity);
         }
 
-        // =========================================================
-        // TIMELINE: TRỘN ACTIVITY VÀ COMMENT
-        // =========================================================
         public async Task<List<TicketTimelineDto>> GetTimelineAsync(long ticketId)
         {
-            // 1. Lấy toàn bộ Activity của Ticket
             var activities = await _ticketActivityRepository.GetListAsync(x => x.TicketId == ticketId);
-
-            // 2. Lấy toàn bộ Comment của Ticket
             var comments = await _ticketCommentRepository.GetListAsync(x => x.TicketId == ticketId);
 
             var timeline = new List<TicketTimelineDto>();
 
-            // Ép kiểu sang DTO chung
             foreach (var act in activities)
             {
                 timeline.Add(new TicketTimelineDto
@@ -179,7 +201,6 @@ namespace ItHelpdesk.Tickets
                 });
             }
 
-            // 3. Lấy thông tin User để hiển thị tên
             var userIds = timeline.Where(x => x.CreatorId.HasValue)
                                   .Select(x => x.CreatorId.Value)
                                   .Distinct()
@@ -200,13 +221,9 @@ namespace ItHelpdesk.Tickets
                 }
             }
 
-            // 4. Trộn và sắp xếp (Cũ nhất xếp trên cùng)
             return timeline.OrderBy(x => x.CreationTime).ToList();
         }
 
-        // =========================================================
-        // LOGIC LỌC DỮ LIỆU TỪ FRONTEND GỬI XUỐNG
-        // =========================================================
         protected override async Task<IQueryable<Ticket>> CreateFilteredQueryAsync(GetTicketListDto input)
         {
             var query = await base.CreateFilteredQueryAsync(input);
@@ -240,9 +257,6 @@ namespace ItHelpdesk.Tickets
             return query;
         }
 
-        // =========================================================
-        // TÍCH HỢP MAPPERLY
-        // =========================================================
         protected override Ticket MapToEntity(CreateUpdateTicketDto createInput)
         {
             var mapper = new ItHelpdeskCreateUpdateTicketDtoToTicketMapper();
@@ -267,9 +281,6 @@ namespace ItHelpdesk.Tickets
             return mapper.Map(entity);
         }
 
-        // =========================================================
-        // PHÂN CÔNG & CHUYỂN TUYẾN XỬ LÝ (ASSIGN / RE-ASSIGN)
-        // =========================================================
         public async Task AssignTicketAsync(AssignTicketDto input)
         {
             var ticket = await Repository.GetAsync(input.TicketId);
@@ -280,7 +291,6 @@ namespace ItHelpdesk.Tickets
             ticket.AssigneeId = input.AssigneeId;
             ticket.TeamId = input.TeamId;
 
-            // Nếu chuyển sang trạng thái Assigned (2) nếu đang là New (1)
             if (ticket.Status == TicketStatus.New && (input.AssigneeId.HasValue || input.TeamId.HasValue))
             {
                 ticket.Status = TicketStatus.Assigned;
@@ -288,7 +298,6 @@ namespace ItHelpdesk.Tickets
 
             await Repository.UpdateAsync(ticket);
 
-            // Ghi log vào Timeline
             var activity = new TicketActivity(
                 input.TicketId,
                 activityType: "TicketAssigned",
@@ -297,6 +306,41 @@ namespace ItHelpdesk.Tickets
                 newValue: $"Assignee: {input.AssigneeId}, Team: {input.TeamId}"
             );
             await _ticketActivityRepository.InsertAsync(activity);
+        }
+
+        [Authorize(ItHelpdeskPermissions.Dashboard.Default)]
+        public async Task<DashboardStatsDto> GetDashboardStatsAsync()
+        {
+            var query = await Repository.GetQueryableAsync();
+
+            var totalTickets = query.Count();
+            var newTickets = query.Count(x => x.Status == TicketStatus.New);
+            var unassignedTickets = query.Count(x => x.AssigneeId == null);
+            var resolvedTickets = query.Count(x => x.Status == TicketStatus.Resolved || x.Status == TicketStatus.Closed);
+
+            var now = DateTime.Now;
+            var overdueTickets = query.Count(x => x.Status != TicketStatus.Resolved &&
+                                                 x.Status != TicketStatus.Closed &&
+                                                 x.TargetResolutionTime.HasValue &&
+                                                 x.TargetResolutionTime.Value < now);
+
+            var completedList = query.Where(x => (x.Status == TicketStatus.Resolved || x.Status == TicketStatus.Closed) &&
+                                                 x.ResolvedAt.HasValue &&
+                                                 x.TargetResolutionTime.HasValue)
+                                     .ToList();
+
+            long onTimeCount = completedList.Count(x => x.ResolvedAt!.Value <= x.TargetResolutionTime!.Value);
+            double complianceRate = completedList.Count > 0 ? Math.Round((double)onTimeCount / completedList.Count * 100, 2) : 100.0;
+
+            return new DashboardStatsDto
+            {
+                TotalTickets = totalTickets,
+                NewTickets = newTickets,
+                UnassignedTickets = unassignedTickets,
+                ResolvedTickets = resolvedTickets,
+                OverdueTickets = overdueTickets,
+                SlaComplianceRate = complianceRate
+            };
         }
     }
 }

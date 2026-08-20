@@ -15,6 +15,15 @@ export interface CreateUpdateTicketDto {
   serviceId: number;
 }
 
+export interface DashboardStatsDto {
+  totalTickets: number;
+  newTickets: number;
+  unassignedTickets: number;
+  resolvedTickets: number;
+  overdueTickets: number;
+  slaComplianceRate: number;
+}
+
 export interface GetTicketListDto extends PagedAndSortedResultRequestDto {
   filter?: string;
   status?: number;
@@ -41,6 +50,8 @@ export interface TicketDto extends FullAuditedEntityDto<number> {
   teamId?: number;
   dueDate?: string;
   resolvedAt?: string;
+  targetResponseTime?: string;
+  targetResolutionTime?: string;
 }
 
 export interface TicketTimelineDto {

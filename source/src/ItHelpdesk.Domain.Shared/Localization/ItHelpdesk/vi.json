@@ -141,6 +141,21 @@
     "Timeline:Title": "Lịch sử & Trao đổi",
     "Timeline:NoData": "Chưa có trao đổi nào.",
     "Timeline:System": "Hệ thống",
-    "Timeline:InternalBadge": "Ghi chú nội bộ"
+    "Timeline:InternalBadge": "Ghi chú nội bộ",
+
+    "Menu:Dashboard": "Bảng điều khiển KPI",
+    "Menu:KnowledgeBase": "Cẩm nang hướng dẫn (KB)",
+    "Permission:Dashboard": "Xem Bảng điều khiển KPI",
+    "Permission:KnowledgeBase": "Quản lý Cẩm nang hướng dẫn",
+
+    "Dashboard:TotalTickets": "Tổng số yêu cầu",
+    "Dashboard:NewTickets": "Yêu cầu mới",
+    "Dashboard:UnassignedTickets": "Chưa phân công",
+    "Dashboard:ResolvedTickets": "Đã giải quyết",
+    "Dashboard:OverdueTickets": "Quá hạn SLA",
+    "Dashboard:SlaComplianceRate": "Tỷ lệ tuân thủ SLA",
+
+    "KnowledgeBase:SearchPlaceholder": "Bạn cần tìm hướng dẫn về vấn đề gì...",
+    "KnowledgeBase:HelpCenter": "Trung tâm trợ giúp"
   }
 }

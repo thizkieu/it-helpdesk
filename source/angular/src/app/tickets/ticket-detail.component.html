@@ -91,7 +91,7 @@
                                         <input type="file" (change)="onFileSelected($event)" hidden>
                                     </label>
 
-                                    <!-- Nút Gửi đi (Cho phép bấm nếu có text HOẶC đã chọn file) -->
+                                    <!-- Nút Gửi đi -->
                                     <button class="btn premium-btn-submit rounded-pill px-4 text-white fw-semibold"
                                         (click)="sendComment()"
                                         [disabled]="(!newCommentContent && !selectedFileName) || isSubmitting">
@@ -100,17 +100,16 @@
                                 </div>
                             </div>
                         </div>
-                        <!-- Danh sách Timeline (Đan xen Activity và Comment) -->
+
+                        <!-- Danh sách Timeline -->
                         <div class="comment-list" *ngIf="timeline.length > 0">
                             <div class="comment-item mb-4" *ngFor="let item of timeline">
 
-                                <!-- Trong vòng lặp *ngFor="let item of timeline" -->
                                 <!-- NẾU LÀ ACTIVITY -->
                                 <div class="d-flex gap-3 align-items-center opacity-75 mb-3"
                                     *ngIf="item.type === 'Activity'">
                                     <div class="avatar bg-secondary bg-opacity-50 text-white rounded-circle d-flex justify-content-center align-items-center flex-shrink-0"
                                         style="width: 32px; height: 32px; font-size: 0.8rem;">
-                                        <!-- Tự động chọn icon -->
                                         <i class="fas"
                                             [ngClass]="item.content.includes('Đã đính kèm tệp') ? 'fa-paperclip text-info' : 'fa-bolt text-warning'"></i>
                                     </div>
@@ -121,7 +120,7 @@
                                     </div>
                                 </div>
 
-                                <!-- NẾU LÀ COMMENT (Bình luận trao đổi) -->
+                                <!-- NẾU LÀ COMMENT -->
                                 <div class="d-flex gap-3" *ngIf="item.type === 'Comment'">
                                     <div class="avatar bg-info bg-opacity-75 text-white rounded-circle d-flex justify-content-center align-items-center flex-shrink-0"
                                         style="width: 42px; height: 42px;">
@@ -131,7 +130,6 @@
                                     <div class="comment-bubble mystical-bubble p-3 rounded-4 flex-grow-1 shadow-sm">
                                         <div class="d-flex justify-content-between align-items-center mb-2">
                                             <span class="fw-bold text-purple-accent">
-                                                <!-- Sử dụng creatorName -->
                                                 {{ item.creatorName }}
                                             </span>
                                             <small class="text-muted" style="font-size: 0.75rem;">
@@ -155,8 +153,53 @@
                 </div>
             </div>
 
-            <!-- CỘT PHẢI: Thông tin chung -->
+            <!-- CỘT PHẢI: Thông tin chung & SLA -->
             <div class="col-lg-4">
+
+                <!-- CARD THÔNG TIN SLA (MỚI THÊM VÀO) -->
+                <div class="card premium-glass-card border-0 shadow-lg mb-4">
+                    <div class="card-body p-4">
+                        <h6 class="fw-bold text-pink border-bottom border-secondary border-opacity-25 pb-3 mb-4">
+                            <i class="fas fa-shield-alt me-2"></i>Cam kết chất lượng (SLA)
+                        </h6>
+
+                        <!-- Hạn phản hồi -->
+                        <div class="mb-3">
+                            <span class="text-muted small text-uppercase d-block mb-1">Hạn phản hồi</span>
+                            <span class="fw-bold fs-6"
+                                [class.text-danger]="getSlaStatus(ticket.targetResponseTime) === 'overdue'"
+                                [class.text-warning]="getSlaStatus(ticket.targetResponseTime) === 'warning'"
+                                [class.text-light]="getSlaStatus(ticket.targetResponseTime) === 'normal'">
+                                <i class="far fa-clock me-1 text-muted"></i>
+                                {{ ticket.targetResponseTime ? (ticket.targetResponseTime | date: 'dd/MM/yyyy HH:mm') :
+                                'Không có' }}
+                            </span>
+                        </div>
+
+                        <!-- Hạn xử lý -->
+                        <div class="mb-3">
+                            <span class="text-muted small text-uppercase d-block mb-1">Hạn xử lý (Resolution)</span>
+                            <span class="fw-bold fs-6"
+                                [class.text-danger]="getSlaStatus(ticket.targetResolutionTime) === 'overdue'"
+                                [class.text-warning]="getSlaStatus(ticket.targetResolutionTime) === 'warning'"
+                                [class.text-light]="getSlaStatus(ticket.targetResolutionTime) === 'normal'">
+                                <i class="fas fa-hourglass-end me-1 text-muted"></i>
+                                {{ ticket.targetResolutionTime ? (ticket.targetResolutionTime | date: 'dd/MM/yyyy
+                                HH:mm') : 'Không có' }}
+                            </span>
+                        </div>
+
+                        <!-- Thời điểm hoàn tất thực tế (nếu có) -->
+                        <div class="mt-3 pt-3 border-top border-secondary border-opacity-25" *ngIf="ticket.resolvedAt">
+                            <span class="text-success small fw-semibold d-flex align-items-center">
+                                <i class="fas fa-check-circle me-1"></i> Đã hoàn tất lúc:
+                                <strong class="ms-1">{{ ticket.resolvedAt | date: 'dd/MM/yyyy HH:mm' }}</strong>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card Thông tin chung -->
                 <div class="card premium-glass-card border-0 shadow-lg mb-4">
                     <div class="card-body p-4">
                         <h6 class="fw-bold text-pink border-bottom border-secondary border-opacity-25 pb-3 mb-4">
@@ -176,14 +219,12 @@
                             </span>
                         </div>
 
-                        <!-- PHẦN THÔNG TIN PHÂN CÔNG -->
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <span class="text-muted small text-uppercase">Người xử lý</span>
                             <span class="text-light fw-medium">{{ ticket.assigneeId ? 'Đã gán KTV' : 'Chưa phân công'
                                 }}</span>
                         </div>
 
-                        <!-- Nút bấm kích hoạt Modal chuẩn Bootstrap -->
                         <div class="d-grid mt-4">
                             <button class="btn cute-outline-btn rounded-pill fw-semibold text-pink border-pink"
                                 (click)="openAssignModal()">

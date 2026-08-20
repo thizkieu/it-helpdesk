@@ -1,11 +1,14 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
+using ItHelpdesk.Permissions;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
 
 namespace ItHelpdesk.Tickets
 {
+    [Authorize(ItHelpdeskPermissions.Tickets.Default)]
     public class TicketCommentAppService : ApplicationService, ITicketCommentAppService
     {
         private readonly IRepository<TicketComment, long> _repository;
@@ -15,7 +18,6 @@ namespace ItHelpdesk.Tickets
             _repository = repository;
         }
 
-        // 1. Lấy danh sách comment của 1 Ticket cụ thể (Sắp xếp mới nhất xếp dưới cùng)
         public async Task<List<TicketCommentDto>> GetListByTicketIdAsync(long ticketId)
         {
             var query = await _repository.GetQueryableAsync();

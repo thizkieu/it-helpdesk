@@ -16,5 +16,7 @@ namespace ItHelpdesk.Tickets
         public long? TeamId { get; set; }
         public DateTime? DueDate { get; set; }
         public DateTime? ResolvedAt { get; set; }
+        public DateTime? TargetResponseTime { get; set; }
+        public DateTime? TargetResolutionTime { get; set; }
     }
 }

@@ -1,0 +1,124 @@
+<div class="ticket-page-wrapper py-4">
+    <div class="container-fluid">
+        <!-- HEADER -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <span class="badge cute-badge-pill mb-2"><i class="fas fa-desktop me-1"></i> IT Workspace</span>
+                <h2 class="fw-bold page-title mb-0 text-white">Hàng đợi Ticket (IT Queue)</h2>
+            </div>
+        </div>
+
+        <!-- BỘ LỌC TABS & SEARCH -->
+        <div class="card premium-glass-card border-0 shadow-lg mb-4">
+            <div class="card-body p-4 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+
+                <!-- Nav Tabs -->
+                <ul class="nav nav-pills custom-pills mb-0">
+                    <li class="nav-item">
+                        <a class="nav-link fw-semibold cursor-pointer rounded-pill px-4"
+                            [class.active]="currentTab === 'all'" (click)="changeTab('all')">
+                            <i class="fas fa-list-ul me-2"></i> Tất cả
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link fw-semibold cursor-pointer rounded-pill px-4"
+                            [class.active]="currentTab === 'unassigned'" (click)="changeTab('unassigned')">
+                            <i class="fas fa-user-slash me-2"></i> Chưa phân công
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link fw-semibold cursor-pointer rounded-pill px-4"
+                            [class.active]="currentTab === 'mine'" (click)="changeTab('mine')">
+                            <i class="fas fa-user-check me-2"></i> Của tôi
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link fw-semibold cursor-pointer rounded-pill px-4"
+                            [class.active]="currentTab === 'team'" (click)="changeTab('team')">
+                            <i class="fas fa-users me-2"></i> Nhóm của tôi
+                        </a>
+                    </li>
+                </ul>
+
+                <!-- Search -->
+                <div class="search-box" style="width: 300px;">
+                    <div class="input-group">
+                        <span class="input-group-text bg-transparent border-end-0 border-secondary border-opacity-25 text-pink">
+                            <i class="fas fa-search"></i>
+                        </span>
+                        <input type="text" class="form-control premium-input text-white border-start-0 ps-0 shadow-none"
+                            placeholder="Tìm mã hoặc tiêu đề..." [(ngModel)]="searchFilter" (keyup.enter)="onSearch()">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- BẢNG DỮ LIỆU -->
+        <div class="card premium-glass-card border-0 shadow-lg">
+            <div class="card-body p-0">
+                <!-- ĐÃ SỬA: Khớp đúng biến items và totalCount từ file .ts -->
+                <ngx-datatable [rows]="items" [count]="totalCount" [list]="list" default>
+
+                    <ngx-datatable-column name="Mã Ticket" prop="ticketNo" [width]="140">
+                        <ng-template let-row="row" ngx-datatable-cell-template>
+                            <span class="text-pink fw-bold">{{ row.ticketNo }}</span>
+                        </ng-template>
+                    </ngx-datatable-column>
+
+                    <ngx-datatable-column name="Tiêu đề" prop="title" [width]="250">
+                        <ng-template let-row="row" ngx-datatable-cell-template>
+                            <span class="text-light fw-medium">{{ row.title }}</span>
+                        </ng-template>
+                    </ngx-datatable-column>
+
+                    <ngx-datatable-column name="Trạng thái" prop="status" [width]="140">
+                        <ng-template let-row="row" ngx-datatable-cell-template>
+                            <span class="badge bg-primary bg-opacity-75 rounded-pill px-3 py-2">
+                                {{ '::Enum:TicketStatus.' + row.status | abpLocalization }}
+                            </span>
+                        </ng-template>
+                    </ngx-datatable-column>
+
+                    <ngx-datatable-column name="Hạn phản hồi" prop="targetResponseTime" [width]="160">
+                        <ng-template let-row="row" let-value="value" ngx-datatable-cell-template>
+                            <span *ngIf="value" class="fw-semibold text-light">
+                                <i class="fas fa-clock me-1 text-muted"></i>{{ value | date: 'dd/MM/yyyy HH:mm' }}
+                            </span>
+                            <span *ngIf="!value" class="text-muted fst-italic">Không có</span>
+                        </ng-template>
+                    </ngx-datatable-column>
+
+                    <ngx-datatable-column name="Hạn xử lý" prop="targetResolutionTime" [width]="160">
+                        <ng-template let-row="row" let-value="value" ngx-datatable-cell-template>
+                            <span *ngIf="value" class="fw-semibold text-light">
+                                <i class="fas fa-hourglass-end me-1 text-muted"></i>{{ value | date: 'dd/MM/yyyy HH:mm' }}
+                            </span>
+                            <span *ngIf="!value" class="text-muted fst-italic">Không có</span>
+                        </ng-template>
+                    </ngx-datatable-column>
+
+                    <ngx-datatable-column name="Người xử lý" prop="assigneeId" [width]="160">
+                        <ng-template let-row="row" ngx-datatable-cell-template>
+                            <span class="badge bg-warning bg-opacity-25 text-warning px-2 py-1 rounded" *ngIf="!row.assigneeId">
+                                <i class="fas fa-exclamation-circle me-1"></i> Chưa gán
+                            </span>
+                            <span class="text-info fw-semibold" *ngIf="row.assigneeId">
+                                <i class="fas fa-user-tag me-1"></i> Đã gán
+                            </span>
+                        </ng-template>
+                    </ngx-datatable-column>
+
+                    <ngx-datatable-column name="Thao tác" [width]="110" [sortable]="false">
+                        <ng-template let-row="row" ngx-datatable-cell-template>
+                            <button class="btn btn-sm cute-outline-btn rounded-pill px-3 text-pink border-pink"
+                                [routerLink]="['/tickets/detail', row.id]">
+                                Chi tiết
+                            </button>
+                        </ng-template>
+                    </ngx-datatable-column>
+
+                </ngx-datatable>
+            </div>
+        </div>
+    </div>
+</div>

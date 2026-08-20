@@ -1,0 +1,61 @@
+<div class="ticket-page-wrapper py-4" *ngIf="!isLoading">
+    <div class="container-fluid">
+        <!-- HEADER -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <span class="badge cute-badge-pill mb-2"><i class="fas fa-book me-1"></i> Help Center</span>
+                <h2 class="fw-bold page-title mb-0 text-white">Cẩm nang hướng dẫn (Knowledge Base)</h2>
+            </div>
+            <div>
+                <a routerLink="/tickets/it-queue" class="btn cute-outline-btn rounded-pill px-4 text-pink border-pink">
+                    <i class="fas fa-ticket-alt me-1"></i> Trở về hàng đợi
+                </a>
+            </div>
+        </div>
+
+        <!-- SEARCH BOX TRA CỨU NHANH -->
+        <div class="card premium-glass-card border-0 shadow-lg mb-4 p-4">
+            <div class="input-group">
+                <span class="input-group-text bg-transparent border-end-0 border-secondary text-pink ps-3">
+                    <i class="fas fa-search"></i>
+                </span>
+                <input type="text" class="form-control premium-input text-white border-start-0 ps-2 shadow-none"
+                    [(ngModel)]="searchText" (input)="filterFaq()"
+                    placeholder="Bạn cần tìm hướng dẫn về vấn đề gì (vd: đổi mật khẩu, lỗi máy in, VPN...)?">
+            </div>
+        </div>
+
+        <!-- DANH SÁCH CÂU HỎI (CARDS) -->
+        <div class="row g-4" *ngIf="filteredFaqList.length > 0">
+            <div class="col-md-6" *ngFor="let item of filteredFaqList">
+                <div class="card premium-glass-card border-0 shadow-lg p-4 h-100">
+                    <div class="d-flex align-items-start mb-3">
+                        <div class="avatar bg-purple-soft bg-opacity-25 text-purple-accent rounded-circle d-flex justify-content-center align-items-center me-3 flex-shrink-0" style="width: 40px; height: 40px;">
+                            <i class="fas fa-question"></i>
+                        </div>
+                        <div>
+                            <span class="badge bg-secondary bg-opacity-25 text-info mb-1" *ngIf="item.category">{{ item.category }}</span>
+                            <h5 class="fw-bold text-white mb-0">{{ item.question }}</h5>
+                        </div>
+                    </div>
+                    <p class="text-light opacity-75 mb-0 ps-5" style="line-height: 1.6;">
+                        {{ item.answer }}
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- TRẠNG THÁI TRỐNG -->
+        <div class="text-center py-5" *ngIf="filteredFaqList.length === 0">
+            <i class="fas fa-search fa-3x mb-3 text-secondary opacity-50"></i>
+            <p class="text-light opacity-50 mb-0">Không tìm thấy hướng dẫn phù hợp với từ khóa của bạn.</p>
+        </div>
+    </div>
+</div>
+
+<!-- Loading state -->
+<div class="text-center py-5 min-vh-100 d-flex justify-content-center align-items-center" *ngIf="isLoading">
+    <div class="spinner-border text-pink" role="status" style="width: 3rem; height: 3rem;">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+</div>

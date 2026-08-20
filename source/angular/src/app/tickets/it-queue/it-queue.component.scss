@@ -1,0 +1,20 @@
+.custom-pills {
+    .nav-link {
+        /* Đổi thành màu xám đậm để hiển thị rõ trên nền trắng */
+        color: #6b7280; 
+        transition: all 0.3s ease;
+        
+        &:hover {
+            /* Hover vào sẽ hiện màu hồng nhạt báo hiệu có thể click */
+            color: #ec4899; 
+            background-color: rgba(236, 72, 153, 0.08);
+        }
+
+        &.active {
+            background-color: rgba(236, 72, 153, 0.2) !important; 
+            color: #ec4899 !important;
+            box-shadow: inset 0 0 10px rgba(236, 72, 153, 0.3);
+            border: 1px solid rgba(236, 72, 153, 0.4);
+        }
+    }
+}

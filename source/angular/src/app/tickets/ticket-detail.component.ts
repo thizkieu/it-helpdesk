@@ -124,6 +124,24 @@ export class TicketDetailComponent implements OnInit {
     };
     reader.readAsDataURL(file);
   }
+  // ==========================================
+  // PHÂN LOẠI TRẠNG THÁI SLA ĐỂ HIỂN THỊ MÀU SẮC
+  // ==========================================
+  getSlaStatus(dateValue: string | Date | null | undefined): 'normal' | 'warning' | 'overdue' {
+    if (!dateValue) return 'normal';
+    
+    const targetDate = new Date(dateValue).getTime();
+    const now = new Date().getTime();
+    const diffHours = (targetDate - now) / (1000 * 60 * 60);
+
+    if (targetDate < now) {
+      return 'overdue'; // Quá hạn -> Đỏ
+    } else if (diffHours <= 2) {
+      return 'warning'; // Sắp hết hạn (dưới 2 tiếng) -> Vàng
+    }
+    
+    return 'normal'; // Bình thường -> Trắng/Sáng
+  }
 
   // Biến quản lý trạng thái hiển thị modal
   isAssignModalOpen: boolean = false;

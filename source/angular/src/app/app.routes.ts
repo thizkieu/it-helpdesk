@@ -58,19 +58,38 @@ export const APP_ROUTES: Routes = [
     loadComponent: () => import('./sys-master-lists/sys-mastert-list.component').then(c => c.SysMasterListComponent),
     canActivate: [authGuard, permissionGuard],
   },
+  
+  // ==========================================
+  // NHÓM ROUTE TICKET & HELPDESK
+  // ==========================================
   {
     path: 'tickets/create',
     loadComponent: () => import('./tickets/create-ticket.component').then(c => c.CreateTicketComponent),
     canActivate: [authGuard, permissionGuard], 
   },
   {
-  path: 'tickets/my-tickets',
-  loadComponent: () => import('./tickets/my-tickets.component').then(c => c.MyTicketsComponent),
-  canActivate: [authGuard, permissionGuard],
-},
-{
-  path: 'tickets/detail/:id',
-  loadComponent: () => import('./tickets/ticket-detail.component').then(c => c.TicketDetailComponent),
-  canActivate: [authGuard, permissionGuard], 
-},
+    path: 'tickets/my-tickets',
+    loadComponent: () => import('./tickets/my-tickets.component').then(c => c.MyTicketsComponent),
+    canActivate: [authGuard, permissionGuard],
+  },
+  {
+    path: 'tickets/detail/:id',
+    loadComponent: () => import('./tickets/ticket-detail.component').then(c => c.TicketDetailComponent),
+    canActivate: [authGuard, permissionGuard], 
+  },
+  {
+    path: 'tickets/it-queue',
+    loadComponent: () => import('./tickets/it-queue/it-queue.component').then(c => c.ItQueueComponent),
+    canActivate: [authGuard, permissionGuard], 
+  },
+  {
+    path: 'tickets/dashboard',
+    loadComponent: () => import('./tickets/dashboard/dashboard.component').then(c => c.DashboardComponent),
+    canActivate: [authGuard, permissionGuard], 
+  },
+  {
+    path: 'tickets/knowledge-base',
+    loadComponent: () => import('./tickets/knowledge-base/knowledge-base.component').then(c => c.KnowledgeBaseComponent),
+    canActivate: [authGuard, permissionGuard], 
+  }
 ];

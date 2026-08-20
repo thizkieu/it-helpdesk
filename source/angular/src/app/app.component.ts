@@ -9,5 +9,6 @@ import { LoaderBarComponent } from '@abp/ng.theme.shared';
     <abp-dynamic-layout />
   `,
   imports: [LoaderBarComponent, DynamicLayoutComponent],
+  standalone: true
 })
 export class AppComponent {}

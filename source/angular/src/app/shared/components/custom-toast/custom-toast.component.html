@@ -1,0 +1,6 @@
+<div class="toast-container">
+    <div *ngFor="let toast of toastService.toasts" class="custom-toast" [ngClass]="toast.type">
+        <i class="fas" [ngClass]="toast.type === 'success' ? 'fa-paw' : 'fa-times-circle'"></i>
+        <span class="ms-2">{{ toast.message }}</span>
+    </div>
+</div>

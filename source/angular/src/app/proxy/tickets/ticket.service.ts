@@ -1,4 +1,4 @@
-import type { AssignTicketDto, CreateUpdateTicketDto, GetTicketListDto, TicketDto, TicketTimelineDto, UploadAttachmentDto } from './models';
+import type { AssignTicketDto, CreateUpdateTicketDto, DashboardStatsDto, GetTicketListDto, TicketDto, TicketTimelineDto, UploadAttachmentDto } from './models';
 import type { TicketStatus } from './ticket-status.enum';
 import { RestService, Rest } from '@abp/ng.core';
 import type { PagedResultDto } from '@abp/ng.core';
@@ -60,6 +60,14 @@ export class TicketService {
     this.restService.request<any, TicketDto>({
       method: 'GET',
       url: `/api/app/ticket/${id}`,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  getDashboardStats = (config?: Partial<Rest.Config>) =>
+    this.restService.request<any, DashboardStatsDto>({
+      method: 'GET',
+      url: '/api/app/ticket/dashboard-stats',
     },
     { apiName: this.apiName,...config });
   

@@ -25,6 +25,8 @@ namespace ItHelpdesk.Tickets
         // Giám sát SLA
         public DateTime? DueDate { get; set; }
         public DateTime? ResolvedAt { get; set; }
+        public DateTime? TargetResponseTime { get; set; }
+        public DateTime? TargetResolutionTime { get; set; }
 
         public Ticket()
         {

@@ -23,5 +23,6 @@ namespace ItHelpdesk.Tickets
         Task UploadAttachmentAsync(UploadAttachmentDto input);
         // Phân công hoặc chuyển tuyến xử lý ticket
         Task AssignTicketAsync(AssignTicketDto input);
+        Task<DashboardStatsDto> GetDashboardStatsAsync();
     }
 }

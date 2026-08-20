@@ -1,6 +1,7 @@
 using ItHelpdesk.Books;
 using ItHelpdesk.Categories;
 using ItHelpdesk.Employees;
+using ItHelpdesk.KnowledgeBase;
 using ItHelpdesk.LocalizationManagement.Languages;
 using ItHelpdesk.LocalizationManagement.LanguageTexts;
 using ItHelpdesk.Priorities;
@@ -66,6 +67,7 @@ public class ItHelpdeskDbContext :
     public DbSet<IdentityLinkUser> LinkUsers { get; set; }
     public DbSet<IdentityUserDelegation> UserDelegations { get; set; }
     public DbSet<IdentitySession> Sessions { get; set; }
+    public DbSet<FaqItem> FaqItems { get; set; }
 
     // Tenant Management
     public DbSet<Tenant> Tenants { get; set; }
@@ -180,6 +182,18 @@ public class ItHelpdeskDbContext :
             // Khóa ngoại liên kết với bảng Tickets
             b.HasOne<Ticket>().WithMany().HasForeignKey(x => x.TicketId).IsRequired();
         });
+
+        // Cấu hình bảng FaqItem
+        builder.Entity<FaqItem>(b =>
+        {
+            b.ToTable(ItHelpdeskConsts.DbTablePrefix + "FaqItems", ItHelpdeskConsts.DbSchema);
+            b.ConfigureByConvention();
+
+            b.Property(x => x.Question).IsRequired().HasMaxLength(500);
+            b.Property(x => x.Answer).IsRequired();
+            b.Property(x => x.Category).HasMaxLength(128);
+        });
+
         builder.ApplyConfiguration(new LanguageEfCoreMapping());
         builder.ApplyConfiguration(new LanguageTextEfCoreMapping());
         builder.ApplyConfiguration(new EmployeeEfCoreMapping());
