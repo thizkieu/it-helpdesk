@@ -18,19 +18,52 @@
                     </div>
                 </div>
 
-                <!-- Cụm chức năng Search và Thêm Mới -->
+                <!-- Cụm chức năng Search thông minh và Thêm Mới -->
                 <div class="col-md-7 text-md-end mt-3 mt-md-0 d-flex flex-wrap justify-content-md-end align-items-center gap-3">
                     
-                    <!-- Ô Search -->
-                    <div class="position-relative">
-                        <input #searchBox type="text" class="form-control admin-input ps-4" 
-                            style="width: 250px; border-radius: 8px;"
-                            placeholder="Tìm kiếm mã hoặc tên..." 
-                            (keyup.enter)="search$.next($any($event.target).value)" />
-                        <button *ngIf="searchBox.value" class="btn btn-link text-muted position-absolute end-0 top-50 translate-middle-y p-0 me-2" 
-                                (click)="searchBox.value=''; search$.next('')">
-                            <i class="fas fa-times"></i>
-                        </button>
+                    <!-- Ô Search thông minh có lịch sử -->
+                    <div class="position-relative" style="width: 280px;">
+                        <div class="input-group search-box-wrapper position-relative">
+                            <span class="input-group-text border-end-0 ps-3 bg-transparent text-pink">
+                                <i class="fas fa-search"></i>
+                            </span>
+                            
+                            <!-- Ô input dùng [(ngModel)]="searchFilter" -->
+                            <input type="text" class="form-control border-start-0 ps-0 shadow-none text-white admin-input" 
+                                placeholder="Tìm kiếm mã hoặc tên..." 
+                                [(ngModel)]="searchFilter"
+                                (input)="onSearchInput()"
+                                (keyup.enter)="performSearch()"
+                                (focus)="showSearchSuggestions = true" />
+                                
+                            <button *ngIf="searchFilter" class="btn btn-link text-muted position-absolute end-0 top-50 translate-middle-y p-0 me-3" 
+                                type="button" style="z-index: 10;"
+                                (click)="clearSearch()" title="Xóa tìm kiếm">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+
+                        <!-- Dropdown Lịch sử & Gợi ý tìm kiếm (Hiệu ứng kính mờ) -->
+                        <ul *ngIf="showSearchSuggestions && recentSearches.length > 0" 
+                            class="dropdown-menu show w-100 shadow-lg border-0 mt-2 p-2 rounded-4 position-absolute text-start"
+                            style="background: rgba(22, 22, 35, 0.95); backdrop-filter: blur(12px); z-index: 1050; border: 1px solid rgba(255,255,255,0.1) !important;">
+                            <li class="d-flex justify-content-between align-items-center px-3 py-1 mb-1">
+                                <span class="text-pink small fw-bold">
+                                    <i class="fas fa-history me-1"></i> Lịch sử tìm kiếm
+                                </span>
+                                <button class="btn btn-link text-muted p-0 small text-decoration-none" style="font-size: 0.75rem;" (click)="clearAllSearchHistory($event)">
+                                    Xóa tất cả
+                                </button>
+                            </li>
+                            <li *ngFor="let item of recentSearches" 
+                                (click)="selectSearchSuggestion(item)"
+                                class="dropdown-item text-light rounded-3 cursor-pointer px-3 py-2 my-1 d-flex justify-content-between align-items-center custom-dropdown-item">
+                                <div>
+                                    <i class="fas fa-search text-purple-accent me-2 opacity-75"></i> {{ item }}
+                                </div>
+                                <i class="fas fa-times text-muted hover-pink ms-2 p-1" title="Xóa mục này" (click)="removeSearchHistoryItem(item, $event)"></i>
+                            </li>
+                        </ul>
                     </div>
 
                     <!-- Nút Thêm Mới -->
@@ -46,7 +79,7 @@
         <div class="card-body p-0">
             <ngx-datatable [rows]="service.items" [count]="service.totalCount" [list]="list" default class="admin-datatable">
 
-                <!-- CỘT THAO TÁC (Tăng Width để không cắt chữ) -->
+                <!-- CỘT THAO TÁC -->
                 <ngx-datatable-column [name]="'::Actions' | abpLocalization" [width]="150" [maxWidth]="150" [sortable]="false">
                     <ng-template let-row="row" ngx-datatable-cell-template>
                         <div ngbDropdown container="body" class="d-inline-block">
@@ -65,7 +98,7 @@
                     </ng-template>
                 </ngx-datatable-column>
 
-                <!-- CỘT MÃ DỊCH VỤ (Ép MaxWidth để thu hẹp khoảng cách & Fix lỗi ngoặc Pipe) -->
+                <!-- CỘT MÃ DỊCH VỤ -->
                 <ngx-datatable-column [name]="'::ServiceCode' | abpLocalization" prop="code" [width]="200" [maxWidth]="250">
                     <ng-template let-row="row" ngx-datatable-cell-template>
                         <div class="d-flex align-items-center gap-3">
@@ -77,7 +110,7 @@
                     </ng-template>
                 </ngx-datatable-column>
 
-                <!-- CỘT TÊN DỊCH VỤ (Không đặt width để giãn tự do) -->
+                <!-- CỘT TÊN DỊCH VỤ -->
                 <ngx-datatable-column [name]="'::ServiceName' | abpLocalization" prop="name">
                     <ng-template let-row="row" ngx-datatable-cell-template>
                         <span class="fw-medium text-light">{{ row.name }}</span>

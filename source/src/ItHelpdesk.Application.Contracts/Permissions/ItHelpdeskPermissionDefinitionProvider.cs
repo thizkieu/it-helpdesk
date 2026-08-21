@@ -9,7 +9,8 @@ namespace ItHelpdesk.Permissions
     {
         public override void Define(IPermissionDefinitionContext context)
         {
-            var myGroup = context.AddGroup(ItHelpdeskPermissions.GroupName);
+            var myGroup = context.GetGroupOrNull(ItHelpdeskPermissions.GroupName) ??
+                          context.AddGroup(ItHelpdeskPermissions.GroupName, L("Permission:ItHelpdesk"));
 
             var booksPermission = myGroup.AddPermission(ItHelpdeskPermissions.Books.Default, L("Permission:Books"));
             booksPermission.AddChild(ItHelpdeskPermissions.Books.Create, L("Permission:Books.Create"));
@@ -56,7 +57,7 @@ namespace ItHelpdesk.Permissions
             teamPermission.AddChild(ItHelpdeskPermissions.Teams.Delete, L("Permission:Teams.Delete"));
 
             // ==========================================
-            // BỔ SUNG: Ticket Permissions
+            // TICKET PERMISSIONS
             // ==========================================
             var ticketPermission = myGroup.AddPermission(ItHelpdeskPermissions.Tickets.Default, L("Permission:Tickets"));
             ticketPermission.AddChild(ItHelpdeskPermissions.Tickets.Create, L("Permission:Tickets.Create"));
@@ -64,12 +65,12 @@ namespace ItHelpdesk.Permissions
             ticketPermission.AddChild(ItHelpdeskPermissions.Tickets.Delete, L("Permission:Tickets.Delete"));
 
             // ==========================================
-            // BỔ SUNG: Dashboard Permissions
+            // DASHBOARD PERMISSIONS
             // ==========================================
             myGroup.AddPermission(ItHelpdeskPermissions.Dashboard.Default, L("Permission:Dashboard"));
 
             // ==========================================
-            // BỔ SUNG: Knowledge Base Permissions
+            // KNOWLEDGE BASE PERMISSIONS
             // ==========================================
             myGroup.AddPermission(ItHelpdeskPermissions.KnowledgeBase.Default, L("Permission:KnowledgeBase"));
         }

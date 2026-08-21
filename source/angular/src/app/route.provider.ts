@@ -9,15 +9,9 @@ export const APP_ROUTE_PROVIDER = [
 
 function configureRoutes() {
   const routes = inject(RoutesService);
+
   routes.add([
-    // CỐ ĐỊNH TRANG CHỦ LÊN ĐẦU TIÊN (Order: 1)
-    {
-      path: '/',
-      name: '::Menu:Home',
-      iconClass: 'fas fa-home',
-      order: 1,
-      layout: eLayoutType.application,
-    },
+    { path: '/', name: '::Menu:Home', iconClass: 'fas fa-home', order: 1, layout: eLayoutType.application },
     {
       path: '/tickets/create',
       name: 'Tạo Yêu cầu hỗ trợ',
@@ -28,27 +22,27 @@ function configureRoutes() {
     },
     {
       path: '/tickets/my-tickets',
-      name: '::Menu:MyTickets', 
+      name: '::Menu:MyTickets',
       iconClass: 'fas fa-ticket-alt',
       order: 3,
       layout: eLayoutType.application,
-      // Đã gỡ bỏ requiredPolicy ở đây để mọi tài khoản (Employee, IT, Admin) đều thấy được menu này
+      requiredPolicy: 'ItHelpdesk.Tickets', // Khớp hoàn toàn với Tickets.Default ở Backend
     },
     {
       path: '/tickets/dashboard',
-      name: '::Menu:Dashboard', 
+      name: '::Menu:Dashboard',
       iconClass: 'fas fa-chart-pie',
       order: 4,
       layout: eLayoutType.application,
-      requiredPolicy: 'ItHelpdesk.Dashboard', 
+      requiredPolicy: 'ItHelpdesk.Dashboard',
     },
     {
       path: '/tickets/it-queue',
-      name: 'Hàng đợi Ticket (IT)', 
+      name: 'Hàng đợi Ticket (IT)',
       iconClass: 'fas fa-list',
       order: 5,
       layout: eLayoutType.application,
-      requiredPolicy: 'ItHelpdesk.Tickets.Edit', 
+      requiredPolicy: 'ItHelpdesk.Tickets.Edit',
     },
     {
       path: '/tickets/knowledge-base',
@@ -56,18 +50,8 @@ function configureRoutes() {
       iconClass: 'fas fa-book',
       order: 6,
       layout: eLayoutType.application,
-      requiredPolicy: 'ItHelpdesk.KnowledgeBase', 
+      requiredPolicy: 'ItHelpdesk.KnowledgeBase',
     },
-    {
-      path: '/books',
-      name: '::Menu:Books',
-      iconClass: 'fas fa-book',
-      layout: eLayoutType.application,
-      order: 7,
-      requiredPolicy: 'ItHelpdesk.Books',
-    },
-    
-    // Nhóm Quản trị danh mục (Administration)
     {
       path: '/categories',
       name: '::Menu:Categories',
@@ -112,6 +96,7 @@ function configureRoutes() {
       parentName: 'AbpUiNavigation::Menu:Administration',
       requiredPolicy: 'ItHelpdesk.LanguageTexts',
       order: 100,
+      invisible: true,
     },
     {
       path: '/sys-master-lists',
@@ -121,6 +106,7 @@ function configureRoutes() {
       parentName: 'AbpUiNavigation::Menu:Administration',
       requiredPolicy: 'ItHelpdesk.SysMasterLists',
       order: 101,
+      invisible: true,
     }
   ]);
 }

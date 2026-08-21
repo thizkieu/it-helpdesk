@@ -13,16 +13,48 @@
             </div>
         </div>
 
-        <!-- SEARCH BOX TRA CỨU NHANH -->
-        <div class="card premium-glass-card border-0 shadow-lg mb-4 p-4">
+        <!-- SEARCH BOX TRA CỨU NHANH CÓ LỊCH SỬ -->
+        <div class="card premium-glass-card border-0 shadow-lg mb-4 p-4 position-relative search-wrapper">
             <div class="input-group">
                 <span class="input-group-text bg-transparent border-end-0 border-secondary text-pink ps-3">
                     <i class="fas fa-search"></i>
                 </span>
                 <input type="text" class="form-control premium-input text-white border-start-0 ps-2 shadow-none"
-                    [(ngModel)]="searchText" (input)="filterFaq()"
+                    [(ngModel)]="searchText" 
+                    (input)="onSearchInput()"
+                    (keyup.enter)="performSearch()"
+                    (focus)="showSearchSuggestions = true"
                     placeholder="Bạn cần tìm hướng dẫn về vấn đề gì (vd: đổi mật khẩu, lỗi máy in, VPN...)?">
+                
+                <button *ngIf="searchText" class="btn btn-link text-muted position-absolute end-0 top-50 translate-middle-y p-0 me-4" 
+                    type="button" style="z-index: 10;" (click)="clearSearch()" title="Xóa">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
+
+            <!-- Dropdown Lịch sử & Gợi ý tìm kiếm (Hiệu ứng kính mờ) -->
+            <ul *ngIf="showSearchSuggestions && recentSearches.length > 0" 
+                class="dropdown-menu show w-100 shadow-lg border-0 mt-2 p-2 rounded-4 position-absolute text-start"
+                style="background: rgba(22, 22, 35, 0.95); backdrop-filter: blur(12px); z-index: 1050; border: 1px solid rgba(255,255,255,0.1) !important; left: 0; right: 0; width: calc(100% - 3rem) !important; margin-left: 1.5rem;">
+                
+                <li class="d-flex justify-content-between align-items-center px-3 py-1 mb-1">
+                    <span class="text-pink small fw-bold">
+                        <i class="fas fa-history me-1"></i> Lịch sử tìm kiếm gần đây
+                    </span>
+                    <button class="btn btn-link text-muted p-0 small text-decoration-none" style="font-size: 0.75rem;" (click)="clearAllSearchHistory($event)">
+                        Xóa tất cả
+                    </button>
+                </li>
+
+                <li *ngFor="let item of recentSearches" 
+                    (click)="selectSearchSuggestion(item)"
+                    class="dropdown-item text-light rounded-3 cursor-pointer px-3 py-2 my-1 d-flex justify-content-between align-items-center custom-dropdown-item">
+                    <div>
+                        <i class="fas fa-search text-purple-accent me-2 opacity-75"></i> <span>{{ item }}</span>
+                    </div>
+                    <i class="fas fa-times text-muted hover-pink ms-2 p-1" title="Xóa mục này" (click)="removeSearchHistoryItem(item, $event)"></i>
+                </li>
+            </ul>
         </div>
 
         <!-- DANH SÁCH CÂU HỎI (CARDS) -->

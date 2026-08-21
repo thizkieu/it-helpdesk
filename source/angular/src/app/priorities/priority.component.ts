@@ -1,16 +1,13 @@
 import { FormGroup, FormBuilder, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
-// Bổ sung thêm ViewChild, HostListener từ @angular/core
-import { Component, inject, OnInit, ViewChild, HostListener } from '@angular/core'; 
+import { Component, inject, OnInit } from '@angular/core'; 
 import { CommonModule } from '@angular/common';
 import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
-// Bổ sung thêm DatatableComponent
-import { NgxDatatableModule, DatatableComponent } from '@swimlane/ngx-datatable'; 
-import { BehaviorSubject } from 'rxjs'; // Thêm BehaviorSubject cho chức năng tìm kiếm
+import { NgxDatatableModule } from '@swimlane/ngx-datatable'; 
 import { ListService, PagedResultDto, LocalizationPipe, PermissionDirective, AutofocusDirective } from '@abp/ng.core';
 import { ConfirmationService, Confirmation, NgxDatatableDefaultDirective, NgxDatatableListDirective, ModalCloseDirective, ModalComponent, ToasterService } from '@abp/ng.theme.shared';
 
-// Import từ proxy 
 import { PriorityDto, PriorityService } from '../proxy/priorities';
+import { AdminBaseComponent } from '../shared/base/admin-base.component';
 
 @Component({
   selector: 'app-priority',
@@ -33,35 +30,26 @@ import { PriorityDto, PriorityService } from '../proxy/priorities';
   ],
   providers: [ListService],
 })
-export class PriorityComponent implements OnInit {
-  public readonly list = inject(ListService);
+export class PriorityComponent extends AdminBaseComponent implements OnInit {
   private priorityService = inject(PriorityService) as any; 
   private fb = inject(FormBuilder);
   private confirmation = inject(ConfirmationService);
   private toaster = inject(ToasterService);
+
+  protected storageKey = 'priority_search_history';
 
   priority = { items: [], totalCount: 0 } as PagedResultDto<PriorityDto>;
   selectedPriority = {} as PriorityDto;
   form!: FormGroup;
   isModalOpen = false;
 
-  // 1. Luồng tìm kiếm
-  search$ = new BehaviorSubject<string>('');
-
-  // 2. Lấy tham chiếu của bảng để cập nhật UI khi resize
-  @ViewChild(DatatableComponent) table!: DatatableComponent;
-
-  // 3. Lắng nghe sự kiện thu phóng trình duyệt
-  @HostListener('window:resize', ['$event'])
-  onResize() {
-    if (this.table) {
-      this.table.recalculate(); // Ép bảng tính toán lại độ rộng cột
-    }
-  }
-
   ngOnInit() {
-    // 4. Hook tìm kiếm vào query
-    const streamCreator = (query: any) => this.priorityService.getList({ ...query, filter: this.search$.value });
+    // BẮT BUỘC: Gọi hàm của Base Component để kích hoạt luồng tìm kiếm tự động
+    super.ngOnInit();
+
+    // Dùng this.searchFilter thay vì this.search$.value
+    const streamCreator = (query: any) => this.priorityService.getList({ ...query, filter: this.searchFilter });
+    
     this.list.hookToQuery(streamCreator).subscribe((response: any) => {
       this.priority = response;
     });

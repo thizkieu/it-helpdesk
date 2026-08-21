@@ -1,52 +1,99 @@
-<div class="ticket-page-wrapper">
+<div class="ticket-page-wrapper py-4">
   <div class="container-fluid">
 
-    <!-- Tiêu đề trang -->
+    <!-- TIÊU ĐỀ TRANG -->
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
       <div>
         <span class="badge cute-badge-pill mb-2">
           <i class="fas fa-paw me-1"></i> Quản Lý Yêu Cầu • IT Helpdesk
         </span>
-        <h2 class="fw-bold page-title mb-0">Yêu Cầu Của Tôi</h2>
+        <h2 class="fw-bold page-title mb-0 text-white">Yêu Cầu Của Tôi</h2>
       </div>
       <div>
-        <!-- ĐÃ SỬA: Đổi từ /tickets/new thành /tickets/create để chạy đúng route -->
-        <a routerLink="/tickets/create" class="btn premium-btn-submit rounded-pill px-4 text-white fw-semibold">
+        <a routerLink="/tickets/create"
+          class="btn cute-outline-btn rounded-pill px-4 text-pink border-pink fw-semibold">
           <i class="fas fa-plus me-2"></i> Tạo yêu cầu mới
         </a>
       </div>
     </div>
 
-    <!-- KHUNG TÌM KIẾM & LỌC -->
-    <div class="card custom-bordered-card shadow-lg mb-4 p-3 p-md-4">
+    <!-- THANH CÔNG CỤ TÌM KIẾM & LỌC -->
+    <div class="card premium-glass-card border-0 shadow-lg mb-4 p-3 p-md-4">
       <div class="row align-items-center g-3">
-        <div class="col-md-5">
-          <!-- Ô TÌM KIẾM LIỀN KHỐI -->
-          <div class="custom-search-box d-flex align-items-center px-3 py-1">
-            <i class="fas fa-search text-pink me-2"></i>
-            <input type="text" class="form-control border-0 bg-transparent shadow-none py-1 ps-0"
-              placeholder="Tìm kiếm theo tiêu đề..." [(ngModel)]="filters.filterText" (input)="onSearchInput()" />
+
+        <!-- Ô TÌM KIẾM THÔNG MINH -->
+        <div class="col-md-6 col-lg-5 position-relative search-wrapper">
+          <div class="input-group">
+            <span class="input-group-text bg-transparent border-end-0 border-secondary border-opacity-25 text-pink">
+              <i class="fas fa-search"></i>
+            </span>
+
+            <input type="text" class="form-control premium-input text-white border-start-0 ps-0 shadow-none"
+              placeholder="Tìm theo mã ticket, tiêu đề..." [(ngModel)]="filters.filterText" (input)="onSearchInput()"
+              (keyup.enter)="performSearch()" (focus)="showSearchSuggestions = true" />
+
+            <button *ngIf="filters.filterText"
+              class="btn btn-link text-muted position-absolute end-0 top-50 translate-middle-y p-0 me-3" type="button"
+              style="z-index: 10;" (click)="clearSearch()" title="Xóa tìm kiếm">
+              <i class="fas fa-times"></i>
+            </button>
           </div>
+
+          <!-- DROPDOWN GỢI Ý & LỊCH SỬ KÍNH MỜ -->
+          <ul *ngIf="showSearchSuggestions && recentSearches.length > 0"
+            class="dropdown-menu show w-100 shadow-lg border-0 mt-2 p-2 rounded-4 position-absolute text-start"
+            style="background: rgba(22, 22, 35, 0.95); backdrop-filter: blur(16px); z-index: 1050; border: 1px solid rgba(255,255,255,0.1) !important; left: 0; right: 0;">
+
+            <li class="d-flex justify-content-between align-items-center px-3 py-1 mb-1">
+              <span class="text-pink small fw-bold">
+                <i class="fas fa-history me-1"></i> Lịch sử tìm kiếm
+              </span>
+              <button class="btn btn-link text-muted p-0 small text-decoration-none" style="font-size: 0.75rem;"
+                (click)="clearAllSearchHistory($event)">
+                Xóa tất cả
+              </button>
+            </li>
+
+            <li *ngFor="let item of recentSearches" (click)="selectSearchSuggestion(item)"
+              class="dropdown-item text-light rounded-3 cursor-pointer px-3 py-2 my-1 d-flex justify-content-between align-items-center custom-dropdown-item">
+              <div>
+                <i class="fas fa-search text-purple-accent me-2 opacity-75"></i>
+                <span>{{ item }}</span>
+              </div>
+              <i class="fas fa-times text-muted hover-pink ms-2 p-1" title="Xóa mục này"
+                (click)="removeSearchHistoryItem(item, $event)">
+              </i>
+            </li>
+          </ul>
         </div>
-        <div class="col-md-4">
-          <!-- Dropdown lọc trạng thái -->
-          <select class="form-select custom-bordered-select py-2 shadow-none rounded-4" [(ngModel)]="filters.status"
+
+        <!-- BỘ LỌC TRẠNG THÁI -->
+        <div class="col-md-4 col-lg-3">
+          <select class="form-select custom-bordered-select py-2 shadow-none rounded-pill" [(ngModel)]="filters.status"
             (change)="onFilterChange()">
             <option [ngValue]="null">-- Tất cả trạng thái --</option>
-            <option [ngValue]="1">Mới</option>
+            <option [ngValue]="1">Mới (New)</option>
+            <option [ngValue]="2">Đã phân công</option>
             <option [ngValue]="3">Đang xử lý</option>
-            <option [ngValue]="6">Đã xử lý</option>
+            <option [ngValue]="6">Đã giải quyết</option>
+            <option [ngValue]="7">Đã đóng</option>
           </select>
         </div>
+
+        <!-- TỔNG SỐ KẾT QUẢ -->
+        <div class="col-md-2 col-lg-4 text-md-end text-muted small">
+          Tổng cộng: <span class="text-pink fw-bold">{{ data.totalCount }}</span> yêu cầu
+        </div>
+
       </div>
     </div>
 
-    <!-- BẢNG DANH SÁCH CHÍNH -->
-    <div class="card custom-bordered-card shadow-lg overflow-hidden">
+    <!-- BẢNG DANH SÁCH TICKET -->
+    <div class="card premium-glass-card border-0 shadow-lg overflow-hidden">
       <div class="card-body p-0">
         <ngx-datatable [rows]="data.items" [count]="data.totalCount" [list]="list" default>
 
-          <ngx-datatable-column [name]="'::TicketNo' | abpLocalization" prop="ticketNo">
+          <ngx-datatable-column [name]="'::TicketNo' | abpLocalization" prop="ticketNo" [width]="160">
             <ng-template let-row="row" ngx-datatable-cell-template>
               <a [routerLink]="['/tickets/detail', row.id]" class="fw-bold text-decoration-none text-purple-accent">
                 {{ row.ticketNo }}
@@ -54,34 +101,30 @@
             </ng-template>
           </ngx-datatable-column>
 
-          <ngx-datatable-column [name]="'::TicketSubject' | abpLocalization" prop="title">
+          <ngx-datatable-column [name]="'::TicketSubject' | abpLocalization" prop="title" [width]="300">
             <ng-template let-row="row" ngx-datatable-cell-template>
-              <span class="table-row-title fw-medium">{{ row.title }}</span>
+              <span class="text-light fw-medium">{{ row.title }}</span>
             </ng-template>
           </ngx-datatable-column>
 
-          <ngx-datatable-column [name]="'::Status' | abpLocalization" prop="status">
+          <ngx-datatable-column [name]="'::Status' | abpLocalization" prop="status" [width]="150">
             <ng-template let-row="row" ngx-datatable-cell-template>
-              <span class="status-badge" [ngClass]="{
-                  'status-new': row.status === 1,
-                  'status-in-progress': row.status === 3,
-                  'status-completed': row.status === 6
-                }">
+              <span class="badge bg-primary bg-opacity-75 rounded-pill px-3 py-2">
                 {{ '::Enum:TicketStatus.' + row.status | abpLocalization }}
               </span>
             </ng-template>
           </ngx-datatable-column>
 
-          <ngx-datatable-column [name]="'::CreationTime' | abpLocalization" prop="creationTime">
+          <ngx-datatable-column [name]="'::CreationTime' | abpLocalization" prop="creationTime" [width]="180">
             <ng-template let-row="row" ngx-datatable-cell-template>
-              <span class="small text-muted-dark">{{ row.creationTime | date:'dd/MM/yyyy HH:mm' }}</span>
+              <span class="small text-muted">{{ row.creationTime | date:'dd/MM/yyyy HH:mm' }}</span>
             </ng-template>
           </ngx-datatable-column>
 
-          <ngx-datatable-column name="Thao tác" [sortable]="false">
+          <ngx-datatable-column name="Thao tác" [sortable]="false" [width]="120">
             <ng-template let-row="row" ngx-datatable-cell-template>
               <a [routerLink]="['/tickets/detail', row.id]"
-                class="btn btn-sm cute-outline-btn rounded-pill px-4 fw-semibold">
+                class="btn btn-sm cute-outline-btn rounded-pill px-3 text-pink border-pink fw-semibold">
                 <i class="fas fa-paw me-1"></i> Chi tiết
               </a>
             </ng-template>

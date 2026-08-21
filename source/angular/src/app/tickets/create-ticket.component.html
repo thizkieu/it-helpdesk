@@ -3,58 +3,64 @@
         <div class="row justify-content-center">
             <div class="col-lg-8">
 
-                <!-- Tiêu đề trang -->
                 <div class="text-center mb-4">
                     <span class="badge cute-badge-pill mb-3">
-                        Góc Nhỏ Trợ Giúp • IT Helpdesk
+                        <i class="fas fa-desktop me-1"></i> Góc Nhỏ Trợ Giúp • IT Helpdesk
                     </span>
-                    <h2 class="fw-bold page-title mb-2">Tạo Yêu Cầu Mới</h2>
-                    <p class="page-subtitle">Gặp sự cố hệ thống hay cần hỗ trợ kỹ thuật? Gửi thông tin cho chúng tôi
-                        nhé.</p>
+                    <h2 class="fw-bold page-title mb-2 text-white">Tạo Yêu Cầu Hỗ Trợ Mới</h2>
+                    <p class="page-subtitle text-muted">Gặp sự cố hệ thống hay cần hỗ trợ kỹ thuật? Gửi thông tin cho
+                        chúng tôi để được xử lý nhanh chóng.</p>
                 </div>
 
-                <!-- Card Kính mờ -->
                 <div class="card premium-glass-card border-0 shadow-lg p-4 p-md-5">
                     <div class="card-body p-0">
                         <form [formGroup]="ticketForm" (ngSubmit)="submitTicket()">
 
-                            <!-- Tiêu đề Yêu Cầu -->
                             <div class="mb-4">
-                                <label class="form-label fw-bold cute-label">
+                                <label class="form-label fw-bold cute-label text-light">
                                     Tiêu đề yêu cầu <span class="text-danger">*</span>
                                 </label>
-                                <input type="text" class="form-control form-control-lg premium-input shadow-none"
+                                <input type="text"
+                                    class="form-control form-control-lg premium-input shadow-none text-white"
                                     formControlName="title"
                                     placeholder="Tóm tắt ngắn gọn vấn đề bạn đang gặp phải..." />
+                                <div *ngIf="ticketForm.get('title')?.touched && ticketForm.get('title')?.invalid"
+                                    class="text-danger small mt-1">
+                                    Vui lòng nhập tiêu đề yêu cầu (tối đa 255 ký tự).
+                                </div>
                             </div>
 
-                            <!-- 3 Dropdown -->
                             <div class="row mb-4 g-3">
                                 <div class="col-md-4">
-                                    <label class="form-label fw-bold cute-label">
+                                    <label class="form-label fw-bold cute-label text-light">
                                         Danh mục <span class="text-danger">*</span>
                                     </label>
-                                    <select class="form-select form-select-lg premium-input shadow-none fs-6"
+                                    <select
+                                        class="form-select form-select-lg premium-input shadow-none fs-6 text-white bg-dark"
                                         formControlName="categoryId">
                                         <option [ngValue]="null" disabled>-- Chọn --</option>
                                         <option *ngFor="let cat of categories" [value]="cat.id">{{ cat.name }}</option>
                                     </select>
                                 </div>
+
                                 <div class="col-md-4">
-                                    <label class="form-label fw-bold cute-label">
+                                    <label class="form-label fw-bold cute-label text-light">
                                         Dịch vụ <span class="text-danger">*</span>
                                     </label>
-                                    <select class="form-select form-select-lg premium-input shadow-none fs-6"
+                                    <select
+                                        class="form-select form-select-lg premium-input shadow-none fs-6 text-white bg-dark"
                                         formControlName="serviceId">
                                         <option [ngValue]="null" disabled>-- Chọn --</option>
                                         <option *ngFor="let srv of services" [value]="srv.id">{{ srv.name }}</option>
                                     </select>
                                 </div>
+
                                 <div class="col-md-4">
-                                    <label class="form-label fw-bold cute-label">
+                                    <label class="form-label fw-bold cute-label text-light">
                                         Mức độ <span class="text-danger">*</span>
                                     </label>
-                                    <select class="form-select form-select-lg premium-input shadow-none fs-6"
+                                    <select
+                                        class="form-select form-select-lg premium-input shadow-none fs-6 text-white bg-dark"
                                         formControlName="priorityId">
                                         <option [ngValue]="null" disabled>-- Chọn --</option>
                                         <option *ngFor="let prio of priorities" [value]="prio.id">{{ prio.name }}
@@ -63,35 +69,56 @@
                                 </div>
                             </div>
 
-                            <!-- Mô tả chi tiết -->
                             <div class="mb-4">
-                                <label class="form-label fw-bold cute-label">
+                                <label class="form-label fw-bold cute-label text-light">
                                     Mô tả chi tiết <span class="text-danger">*</span>
                                 </label>
-                                <textarea class="form-control premium-input shadow-none p-3"
+                                <textarea class="form-control premium-input shadow-none p-3 text-white"
                                     formControlName="description" rows="5"
                                     placeholder="Miêu tả chi tiết hiện tượng lỗi hoặc các bước thực hiện..."></textarea>
-                            </div>
-
-                            <!-- Khu vực Đính kèm tệp có con mèo dễ thương -->
-                            <div class="mb-4">
-                                <label class="form-label fw-bold cute-label">
-                                    Đính kèm hình ảnh / file log
-                                </label>
-                                <div class="upload-zone rounded-4 p-4 text-center position-relative">
-                                    <input type="file" class="upload-input" />
-                                    <div class="upload-icon-circle mx-auto mb-2">
-                                        <i class="fas fa-cat fa-lg text-pink bounce-icon"></i>
-                                    </div>
-                                    <p class="mb-1 text-white small fw-medium">Kéo thả ảnh chụp màn hình vào đây hoặc
-                                        bấm để chọn</p>
-                                    <span class="text-muted" style="font-size: 0.75rem;">Hỗ trợ định dạng: PNG, JPG, PDF
-                                        (Tối đa 10MB)</span>
+                                <div *ngIf="ticketForm.get('description')?.touched && ticketForm.get('description')?.invalid"
+                                    class="text-danger small mt-1">
+                                    Vui lòng nhập mô tả chi tiết sự cố.
                                 </div>
                             </div>
 
-                            <!-- Nút Gửi -->
-                            <div class="d-flex justify-content-end pt-3 border-top border-secondary border-opacity-25">
+                            <!-- Khu vực Đính kèm tệp có icon bé mèo -->
+                            <div class="mb-4">
+                                <label class="form-label fw-bold cute-label text-light">Đính kèm hình ảnh / file
+                                    log</label>
+                                <div
+                                    class="upload-zone rounded-4 p-4 text-center position-relative cursor-pointer border border-secondary border-opacity-25 bg-dark bg-opacity-25">
+                                    <input type="file"
+                                        class="upload-input position-absolute top-0 start-0 w-100 h-100 opacity-0 cursor-pointer"
+                                        (change)="onFilesSelected($event)" multiple />
+                                    <div class="upload-icon-circle mx-auto mb-2 text-pink">
+                                        <i class="fas fa-cat fa-2x bounce-icon"></i>
+                                    </div>
+                                    <p class="mb-1 text-white small fw-medium">Bấm vào đây để chọn hoặc kéo thả tệp vào
+                                        vùng này</p>
+                                    <span class="text-muted" style="font-size: 0.75rem;">Hỗ trợ: PNG, JPG, PDF, LOG (Tối
+                                        đa 10MB/file)</span>
+                                </div>
+
+                                <div class="mt-3" *ngIf="selectedFiles.length > 0">
+                                    <small class="text-muted mb-2 d-block fw-semibold">Tệp đã đính kèm ({{
+                                        selectedFiles.length }}):</small>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        <div *ngFor="let file of selectedFiles; let i = index"
+                                            class="badge bg-dark bg-opacity-50 text-light border border-secondary border-opacity-50 p-2 rounded-pill d-flex align-items-center gap-2">
+                                            <i class="fas fa-file-alt text-pink"></i>
+                                            <span class="text-truncate" style="max-width: 180px;">{{ file.name }}</span>
+                                            <button type="button" class="btn-close btn-close-white btn-sm ms-1"
+                                                style="font-size: 0.6rem;" (click)="removeFile(i)"></button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div
+                                class="d-flex justify-content-end pt-3 border-top border-secondary border-opacity-25 gap-3">
+                                <a routerLink="/tickets/my-tickets"
+                                    class="btn btn-outline-light rounded-pill px-4">Hủy</a>
                                 <button type="submit"
                                     class="btn premium-btn-submit btn-lg px-5 rounded-pill shadow fw-bold text-white"
                                     [disabled]="ticketForm.invalid || isSubmitting">
@@ -100,9 +127,7 @@
                                             aria-hidden="true"></span>
                                         Đang gửi đi...
                                     </span>
-                                    <span *ngIf="!isSubmitting">
-                                        Gửi yêu cầu ngay
-                                    </span>
+                                    <span *ngIf="!isSubmitting">Gửi yêu cầu ngay</span>
                                 </button>
                             </div>
 

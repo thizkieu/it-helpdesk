@@ -1,9 +1,8 @@
-import { Component, inject, OnInit, ViewChild, HostListener } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormGroup, FormBuilder, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
-import { NgxDatatableModule, DatatableComponent } from '@swimlane/ngx-datatable';
-import { BehaviorSubject } from 'rxjs';
+import { NgxDatatableModule } from '@swimlane/ngx-datatable';
 import {
   ListService,
   PagedResultDto,
@@ -22,6 +21,7 @@ import {
 } from '@abp/ng.theme.shared';
 
 import { CategoryDto, CategoryService } from '../proxy/categories';
+import { AdminBaseComponent } from '../shared/base/admin-base.component';
 
 @Component({
   selector: 'app-category',
@@ -44,33 +44,19 @@ import { CategoryDto, CategoryService } from '../proxy/categories';
   ],
   providers: [ListService],
 })
-export class CategoryComponent implements OnInit {
-  public readonly list = inject(ListService);
+export class CategoryComponent extends AdminBaseComponent implements OnInit {
   private categoryService = inject(CategoryService);
   private fb = inject(FormBuilder);
   private confirmation = inject(ConfirmationService);
   private toaster = inject(ToasterService);
+
+  protected storageKey = 'category_search_history';
 
   category = { items: [], totalCount: 0 } as PagedResultDto<CategoryDto>;
   selectedCategory = {} as CategoryDto;
   form!: FormGroup;
   isModalOpen = false;
 
-  // 1. Khởi tạo luồng tìm kiếm
-  search$ = new BehaviorSubject<string>('');
-
-  // 2. Tham chiếu trực tiếp đến bảng để ép cập nhật UI khi resize
-  @ViewChild(DatatableComponent) table!: DatatableComponent;
-
-  // 3. Lắng nghe sự kiện thu phóng trình duyệt
-  @HostListener('window:resize', ['$event'])
-  onResize() {
-    if (this.table) {
-      this.table.recalculate();
-    }
-  }
-
-  // Danh sách giả lập cho Danh mục cha và Đội ngũ (có thể thay thế bằng API thực tế)
   parentCategories: CategoryDto[] = [];
   teams: { id: string; name: string }[] = [
     { id: 'team-1', name: 'IT Support L1' },
@@ -79,9 +65,11 @@ export class CategoryComponent implements OnInit {
   ];
 
   ngOnInit(): void {
-    // 4. Hook luồng tìm kiếm vào query của danh sách
+    super.ngOnInit(); // BẮT BUỘC PHẢI CÓ để kích hoạt luồng tìm kiếm từ Base Component
+
     const categoryStreamCreator = (query: any) =>
-      this.categoryService.getList({ ...query, filter: this.search$.value });
+      // Dùng this.searchFilter thay vì this.search$.value (vì Subject không có .value)
+      this.categoryService.getList({ ...query, filter: this.searchFilter });
 
     this.list.hookToQuery(categoryStreamCreator).subscribe((response: PagedResultDto<CategoryDto>) => {
       this.category = response;

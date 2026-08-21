@@ -63,3 +63,17 @@
         background-color: #c084fc !important;
     }
 }
+
+// Tùy chỉnh màu chữ trong ngx-charts để phù hợp với Dark Mode Glassmorphism
+::ng-deep {
+    .ngx-charts {
+        text {
+            fill: #94a3b8 !important;
+        }
+        .tooltip-content {
+            background-color: #1e293b !important;
+            color: #ffffff !important;
+            border-radius: 8px !important;
+        }
+    }
+}

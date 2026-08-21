@@ -2,7 +2,7 @@
   "Culture": "vi",
   "Texts": {
     "AppName": "ItHelpdesk",
-    "Menu:ItHelpdesk": "Book Store",
+    "Menu:ItHelpdesk": "IT Helpdesk",
     "Menu:Books": "Books",
     "Actions": "Thao tác",
     "Close": "Đóng",
@@ -28,11 +28,13 @@
     "Enum:BookType.6": "Science",
     "Enum:BookType.7": "Science fiction",
     "Enum:BookType.8": "Poetry",
-    "Permission:ItHelpdesk": "Book Store",
+
+    "Permission:ItHelpdesk": "Quản lý IT Helpdesk",
     "Permission:Books": "Book Management",
     "Permission:Books.Create": "Creating new books",
     "Permission:Books.Edit": "Editing the books",
     "Permission:Books.Delete": "Deleting the books",
+
     "Menu:Home": "Trang chủ",
     "LongWelcomeMessage": "Welcome to the application. This is a startup project based on the ABP framework. For more information visit",
     "Welcome": "Xin chào",
@@ -107,6 +109,7 @@
     "Attachments": "File đính kèm (Ảnh lỗi, log...)",
     "DragAndDropOrClick": "Kéo thả file vào đây hoặc Click để chọn",
     "MaxFileSizeLimit": "Hỗ trợ JPG, PNG, PDF, DOCX (Max 5MB)",
+
     "Permission:Tickets": "Quản lý Yêu cầu (Ticket)",
     "Permission:Tickets.Create": "Tạo Yêu cầu",
     "Permission:Tickets.Edit": "Cập nhật Yêu cầu",
@@ -146,16 +149,6 @@
     "Menu:Dashboard": "Bảng điều khiển KPI",
     "Menu:KnowledgeBase": "Cẩm nang hướng dẫn (KB)",
     "Permission:Dashboard": "Xem Bảng điều khiển KPI",
-    "Permission:KnowledgeBase": "Quản lý Cẩm nang hướng dẫn",
-
-    "Dashboard:TotalTickets": "Tổng số yêu cầu",
-    "Dashboard:NewTickets": "Yêu cầu mới",
-    "Dashboard:UnassignedTickets": "Chưa phân công",
-    "Dashboard:ResolvedTickets": "Đã giải quyết",
-    "Dashboard:OverdueTickets": "Quá hạn SLA",
-    "Dashboard:SlaComplianceRate": "Tỷ lệ tuân thủ SLA",
-
-    "KnowledgeBase:SearchPlaceholder": "Bạn cần tìm hướng dẫn về vấn đề gì...",
-    "KnowledgeBase:HelpCenter": "Trung tâm trợ giúp"
+    "Permission:KnowledgeBase": "Quản lý Cẩm nang hướng dẫn"
   }
 }
