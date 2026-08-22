@@ -1,9 +1,10 @@
 ﻿using System;
+using ItHelpdesk.Priorities;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
 using ItHelpdesk.Permissions;
 using Volo.Abp.Application.Services;
 using Volo.Abp.BlobStoring;
@@ -12,7 +13,7 @@ using Volo.Abp.Identity;
 
 namespace ItHelpdesk.Tickets
 {
-    [Authorize(ItHelpdeskPermissions.Tickets.Default)]
+    // Đã xóa/comment [Authorize(...)] ở đầu class để tránh chặn toàn bộ End User
     public class TicketAppService : CrudAppService<
         Ticket,
         TicketDto,
@@ -25,6 +26,7 @@ namespace ItHelpdesk.Tickets
         private readonly IRepository<IdentityUser, Guid> _userRepository;
         private readonly IBlobContainer _blobContainer;
         private readonly IRepository<TicketAttachment, long> _attachmentRepository;
+        private readonly IRepository<Priority, long> _priorityRepository;
 
         public TicketAppService(
             IRepository<Ticket, long> repository,
@@ -32,7 +34,8 @@ namespace ItHelpdesk.Tickets
             IRepository<TicketComment, long> ticketCommentRepository,
             IRepository<IdentityUser, Guid> userRepository,
             IBlobContainer blobContainer,
-            IRepository<TicketAttachment, long> attachmentRepository)
+            IRepository<TicketAttachment, long> attachmentRepository,
+            IRepository<Priority, long> priorityRepository)
             : base(repository)
         {
             _ticketActivityRepository = ticketActivityRepository;
@@ -40,10 +43,16 @@ namespace ItHelpdesk.Tickets
             _userRepository = userRepository;
             _blobContainer = blobContainer;
             _attachmentRepository = attachmentRepository;
+            _priorityRepository = priorityRepository;
 
-            GetPolicyName = ItHelpdeskPermissions.Tickets.Default;
-            GetListPolicyName = ItHelpdeskPermissions.Tickets.Default;
-            CreatePolicyName = ItHelpdeskPermissions.Tickets.Create;
+            // Mở công khai quyền Get/GetList để người dùng cuối truy xuất được danh sách của họ
+            // GetPolicyName = ItHelpdeskPermissions.Tickets.Default;
+            // GetListPolicyName = ItHelpdeskPermissions.Tickets.Default;
+
+            // Mở công khai quyền Create để End User không bị vướng lỗi 403 khi tạo mới yêu cầu
+            // CreatePolicyName = ItHelpdeskPermissions.Tickets.Create;
+
+            // Giữ lại bảo mật cho Sửa / Xóa (Dành cho KTV/Admin)
             UpdatePolicyName = ItHelpdeskPermissions.Tickets.Edit;
             DeletePolicyName = ItHelpdeskPermissions.Tickets.Delete;
         }
@@ -51,10 +60,12 @@ namespace ItHelpdesk.Tickets
         public override async Task<TicketDto> CreateAsync(CreateUpdateTicketDto input)
         {
             var ticket = MapToEntity(input);
-            ticket.TicketNo = "TK-" + DateTime.Now.ToString("yyyyMMddHHmmss");
+
+            // Fix: Thêm ffff (mili-giây) để chống lỗi trùng mã khi có nhiều người tạo cùng lúc
+            ticket.TicketNo = "TK-" + DateTime.Now.ToString("yyyyMMddHHmmssffff");
             ticket.Status = TicketStatus.New;
 
-            CalculateSla(ticket);
+            await CalculateSlaAsync(ticket);
 
             await Repository.InsertAsync(ticket, autoSave: true);
 
@@ -68,29 +79,25 @@ namespace ItHelpdesk.Tickets
             return MapToGetOutputDto(ticket);
         }
 
-        private void CalculateSla(Ticket ticket)
+        private async Task CalculateSlaAsync(Ticket ticket)
         {
             var now = DateTime.Now;
 
-            switch (ticket.PriorityId)
+            // Fix: Kiểm tra > 0 thay vì dùng .HasValue
+            if (ticket.PriorityId > 0)
             {
-                case 1:
-                    ticket.TargetResponseTime = now.AddHours(2);
-                    ticket.TargetResolutionTime = now.AddHours(8);
-                    break;
-                case 2:
-                    ticket.TargetResponseTime = now.AddHours(4);
-                    ticket.TargetResolutionTime = now.AddDays(1);
-                    break;
-                case 3:
-                    ticket.TargetResponseTime = now.AddHours(8);
-                    ticket.TargetResolutionTime = now.AddDays(3);
-                    break;
-                default:
-                    ticket.TargetResponseTime = now.AddDays(1);
-                    ticket.TargetResolutionTime = now.AddDays(5);
-                    break;
+                var priority = await _priorityRepository.FindAsync(ticket.PriorityId);
+                if (priority != null)
+                {
+                    ticket.TargetResponseTime = now.AddMinutes(priority.ResponseMinutes);
+                    ticket.TargetResolutionTime = now.AddMinutes(priority.ResolutionMinutes);
+                    return;
+                }
             }
+
+            // Mặc định nếu không có Priority hợp lệ
+            ticket.TargetResponseTime = now.AddDays(1);
+            ticket.TargetResolutionTime = now.AddDays(5);
         }
 
         public async Task UploadAttachmentAsync(UploadAttachmentDto input)
@@ -259,26 +266,22 @@ namespace ItHelpdesk.Tickets
 
         protected override Ticket MapToEntity(CreateUpdateTicketDto createInput)
         {
-            var mapper = new ItHelpdeskCreateUpdateTicketDtoToTicketMapper();
-            return mapper.Map(createInput);
+            return ObjectMapper.Map<CreateUpdateTicketDto, Ticket>(createInput);
         }
 
         protected override void MapToEntity(CreateUpdateTicketDto updateInput, Ticket entity)
         {
-            var mapper = new ItHelpdeskCreateUpdateTicketDtoToTicketMapper();
-            mapper.Map(updateInput, entity);
+            ObjectMapper.Map(updateInput, entity);
         }
 
         protected override TicketDto MapToGetOutputDto(Ticket entity)
         {
-            var mapper = new ItHelpdeskTicketToTicketDtoMapper();
-            return mapper.Map(entity);
+            return ObjectMapper.Map<Ticket, TicketDto>(entity);
         }
 
         protected override TicketDto MapToGetListOutputDto(Ticket entity)
         {
-            var mapper = new ItHelpdeskTicketToTicketDtoMapper();
-            return mapper.Map(entity);
+            return ObjectMapper.Map<Ticket, TicketDto>(entity);
         }
 
         public async Task AssignTicketAsync(AssignTicketDto input)
@@ -313,24 +316,31 @@ namespace ItHelpdesk.Tickets
         {
             var query = await Repository.GetQueryableAsync();
 
-            var totalTickets = query.Count();
-            var newTickets = query.Count(x => x.Status == TicketStatus.New);
-            var unassignedTickets = query.Count(x => x.AssigneeId == null);
-            var resolvedTickets = query.Count(x => x.Status == TicketStatus.Resolved || x.Status == TicketStatus.Closed);
+            var totalTickets = await query.CountAsync();
+            var newTickets = await query.CountAsync(x => x.Status == TicketStatus.New);
+            var unassignedTickets = await query.CountAsync(x => x.AssigneeId == null);
+            var resolvedTickets = await query.CountAsync(x => x.Status == TicketStatus.Resolved || x.Status == TicketStatus.Closed);
 
             var now = DateTime.Now;
-            var overdueTickets = query.Count(x => x.Status != TicketStatus.Resolved &&
-                                                 x.Status != TicketStatus.Closed &&
-                                                 x.TargetResolutionTime.HasValue &&
-                                                 x.TargetResolutionTime.Value < now);
+            var overdueTickets = await query.CountAsync(x => x.Status != TicketStatus.Resolved &&
+                                                             x.Status != TicketStatus.Closed &&
+                                                             x.TargetResolutionTime.HasValue &&
+                                                             x.TargetResolutionTime.Value < now);
 
-            var completedList = query.Where(x => (x.Status == TicketStatus.Resolved || x.Status == TicketStatus.Closed) &&
-                                                 x.ResolvedAt.HasValue &&
-                                                 x.TargetResolutionTime.HasValue)
-                                     .ToList();
+            var totalCompletedTickets = await query.CountAsync(x =>
+                (x.Status == TicketStatus.Resolved || x.Status == TicketStatus.Closed) &&
+                x.ResolvedAt.HasValue &&
+                x.TargetResolutionTime.HasValue);
 
-            long onTimeCount = completedList.Count(x => x.ResolvedAt!.Value <= x.TargetResolutionTime!.Value);
-            double complianceRate = completedList.Count > 0 ? Math.Round((double)onTimeCount / completedList.Count * 100, 2) : 100.0;
+            var onTimeCount = await query.CountAsync(x =>
+                (x.Status == TicketStatus.Resolved || x.Status == TicketStatus.Closed) &&
+                x.ResolvedAt.HasValue &&
+                x.TargetResolutionTime.HasValue &&
+                x.ResolvedAt <= x.TargetResolutionTime);
+
+            double complianceRate = totalCompletedTickets > 0
+                ? Math.Round((double)onTimeCount / totalCompletedTickets * 100, 2)
+                : 100.0;
 
             return new DashboardStatsDto
             {

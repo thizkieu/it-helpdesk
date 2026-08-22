@@ -65,7 +65,7 @@ export const APP_ROUTES: Routes = [
   {
     path: 'tickets/create',
     loadComponent: () => import('./tickets/create-ticket.component').then(c => c.CreateTicketComponent),
-    canActivate: [authGuard, permissionGuard], 
+    canActivate: [authGuard], 
   },
   {
     path: 'tickets/my-tickets',

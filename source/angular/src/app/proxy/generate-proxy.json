@@ -2434,13 +2434,8 @@
                 ],
                 "isRemoteStream": false
               },
-              "allowAnonymous": false,
-              "authorizeDatas": [
-                {
-                  "policy": "ItHelpdesk.KnowledgeBase",
-                  "roles": null
-                }
-              ],
+              "allowAnonymous": null,
+              "authorizeDatas": [],
               "implementFrom": "Volo.Abp.Application.Services.ICreateAppService<ItHelpdesk.KnowledgeBase.FaqItemDto,ItHelpdesk.KnowledgeBase.CreateUpdateFaqDto>",
               "summary": null,
               "remarks": null,
@@ -2520,13 +2515,8 @@
                 ],
                 "isRemoteStream": false
               },
-              "allowAnonymous": false,
-              "authorizeDatas": [
-                {
-                  "policy": "ItHelpdesk.KnowledgeBase",
-                  "roles": null
-                }
-              ],
+              "allowAnonymous": null,
+              "authorizeDatas": [],
               "implementFrom": "Volo.Abp.Application.Services.IUpdateAppService<ItHelpdesk.KnowledgeBase.FaqItemDto,System.Int64,ItHelpdesk.KnowledgeBase.CreateUpdateFaqDto>",
               "summary": null,
               "remarks": null,
@@ -2576,13 +2566,8 @@
                 "contentTypes": null,
                 "isRemoteStream": false
               },
-              "allowAnonymous": false,
-              "authorizeDatas": [
-                {
-                  "policy": "ItHelpdesk.KnowledgeBase",
-                  "roles": null
-                }
-              ],
+              "allowAnonymous": null,
+              "authorizeDatas": [],
               "implementFrom": "Volo.Abp.Application.Services.IDeleteAppService<System.Int64>",
               "summary": null,
               "remarks": null,
@@ -2636,13 +2621,8 @@
                 ],
                 "isRemoteStream": false
               },
-              "allowAnonymous": false,
-              "authorizeDatas": [
-                {
-                  "policy": "ItHelpdesk.KnowledgeBase",
-                  "roles": null
-                }
-              ],
+              "allowAnonymous": null,
+              "authorizeDatas": [],
               "implementFrom": "Volo.Abp.Application.Services.IReadOnlyAppService<ItHelpdesk.KnowledgeBase.FaqItemDto,ItHelpdesk.KnowledgeBase.FaqItemDto,System.Int64,Volo.Abp.Application.Dtos.PagedAndSortedResultRequestDto>",
               "summary": null,
               "remarks": null,
@@ -2726,13 +2706,8 @@
                 ],
                 "isRemoteStream": false
               },
-              "allowAnonymous": false,
-              "authorizeDatas": [
-                {
-                  "policy": "ItHelpdesk.KnowledgeBase",
-                  "roles": null
-                }
-              ],
+              "allowAnonymous": null,
+              "authorizeDatas": [],
               "implementFrom": "Volo.Abp.Application.Services.IReadOnlyAppService<ItHelpdesk.KnowledgeBase.FaqItemDto,ItHelpdesk.KnowledgeBase.FaqItemDto,System.Int64,Volo.Abp.Application.Dtos.PagedAndSortedResultRequestDto>",
               "summary": null,
               "remarks": null,
@@ -6313,13 +6288,8 @@
                 ],
                 "isRemoteStream": false
               },
-              "allowAnonymous": false,
-              "authorizeDatas": [
-                {
-                  "policy": "ItHelpdesk.Tickets",
-                  "roles": null
-                }
-              ],
+              "allowAnonymous": null,
+              "authorizeDatas": [],
               "implementFrom": "Volo.Abp.Application.Services.ICreateAppService<ItHelpdesk.Tickets.TicketDto,ItHelpdesk.Tickets.CreateUpdateTicketDto>",
               "summary": null,
               "remarks": null,
@@ -6369,13 +6339,8 @@
                 "contentTypes": null,
                 "isRemoteStream": false
               },
-              "allowAnonymous": false,
-              "authorizeDatas": [
-                {
-                  "policy": "ItHelpdesk.Tickets",
-                  "roles": null
-                }
-              ],
+              "allowAnonymous": null,
+              "authorizeDatas": [],
               "implementFrom": "ItHelpdesk.Tickets.ITicketAppService",
               "summary": null,
               "remarks": null,
@@ -6477,13 +6442,8 @@
                 "contentTypes": null,
                 "isRemoteStream": false
               },
-              "allowAnonymous": false,
-              "authorizeDatas": [
-                {
-                  "policy": "ItHelpdesk.Tickets",
-                  "roles": null
-                }
-              ],
+              "allowAnonymous": null,
+              "authorizeDatas": [],
               "implementFrom": "ItHelpdesk.Tickets.ITicketAppService",
               "summary": null,
               "remarks": null,
@@ -6585,13 +6545,8 @@
                 "contentTypes": null,
                 "isRemoteStream": false
               },
-              "allowAnonymous": false,
-              "authorizeDatas": [
-                {
-                  "policy": "ItHelpdesk.Tickets",
-                  "roles": null
-                }
-              ],
+              "allowAnonymous": null,
+              "authorizeDatas": [],
               "implementFrom": "ItHelpdesk.Tickets.ITicketAppService",
               "summary": null,
               "remarks": null,
@@ -6645,13 +6600,8 @@
                 ],
                 "isRemoteStream": false
               },
-              "allowAnonymous": false,
-              "authorizeDatas": [
-                {
-                  "policy": "ItHelpdesk.Tickets",
-                  "roles": null
-                }
-              ],
+              "allowAnonymous": null,
+              "authorizeDatas": [],
               "implementFrom": "ItHelpdesk.Tickets.ITicketAppService",
               "summary": null,
               "remarks": null,
@@ -6701,13 +6651,8 @@
                 "contentTypes": null,
                 "isRemoteStream": false
               },
-              "allowAnonymous": false,
-              "authorizeDatas": [
-                {
-                  "policy": "ItHelpdesk.Tickets",
-                  "roles": null
-                }
-              ],
+              "allowAnonymous": null,
+              "authorizeDatas": [],
               "implementFrom": "ItHelpdesk.Tickets.ITicketAppService",
               "summary": null,
               "remarks": null,
@@ -6735,10 +6680,6 @@
               },
               "allowAnonymous": false,
               "authorizeDatas": [
-                {
-                  "policy": "ItHelpdesk.Tickets",
-                  "roles": null
-                },
                 {
                   "policy": "ItHelpdesk.Dashboard",
                   "roles": null
@@ -6823,13 +6764,8 @@
                 ],
                 "isRemoteStream": false
               },
-              "allowAnonymous": false,
-              "authorizeDatas": [
-                {
-                  "policy": "ItHelpdesk.Tickets",
-                  "roles": null
-                }
-              ],
+              "allowAnonymous": null,
+              "authorizeDatas": [],
               "implementFrom": "Volo.Abp.Application.Services.IUpdateAppService<ItHelpdesk.Tickets.TicketDto,System.Int64,ItHelpdesk.Tickets.CreateUpdateTicketDto>",
               "summary": null,
               "remarks": null,
@@ -6879,13 +6815,8 @@
                 "contentTypes": null,
                 "isRemoteStream": false
               },
-              "allowAnonymous": false,
-              "authorizeDatas": [
-                {
-                  "policy": "ItHelpdesk.Tickets",
-                  "roles": null
-                }
-              ],
+              "allowAnonymous": null,
+              "authorizeDatas": [],
               "implementFrom": "Volo.Abp.Application.Services.IDeleteAppService<System.Int64>",
               "summary": null,
               "remarks": null,
@@ -6939,13 +6870,8 @@
                 ],
                 "isRemoteStream": false
               },
-              "allowAnonymous": false,
-              "authorizeDatas": [
-                {
-                  "policy": "ItHelpdesk.Tickets",
-                  "roles": null
-                }
-              ],
+              "allowAnonymous": null,
+              "authorizeDatas": [],
               "implementFrom": "Volo.Abp.Application.Services.IReadOnlyAppService<ItHelpdesk.Tickets.TicketDto,ItHelpdesk.Tickets.TicketDto,System.Int64,ItHelpdesk.Tickets.GetTicketListDto>",
               "summary": null,
               "remarks": null,
@@ -7104,13 +7030,8 @@
                 ],
                 "isRemoteStream": false
               },
-              "allowAnonymous": false,
-              "authorizeDatas": [
-                {
-                  "policy": "ItHelpdesk.Tickets",
-                  "roles": null
-                }
-              ],
+              "allowAnonymous": null,
+              "authorizeDatas": [],
               "implementFrom": "Volo.Abp.Application.Services.IReadOnlyAppService<ItHelpdesk.Tickets.TicketDto,ItHelpdesk.Tickets.TicketDto,System.Int64,ItHelpdesk.Tickets.GetTicketListDto>",
               "summary": null,
               "remarks": null,
@@ -7209,13 +7130,8 @@
                 ],
                 "isRemoteStream": false
               },
-              "allowAnonymous": false,
-              "authorizeDatas": [
-                {
-                  "policy": "ItHelpdesk.Tickets",
-                  "roles": null
-                }
-              ],
+              "allowAnonymous": null,
+              "authorizeDatas": [],
               "implementFrom": "ItHelpdesk.Tickets.ITicketCommentAppService",
               "summary": null,
               "remarks": null,

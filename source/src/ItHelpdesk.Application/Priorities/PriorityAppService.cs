@@ -10,8 +10,10 @@ namespace ItHelpdesk.Priorities
     {
         public PriorityAppService(IRepository<Priority, long> repository) : base(repository)
         {
-            GetPolicyName = ItHelpdeskPermissions.Priorities.Default;
-            GetListPolicyName = ItHelpdeskPermissions.Priorities.Default;
+            // Mở công khai quyền đọc/xem cho End User tải dropdown
+            // GetPolicyName = ItHelpdeskPermissions.Priorities.Default;
+            // GetListPolicyName = ItHelpdeskPermissions.Priorities.Default;
+
             CreatePolicyName = ItHelpdeskPermissions.Priorities.Create;
             UpdatePolicyName = ItHelpdeskPermissions.Priorities.Edit;
             DeletePolicyName = ItHelpdeskPermissions.Priorities.Delete;

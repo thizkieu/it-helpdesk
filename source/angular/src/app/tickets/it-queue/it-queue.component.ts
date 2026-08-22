@@ -2,7 +2,8 @@ import { Component, OnInit, OnDestroy, inject, ElementRef, HostListener } from '
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { TicketService, TicketDto } from '@proxy/tickets';
+import { TicketService, TicketDto, AssignTicketDto } from '@proxy/tickets';
+import { TeamService, TeamDto } from '@proxy/teams';
 import { CoreModule, ListService, PagedResultDto, ConfigStateService } from '@abp/ng.core';
 import { ThemeSharedModule } from '@abp/ng.theme.shared';
 import { NgxDatatableModule } from '@swimlane/ngx-datatable';
@@ -20,6 +21,7 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 })
 export class ItQueueComponent implements OnInit, OnDestroy {
   private ticketService = inject(TicketService);
+  private teamService = inject(TeamService);
   public readonly list = inject(ListService);
   private customToast = inject(CustomToastService);
   private config = inject(ConfigStateService);
@@ -32,7 +34,20 @@ export class ItQueueComponent implements OnInit, OnDestroy {
   searchFilter: string = '';
   currentUserId: string = '';
 
-  // --- BIẾN CHO TÌM KIẾM THÔNG MINH & LỊCH SỬ ---
+  // Danh sách hỗ trợ phân công
+  teams: TeamDto[] = [];
+  technicians: any[] = []; // Dùng any để tránh lỗi type identity
+
+  // Modal phân công
+  isAssignModalOpen: boolean = false;
+  selectedTicket: TicketDto | null = null;
+  assignForm: AssignTicketDto = {
+    ticketId: 0,
+    assigneeId: undefined,
+    teamId: undefined
+  };
+  isSavingAssign: boolean = false;
+
   private readonly storageKey = 'it_queue_search_history';
   recentSearches: string[] = [];
   showSearchSuggestions: boolean = false;
@@ -41,9 +56,8 @@ export class ItQueueComponent implements OnInit, OnDestroy {
   private searchSubscription?: Subscription;
 
   greetingMessage: string = '';
-  isLoading: boolean = true; 
+  isLoading: boolean = true;
 
-  // Đóng gợi ý tìm kiếm khi click ra ngoài
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent): void {
     if (!this.elementRef.nativeElement.querySelector('.search-wrapper')?.contains(event.target)) {
@@ -54,15 +68,16 @@ export class ItQueueComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     const currentUser = this.config.getOne('currentUser');
     this.currentUserId = currentUser?.id || '';
-    
+
     this.loadSearchHistory();
     this.setGreeting();
+    this.loadDropdownData();
 
     const ticketStreamCreator = (query: any) => {
       query.filter = this.searchFilter?.trim() || '';
       if (this.currentTab === 'unassigned') query.unassigned = true;
       if (this.currentTab === 'mine') query.assigneeId = this.currentUserId;
-      if (this.currentTab === 'pending') query.status = 1; 
+      if (this.currentTab === 'pending') query.status = 1;
 
       return this.ticketService.getList(query);
     };
@@ -73,18 +88,17 @@ export class ItQueueComponent implements OnInit, OnDestroy {
         this.totalCount = response.totalCount || 0;
         this.isLoading = false;
       },
-      error: (err) => {
+      error: (err: any) => {
         this.customToast.show('Không thể tải dữ liệu hàng đợi!', 'error');
         this.isLoading = false;
         console.error(err);
       }
     });
 
-    // Tự động tìm kiếm sau khi ngừng gõ 350ms
     this.searchSubscription = this.searchSubject.pipe(
       debounceTime(350),
       distinctUntilChanged()
-    ).subscribe(keyword => {
+    ).subscribe((keyword: string) => {
       if (keyword.trim().length >= 2) {
         this.saveSearchHistory(keyword.trim());
       }
@@ -95,6 +109,48 @@ export class ItQueueComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.searchSubscription?.unsubscribe();
+  }
+
+  private loadDropdownData(): void {
+    // Tải danh sách Teams
+    this.teamService.getList({ maxResultCount: 100 } as any).subscribe((res: any) => {
+      this.teams = res.items || [];
+    });
+  }
+
+  // --- MODAL PHÂN CÔNG ---
+  openAssignModal(ticket: TicketDto): void {
+    this.selectedTicket = ticket;
+    this.assignForm = {
+      ticketId: ticket.id!, // Fix lỗi type number | undefined
+      assigneeId: ticket.assigneeId || undefined,
+      teamId: ticket.teamId || undefined
+    };
+    this.isAssignModalOpen = true;
+  }
+
+  closeAssignModal(): void {
+    this.isAssignModalOpen = false;
+    this.selectedTicket = null;
+  }
+
+  saveAssignment(): void {
+    if (!this.selectedTicket) return;
+
+    this.isSavingAssign = true;
+    this.ticketService.assignTicket(this.assignForm).subscribe({
+      next: () => {
+        this.customToast.show('Phân công thành công!', 'success');
+        this.isSavingAssign = false;
+        this.closeAssignModal();
+        this.list.get();
+      },
+      error: (err: any) => {
+        this.customToast.show('Phân công thất bại, vui lòng thử lại!', 'error');
+        this.isSavingAssign = false;
+        console.error(err);
+      }
+    });
   }
 
   // --- XỬ LÝ LỊCH SỬ TÌM KIẾM ---
@@ -122,7 +178,6 @@ export class ItQueueComponent implements OnInit, OnDestroy {
     localStorage.removeItem(this.storageKey);
   }
 
-  // --- CÁC HÀNH ĐỘNG TÌM KIẾM ---
   onSearchInput(): void {
     this.showSearchSuggestions = true;
     this.searchSubject.next(this.searchFilter);
@@ -170,15 +225,15 @@ export class ItQueueComponent implements OnInit, OnDestroy {
     this.list.get();
   }
 
-  getSlaStatus(dateValue: string | Date): 'normal' | 'warning' | 'overdue' {
+  getSlaStatus(dateValue?: string | Date | null): 'normal' | 'warning' | 'overdue' {
     if (!dateValue) return 'normal';
     const targetDate = new Date(dateValue).getTime();
     const now = new Date().getTime();
     const diffHours = (targetDate - now) / (1000 * 60 * 60);
 
     if (targetDate < now) return 'overdue';
-    else if (diffHours <= 2) return 'warning';
-    
+    else if (diffHours <= 2 && diffHours > 0) return 'warning';
+
     return 'normal';
   }
 }

@@ -10,8 +10,10 @@ namespace ItHelpdesk.Teams
     {
         public TeamAppService(IRepository<Team, long> repository) : base(repository)
         {
-            GetPolicyName = ItHelpdeskPermissions.Teams.Default;
-            GetListPolicyName = ItHelpdeskPermissions.Teams.Default;
+            // Comment lại nếu End User cần load danh sách Team
+            // GetPolicyName = ItHelpdeskPermissions.Teams.Default;
+            // GetListPolicyName = ItHelpdeskPermissions.Teams.Default;
+
             CreatePolicyName = ItHelpdeskPermissions.Teams.Create;
             UpdatePolicyName = ItHelpdeskPermissions.Teams.Edit;
             DeletePolicyName = ItHelpdeskPermissions.Teams.Delete;

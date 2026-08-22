@@ -20,8 +20,11 @@ namespace ItHelpdesk.Categories
     {
         public CategoryAppService(IRepository<Category, long> repository) : base(repository)
         {
-            GetPolicyName = ItHelpdeskPermissions.Categories.Default;
-            GetListPolicyName = ItHelpdeskPermissions.Categories.Default;
+            // Mở công khai quyền đọc/xem danh sách cho mọi user
+            // GetPolicyName = ItHelpdeskPermissions.Categories.Default;
+            // GetListPolicyName = ItHelpdeskPermissions.Categories.Default;
+
+            // Giữ lại bảo mật cho Thêm, Sửa, Xóa
             CreatePolicyName = ItHelpdeskPermissions.Categories.Create;
             UpdatePolicyName = ItHelpdeskPermissions.Categories.Edit;
             DeletePolicyName = ItHelpdeskPermissions.Categories.Delete;

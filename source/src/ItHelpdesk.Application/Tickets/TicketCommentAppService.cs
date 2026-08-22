@@ -2,13 +2,14 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
 using ItHelpdesk.Permissions;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
 
 namespace ItHelpdesk.Tickets
 {
-    [Authorize(ItHelpdeskPermissions.Tickets.Default)]
+    // Đã gỡ bỏ [Authorize(...)] ở đầu class để người dùng cuối không bị chặn lỗi 403 khi xem comment của ticket
     public class TicketCommentAppService : ApplicationService, ITicketCommentAppService
     {
         private readonly IRepository<TicketComment, long> _repository;
@@ -21,9 +22,11 @@ namespace ItHelpdesk.Tickets
         public async Task<List<TicketCommentDto>> GetListByTicketIdAsync(long ticketId)
         {
             var query = await _repository.GetQueryableAsync();
-            var comments = query.Where(x => x.TicketId == ticketId)
-                                .OrderBy(x => x.CreationTime)
-                                .ToList();
+
+            // Sử dụng ToListAsync để tối ưu hiệu năng bất đồng bộ trực tiếp trên database
+            var comments = await query.Where(x => x.TicketId == ticketId)
+                                      .OrderBy(x => x.CreationTime)
+                                      .ToListAsync();
 
             return comments.Select(x => new TicketCommentDto
             {

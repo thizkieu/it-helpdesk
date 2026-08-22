@@ -9,8 +9,7 @@
         </div>
 
         <div class="card premium-glass-card border-0 shadow-lg mb-4">
-            <div
-                class="card-body p-4 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+            <div class="card-body p-4 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
                 <ul class="nav nav-pills custom-pills mb-0">
                     <li class="nav-item">
                         <a class="nav-link fw-semibold cursor-pointer rounded-pill px-4"
@@ -41,8 +40,7 @@
                 <!-- Ô tìm kiếm thông minh có lịch sử -->
                 <div class="position-relative search-wrapper" style="width: 320px;">
                     <div class="input-group">
-                        <span
-                            class="input-group-text bg-transparent border-end-0 border-secondary border-opacity-25 text-pink">
+                        <span class="input-group-text bg-transparent border-end-0 border-secondary border-opacity-25 text-pink">
                             <i class="fas fa-search"></i>
                         </span>
                         <input type="text" class="form-control premium-input text-white border-start-0 ps-0 shadow-none"
@@ -91,7 +89,7 @@
                     <div class="skeleton-row mb-3" *ngFor="let i of [1,2,3,4,5]"></div>
                 </div>
 
-                <!-- BẢNG DỮ LIỆU (HIỆN KHI ISLOADING = FALSE) -->
+                <!-- BẢNG DỮ LIỆU -->
                 <div *ngIf="!isLoading">
                     <ngx-datatable [rows]="items" [count]="totalCount" [list]="list" default>
                         <ngx-datatable-column name="Mã Ticket" prop="ticketNo" [width]="140">
@@ -114,20 +112,29 @@
                             </ng-template>
                         </ngx-datatable-column>
 
-                        <ngx-datatable-column name="Hạn xử lý" prop="targetResolutionTime" [width]="160">
+                        <!-- CỘT SLA ĐÃ ĐỔI MÀU CẢNH BÁO TỰ ĐỘNG -->
+                        <ngx-datatable-column name="Hạn xử lý" prop="targetResolutionTime" [width]="180">
                             <ng-template let-row="row" let-value="value" ngx-datatable-cell-template>
-                                <span *ngIf="value" class="fw-semibold text-light">
-                                    <i class="fas fa-hourglass-end me-1 text-muted"></i>{{ value | date: 'dd/MM/yyyy
-                                    HH:mm' }}
-                                </span>
-                                <span *ngIf="!value" class="text-muted fst-italic">Không có</span>
+                                <div *ngIf="value">
+                                    <span class="badge px-2 py-1 rounded-pill"
+                                        [ngClass]="{
+                                            'bg-danger text-white': getSlaStatus(value) === 'overdue',
+                                            'bg-warning text-dark': getSlaStatus(value) === 'warning',
+                                            'bg-secondary bg-opacity-50 text-light': getSlaStatus(value) === 'normal'
+                                        }">
+                                        <i class="fas fa-hourglass-end me-1"></i>{{ value | date: 'dd/MM/yyyy HH:mm' }}
+                                    </span>
+                                    <small *ngIf="getSlaStatus(value) === 'overdue'" class="text-danger d-block mt-1 fw-bold">
+                                        <i class="fas fa-fire me-1"></i>Quá hạn
+                                    </small>
+                                </div>
+                                <span *ngIf="!value" class="text-muted fst-italic">Chưa thiết lập</span>
                             </ng-template>
                         </ngx-datatable-column>
 
                         <ngx-datatable-column name="Người xử lý" prop="assigneeId" [width]="160">
                             <ng-template let-row="row" ngx-datatable-cell-template>
-                                <span class="badge bg-warning bg-opacity-25 text-warning px-2 py-1 rounded"
-                                    *ngIf="!row.assigneeId">
+                                <span class="badge bg-warning bg-opacity-25 text-warning px-2 py-1 rounded" *ngIf="!row.assigneeId">
                                     <i class="fas fa-exclamation-circle me-1"></i> Chưa gán
                                 </span>
                                 <span class="text-info fw-semibold" *ngIf="row.assigneeId">
@@ -136,17 +143,61 @@
                             </ng-template>
                         </ngx-datatable-column>
 
-                        <ngx-datatable-column name="Thao tác" [width]="130" [sortable]="false">
+                        <!-- CỘT THAO TÁC CÓ NÚT PHÂN CÔNG -->
+                        <ngx-datatable-column name="Thao tác" [width]="200" [sortable]="false">
                             <ng-template let-row="row" ngx-datatable-cell-template>
-                                <a [routerLink]="['/tickets/detail', row.id]"
-                                    class="btn btn-sm cute-outline-btn rounded-pill px-3 text-pink border-pink fw-semibold">
-                                    <i class="fas fa-paw me-1"></i> Chi tiết
-                                </a>
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-sm btn-outline-info rounded-pill px-2"
+                                        (click)="openAssignModal(row)" title="Phân công">
+                                        <i class="fas fa-user-plus me-1"></i> Phân công
+                                    </button>
+                                    <a [routerLink]="['/tickets/detail', row.id]"
+                                        class="btn btn-sm cute-outline-btn rounded-pill px-3 text-pink border-pink fw-semibold">
+                                        <i class="fas fa-eye me-1"></i> Chi tiết
+                                    </a>
+                                </div>
                             </ng-template>
                         </ngx-datatable-column>
                     </ngx-datatable>
                 </div>
 
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL PHÂN CÔNG / CHUYỂN TUYẾN KÍNH MỜ -->
+<div *ngIf="isAssignModalOpen" class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.65); backdrop-filter: blur(4px);">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content premium-glass-card border-secondary border-opacity-25 text-white shadow-2xl">
+            <div class="modal-header border-bottom border-secondary border-opacity-25">
+                <h5 class="modal-title fw-bold text-pink">
+                    <i class="fas fa-tasks me-2"></i>Phân công Ticket #{{ selectedTicket?.ticketNo }}
+                </h5>
+                <button type="button" class="btn-close btn-close-white" (click)="closeAssignModal()"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="mb-3">
+                    <label class="form-label text-light">Nhóm tiếp nhận (Team)</label>
+                    <select class="form-select bg-dark text-white border-secondary" [(ngModel)]="assignForm.teamId">
+                        <option [ngValue]="undefined">-- Chọn Nhóm Kỹ Thuật --</option>
+                        <option *ngFor="let team of teams" [value]="team.id">{{ team.name }}</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label text-light">Kỹ thuật viên chuyên trách</label>
+                    <select class="form-select bg-dark text-white border-secondary" [(ngModel)]="assignForm.assigneeId">
+                        <option [ngValue]="undefined">-- Để trống (Chỉ gán Team) --</option>
+                        <option *ngFor="let tech of technicians" [value]="tech.id">{{ tech.surname }} {{ tech.name }} ({{ tech.userName }})</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer border-top border-secondary border-opacity-25">
+                <button type="button" class="btn btn-outline-light rounded-pill px-4" (click)="closeAssignModal()">Hủy</button>
+                <button type="button" class="btn btn-primary rounded-pill px-4" [disabled]="isSavingAssign" (click)="saveAssignment()">
+                    <span *ngIf="isSavingAssign" class="spinner-border spinner-border-sm me-1"></span>
+                    <i *ngIf="!isSavingAssign" class="fas fa-check me-1"></i> Lưu phân công
+                </button>
             </div>
         </div>
     </div>

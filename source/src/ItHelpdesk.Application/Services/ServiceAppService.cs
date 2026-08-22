@@ -15,9 +15,11 @@ namespace ItHelpdesk.Services
     {
         public ServiceAppService(IRepository<Service, long> repository) : base(repository)
         {
-            // Phân quyền API
-            GetPolicyName = ItHelpdeskPermissions.Services.Default;
-            GetListPolicyName = ItHelpdeskPermissions.Services.Default;
+            // Mở công khai quyền đọc/xem cho mọi user
+            // GetPolicyName = ItHelpdeskPermissions.Services.Default;
+            // GetListPolicyName = ItHelpdeskPermissions.Services.Default;
+
+            // Giữ lại bảo mật cho Thêm, Sửa, Xóa
             CreatePolicyName = ItHelpdeskPermissions.Services.Create;
             UpdatePolicyName = ItHelpdeskPermissions.Services.Edit;
             DeletePolicyName = ItHelpdeskPermissions.Services.Delete;
