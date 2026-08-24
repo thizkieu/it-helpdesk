@@ -2,6 +2,7 @@ using ItHelpdesk.MultiTenancy;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using System;
+using Volo.Abp; // Bắt buộc phải có thư viện này cho ApplicationInitializationContext
 using Volo.Abp.AuditLogging;
 using Volo.Abp.BackgroundJobs;
 using Volo.Abp.BlobStoring.Database;
@@ -17,6 +18,8 @@ using Volo.Abp.PermissionManagement.Identity;
 using Volo.Abp.PermissionManagement.OpenIddict;
 using Volo.Abp.SettingManagement;
 using Volo.Abp.TenantManagement;
+using Volo.Abp.BackgroundWorkers; // Thêm thư viện để gọi AddBackgroundWorkerAsync
+using ItHelpdesk.Workers; // Gọi thư mục chứa SlaMonitorWorker
 
 namespace ItHelpdesk;
 
@@ -43,10 +46,14 @@ public class ItHelpdeskDomainModule : AbpModule
         {
             options.IsEnabled = MultiTenancyConsts.IsEnabled;
         });
-
-
 #if DEBUG
         context.Services.Replace(ServiceDescriptor.Singleton<IEmailSender, NullEmailSender>());
 #endif
+    }
+
+    // ĐÂY LÀ HÀM THÊM VÀO ĐỂ KHỞI CHẠY WORKER SLA
+    public override void OnApplicationInitialization(ApplicationInitializationContext context)
+    {
+        context.AddBackgroundWorkerAsync<SlaMonitorWorker>();
     }
 }

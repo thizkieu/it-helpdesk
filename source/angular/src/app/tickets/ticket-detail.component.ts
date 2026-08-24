@@ -23,7 +23,7 @@ export class TicketDetailComponent implements OnInit {
 
   ticketId: number = 0;
   ticket: TicketDto | null = null;
-  timeline: TicketTimelineDto[] = [];
+  timeline: any[] = [];
   newCommentContent: string = '';
 
   selectedFileName: string | null = null;
@@ -35,7 +35,6 @@ export class TicketDetailComponent implements OnInit {
   assigneeInputId: string = '';
   teamInputId: string = '';
 
-  // --- BIẾN CHO AUTOCOMPLETE & DỮ LIỆU THẬT ---
   assigneeSearchText: string = '';
   teamSearchText: string = '';
 
@@ -51,9 +50,10 @@ export class TicketDetailComponent implements OnInit {
   isEditModalOpen: boolean = false;
   editData = { title: '', description: '' };
 
-  // --- TÍNH NĂNG MICRO (SPEECH TO TEXT) ---
   isRecording: boolean = false;
   recognition: any;
+
+  attachments: any[] = [];
 
   quickReplies: string[] = [
     '👍 IT đã tiếp nhận và đang xử lý.',
@@ -105,6 +105,33 @@ export class TicketDetailComponent implements OnInit {
     this.ticketService.getTimeline(this.ticketId).subscribe({
       next: (res: TicketTimelineDto[]) => {
         this.timeline = res || [];
+
+        // GỌI ĐÚNG ĐƯỜNG DẪN TUYỆT ĐỐI KHỚP VỚI C#
+        this.restService.request<any, any[]>({
+          method: 'GET',
+          url: `/api/app/ticket/${this.ticketId}/attachments`
+        }).subscribe({
+          next: (attRes) => {
+            this.attachments = (attRes || []).map(a => ({
+              name: a.fileName,
+              type: a.contentType,
+              url: `data:${a.contentType};base64,${a.base64Content}`
+            }));
+
+            this.timeline.forEach((item: any) => {
+              if (item.type === 'Activity' && item.content && item.content.includes('Đã đính kèm tệp:')) {
+                const fileName = item.content.replace('Đã đính kèm tệp:', '').trim();
+                const found = this.attachments.find(a => a.name === fileName);
+                if (found) {
+                  item.attachmentUrl = found.url;
+                  item.attachmentType = found.type;
+                }
+              }
+            });
+          },
+          error: (e) => console.error('Lỗi tải hình ảnh:', e)
+        });
+
       },
       error: (err: unknown) => {
         console.error('Lỗi khi tải lịch sử timeline:', err);
@@ -113,10 +140,9 @@ export class TicketDetailComponent implements OnInit {
   }
 
   loadRealDataForAssignment(): void {
-    // 1. Gọi API lấy danh sách User thật từ hệ thống ABP Identity
     this.restService.request<any, any>({
       method: 'GET',
-      url: '/api/identity/users'
+      url: '/api/identity/users?maxResultCount=100'
     }).subscribe({
       next: (res) => {
         const users = res.items || res || [];
@@ -134,10 +160,9 @@ export class TicketDetailComponent implements OnInit {
       }
     });
 
-    // 2. Gọi API lấy danh sách Nhóm (Team) thật từ Backend
     this.restService.request<any, any>({
       method: 'GET',
-      url: '/api/app/team'
+      url: '/api/app/team?maxResultCount=100'
     }).subscribe({
       next: (res) => {
         const teams = res.items || res || [];
@@ -221,31 +246,37 @@ export class TicketDetailComponent implements OnInit {
     this.selectedFileName = file.name;
     this.isSubmitting = true;
 
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('ticketId', this.ticketId.toString());
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => {
+      const base64String = (reader.result as string).split(',')[1];
 
-    this.restService.request<any, any>({
-      method: 'POST',
-      url: `/api/app/ticket/upload-attachment`,
-      body: formData
-    }).subscribe({
-      next: () => {
-        this.customToast.show('Tải tệp đính kèm lên thành công!', 'success');
-        this.loadTimeline();
-        this.isSubmitting = false;
-        setTimeout(() => {
+      this.restService.request<any, void>({
+        method: 'POST',
+        url: `/api/app/ticket/upload-attachment`,
+        body: {
+          ticketId: this.ticketId,
+          fileName: file.name,
+          contentType: file.type || 'application/octet-stream',
+          base64Content: base64String
+        }
+      }).subscribe({
+        next: () => {
+          this.customToast.show('Tải tệp đính kèm lên thành công!', 'success');
+          this.loadTimeline();
+          this.isSubmitting = false;
+          setTimeout(() => {
+            this.selectedFileName = null;
+          }, 3000);
+        },
+        error: (err: unknown) => {
+          console.error('Lỗi upload:', err);
+          this.customToast.show('Upload thất bại, có lỗi xảy ra!', 'error');
+          this.isSubmitting = false;
           this.selectedFileName = null;
-        }, 3000);
-      },
-      error: (err: unknown) => {
-        console.error('Lỗi upload:', err);
-        const errorObj = err as any;
-        this.customToast.show(errorObj?.error?.message || 'Upload thất bại, vui lòng kiểm tra lại!', 'error');
-        this.isSubmitting = false;
-        this.selectedFileName = null;
-      }
-    });
+        }
+      });
+    };
   }
 
   getSlaStatus(dateValue: string | Date | null | undefined): 'normal' | 'warning' | 'overdue' {

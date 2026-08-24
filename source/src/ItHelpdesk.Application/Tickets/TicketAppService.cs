@@ -10,10 +10,11 @@ using Volo.Abp.Application.Services;
 using Volo.Abp.BlobStoring;
 using Volo.Abp.Domain.Repositories;
 using Volo.Abp.Identity;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 
 namespace ItHelpdesk.Tickets
 {
-    // Đã xóa/comment [Authorize(...)] ở đầu class để tránh chặn toàn bộ End User
     public class TicketAppService : CrudAppService<
         Ticket,
         TicketDto,
@@ -27,6 +28,7 @@ namespace ItHelpdesk.Tickets
         private readonly IBlobContainer _blobContainer;
         private readonly IRepository<TicketAttachment, long> _attachmentRepository;
         private readonly IRepository<Priority, long> _priorityRepository;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
         public TicketAppService(
             IRepository<Ticket, long> repository,
@@ -35,7 +37,8 @@ namespace ItHelpdesk.Tickets
             IRepository<IdentityUser, Guid> userRepository,
             IBlobContainer blobContainer,
             IRepository<TicketAttachment, long> attachmentRepository,
-            IRepository<Priority, long> priorityRepository)
+            IRepository<Priority, long> priorityRepository,
+            IHttpContextAccessor httpContextAccessor)
             : base(repository)
         {
             _ticketActivityRepository = ticketActivityRepository;
@@ -44,15 +47,8 @@ namespace ItHelpdesk.Tickets
             _blobContainer = blobContainer;
             _attachmentRepository = attachmentRepository;
             _priorityRepository = priorityRepository;
+            _httpContextAccessor = httpContextAccessor;
 
-            // Mở công khai quyền Get/GetList để người dùng cuối truy xuất được danh sách của họ
-            // GetPolicyName = ItHelpdeskPermissions.Tickets.Default;
-            // GetListPolicyName = ItHelpdeskPermissions.Tickets.Default;
-
-            // Mở công khai quyền Create để End User không bị vướng lỗi 403 khi tạo mới yêu cầu
-            // CreatePolicyName = ItHelpdeskPermissions.Tickets.Create;
-
-            // Giữ lại bảo mật cho Sửa / Xóa (Dành cho KTV/Admin)
             UpdatePolicyName = ItHelpdeskPermissions.Tickets.Edit;
             DeletePolicyName = ItHelpdeskPermissions.Tickets.Delete;
         }
@@ -61,8 +57,7 @@ namespace ItHelpdesk.Tickets
         {
             var ticket = MapToEntity(input);
 
-            // Fix: Thêm ffff (mili-giây) để chống lỗi trùng mã khi có nhiều người tạo cùng lúc
-            ticket.TicketNo = "TK-" + DateTime.Now.ToString("yyyyMMddHHmmssffff");
+            ticket.TicketNo = "TK-" + DateTime.Now.ToString("yyMMddHHmmss");
             ticket.Status = TicketStatus.New;
 
             await CalculateSlaAsync(ticket);
@@ -74,7 +69,7 @@ namespace ItHelpdesk.Tickets
                 activityType: "TicketCreated",
                 description: "Yêu cầu hỗ trợ đã được tạo mới"
             );
-            await _ticketActivityRepository.InsertAsync(activity);
+            await _ticketActivityRepository.InsertAsync(activity, autoSave: true);
 
             return MapToGetOutputDto(ticket);
         }
@@ -82,8 +77,6 @@ namespace ItHelpdesk.Tickets
         private async Task CalculateSlaAsync(Ticket ticket)
         {
             var now = DateTime.Now;
-
-            // Fix: Kiểm tra > 0 thay vì dùng .HasValue
             if (ticket.PriorityId > 0)
             {
                 var priority = await _priorityRepository.FindAsync(ticket.PriorityId);
@@ -94,40 +87,72 @@ namespace ItHelpdesk.Tickets
                     return;
                 }
             }
-
-            // Mặc định nếu không có Priority hợp lệ
             ticket.TargetResponseTime = now.AddDays(1);
             ticket.TargetResolutionTime = now.AddDays(5);
         }
 
+        // FIX LỖI ROUTING: Ép cứng đường dẫn tuyệt đối cho hàm Upload
+        [HttpPost]
+        [Route("api/app/ticket/upload-attachment")]
         public async Task UploadAttachmentAsync(UploadAttachmentDto input)
         {
-            var bytes = Convert.FromBase64String(input.Base64Content);
-            var blobName = $"{Guid.NewGuid()}_{input.FileName}";
+            try
+            {
+                var bytes = Convert.FromBase64String(input.Base64Content);
+                var blobName = $"{Guid.NewGuid()}_{input.FileName}";
 
-            await _blobContainer.SaveAsync(blobName, bytes);
+                await _blobContainer.SaveAsync(blobName, bytes);
 
-            var attachment = new TicketAttachment(
-                input.TicketId,
-                input.FileName,
-                blobName,
-                bytes.Length,
-                input.ContentType
-            );
-            await _attachmentRepository.InsertAsync(attachment, autoSave: true);
+                var attachment = new TicketAttachment(
+                    input.TicketId,
+                    input.FileName,
+                    blobName,
+                    bytes.Length,
+                    input.ContentType
+                );
+                await _attachmentRepository.InsertAsync(attachment, autoSave: true);
 
-            var activity = new TicketActivity(
-                input.TicketId,
-                activityType: "FileUploaded",
-                description: $"Đã đính kèm tệp: {input.FileName}"
-            );
-            await _ticketActivityRepository.InsertAsync(activity);
+                var activity = new TicketActivity(
+                    input.TicketId,
+                    activityType: "FileUploaded",
+                    description: $"Đã đính kèm tệp: {input.FileName}"
+                );
+                await _ticketActivityRepository.InsertAsync(activity, autoSave: true);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[LỖI UPLOAD FILE]: {ex.Message}");
+            }
+        }
+
+        // FIX LỖI ROUTING: Ép cứng đường dẫn tuyệt đối cho hàm Load Ảnh (Né lỗi 404)
+        [HttpGet]
+        [Route("api/app/ticket/{ticketId}/attachments")]
+        public async Task<List<UploadAttachmentDto>> GetAttachmentsAsync(long ticketId)
+        {
+            var attachments = await _attachmentRepository.GetListAsync(x => x.TicketId == ticketId);
+            var result = new List<UploadAttachmentDto>();
+
+            foreach (var att in attachments)
+            {
+                var bytes = await _blobContainer.GetAllBytesOrNullAsync(att.BlobName);
+                if (bytes != null)
+                {
+                    result.Add(new UploadAttachmentDto
+                    {
+                        TicketId = ticketId,
+                        FileName = att.FileName,
+                        ContentType = att.ContentType,
+                        Base64Content = Convert.ToBase64String(bytes)
+                    });
+                }
+            }
+            return result;
         }
 
         public async Task ChangeStatusAsync(long ticketId, TicketStatus newStatus, string? comment = null)
         {
             var ticket = await Repository.GetAsync(ticketId);
-
             if (ticket.Status == newStatus) return;
 
             var oldStatus = ticket.Status;
@@ -208,11 +233,7 @@ namespace ItHelpdesk.Tickets
                 });
             }
 
-            var userIds = timeline.Where(x => x.CreatorId.HasValue)
-                                  .Select(x => x.CreatorId.Value)
-                                  .Distinct()
-                                  .ToList();
-
+            var userIds = timeline.Where(x => x.CreatorId.HasValue).Select(x => x.CreatorId.Value).Distinct().ToList();
             var users = await _userRepository.GetListAsync(x => userIds.Contains(x.Id));
 
             foreach (var item in timeline)
@@ -261,6 +282,12 @@ namespace ItHelpdesk.Tickets
                 query = query.Where(x => x.AssigneeId == null);
             }
 
+            var creatorIdStr = _httpContextAccessor.HttpContext?.Request.Query["creatorId"].ToString();
+            if (!string.IsNullOrEmpty(creatorIdStr) && Guid.TryParse(creatorIdStr, out var cId))
+            {
+                query = query.Where(x => x.CreatorId == cId);
+            }
+
             return query;
         }
 
@@ -301,12 +328,25 @@ namespace ItHelpdesk.Tickets
 
             await Repository.UpdateAsync(ticket);
 
+            string assigneeName = "Chưa gán";
+            if (input.AssigneeId.HasValue)
+            {
+                var user = await _userRepository.FindAsync(input.AssigneeId.Value);
+                if (user != null) assigneeName = $"{user.Surname} {user.Name}".Trim();
+            }
+
+            string desc = $"Đã phân công xử lý ticket cho KTV: {assigneeName}";
+            if (input.TeamId.HasValue)
+            {
+                desc += $" (Phân về Nhóm số: {input.TeamId})";
+            }
+
             var activity = new TicketActivity(
                 input.TicketId,
                 activityType: "TicketAssigned",
-                description: $"Đã phân công/chuyển tuyến xử lý ticket (KTV: {input.AssigneeId}, Team: {input.TeamId})",
-                oldValue: $"Assignee: {oldAssignee}, Team: {oldTeam}",
-                newValue: $"Assignee: {input.AssigneeId}, Team: {input.TeamId}"
+                description: desc,
+                oldValue: oldAssignee?.ToString(),
+                newValue: input.AssigneeId?.ToString()
             );
             await _ticketActivityRepository.InsertAsync(activity);
         }

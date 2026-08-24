@@ -1,8 +1,8 @@
 import { FormGroup, FormBuilder, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { Component, inject, OnInit } from '@angular/core'; 
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
-import { NgxDatatableModule } from '@swimlane/ngx-datatable'; 
+import { NgxDatatableModule } from '@swimlane/ngx-datatable';
 import { ListService, PagedResultDto, LocalizationPipe, PermissionDirective, AutofocusDirective } from '@abp/ng.core';
 import { ConfirmationService, Confirmation, NgxDatatableDefaultDirective, NgxDatatableListDirective, ModalCloseDirective, ModalComponent, ToasterService } from '@abp/ng.theme.shared';
 
@@ -15,23 +15,23 @@ import { AdminBaseComponent } from '../shared/base/admin-base.component';
   styleUrls: ['./priority.component.scss'],
   standalone: true,
   imports: [
-    CommonModule, 
-    FormsModule, 
-    ReactiveFormsModule, 
-    NgxDatatableModule, 
-    NgbDropdownModule, 
-    ModalComponent, 
-    AutofocusDirective, 
-    NgxDatatableListDirective, 
-    NgxDatatableDefaultDirective, 
-    PermissionDirective, 
-    ModalCloseDirective, 
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    NgxDatatableModule,
+    NgbDropdownModule,
+    ModalComponent,
+    AutofocusDirective,
+    NgxDatatableListDirective,
+    NgxDatatableDefaultDirective,
+    PermissionDirective,
+    ModalCloseDirective,
     LocalizationPipe
   ],
   providers: [ListService],
 })
 export class PriorityComponent extends AdminBaseComponent implements OnInit {
-  private priorityService = inject(PriorityService) as any; 
+  private priorityService = inject(PriorityService) as any;
   private fb = inject(FormBuilder);
   private confirmation = inject(ConfirmationService);
   private toaster = inject(ToasterService);
@@ -49,7 +49,7 @@ export class PriorityComponent extends AdminBaseComponent implements OnInit {
 
     // Dùng this.searchFilter thay vì this.search$.value
     const streamCreator = (query: any) => this.priorityService.getList({ ...query, filter: this.searchFilter });
-    
+
     this.list.hookToQuery(streamCreator).subscribe((response: any) => {
       this.priority = response;
     });

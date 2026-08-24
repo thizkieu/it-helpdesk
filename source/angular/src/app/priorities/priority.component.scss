@@ -2,7 +2,7 @@
    STYLE TRANG QUẢN TRỊ ĐỘ ƯU TIÊN (PRIORITIES) - MATURE DARK MODE
    ========================================================================= */
 
-$bg-card: rgba(30, 41, 59, 0.75); 
+$bg-card: rgba(30, 41, 59, 0.75);
 $border-glass: rgba(255, 255, 255, 0.08);
 $text-main: #f8fafc;
 $text-muted: #94a3b8;
@@ -10,7 +10,7 @@ $primary-color: #4f46e5; // Indigo trầm chuyên nghiệp
 
 /* FIX LỖI SÁT KHUNG LỀ */
 .admin-page-container {
-    padding: 1.5rem; 
+    padding: 1.5rem;
     background: transparent;
     min-height: 100vh;
 }
@@ -22,7 +22,7 @@ $primary-color: #4f46e5; // Indigo trầm chuyên nghiệp
     -webkit-backdrop-filter: blur(24px);
     border: 1px solid $border-glass !important;
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important;
-    
+
     .card-header {
         background: transparent !important;
         border-bottom: 1px solid $border-glass !important;
@@ -32,7 +32,7 @@ $primary-color: #4f46e5; // Indigo trầm chuyên nghiệp
 /* Giúp khung bên trong không phá layout bảng khi resize */
 .card-body {
     width: 100%;
-    overflow: hidden; 
+    overflow: hidden;
 }
 
 /* HIỆU ỨNG TEXT */
@@ -40,7 +40,10 @@ $primary-color: #4f46e5; // Indigo trầm chuyên nghiệp
     color: $text-main;
     letter-spacing: 0.5px;
 }
-.text-muted-custom { color: $text-muted; }
+
+.text-muted-custom {
+    color: $text-muted;
+}
 
 /* ICON HEADER */
 .header-icon-box {
@@ -96,7 +99,9 @@ $primary-color: #4f46e5; // Indigo trầm chuyên nghiệp
         border-bottom: 1px solid rgba(255, 255, 255, 0.03) !important;
         transition: background-color 0.2s ease;
 
-        &:hover { background-color: rgba(255, 255, 255, 0.04) !important; }
+        &:hover {
+            background-color: rgba(255, 255, 255, 0.04) !important;
+        }
 
         .datatable-body-cell {
             padding: 1.2rem 1.5rem !important;
@@ -109,7 +114,7 @@ $primary-color: #4f46e5; // Indigo trầm chuyên nghiệp
         background: rgba(15, 23, 42, 0.4) !important;
         border-top: 1px solid $border-glass !important;
         color: $text-muted !important;
-        
+
         .datatable-pager li.active a {
             background-color: $primary-color !important;
             color: white !important;
@@ -129,7 +134,7 @@ $primary-color: #4f46e5; // Indigo trầm chuyên nghiệp
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
 }
 
 /* DROPDOWN */
@@ -138,15 +143,22 @@ $primary-color: #4f46e5; // Indigo trầm chuyên nghiệp
     border: 1px solid $border-glass !important;
     color: $text-main !important;
     font-size: 0.85rem;
-    &:hover { background: rgba(255, 255, 255, 0.1) !important; }
+
+    &:hover {
+        background: rgba(255, 255, 255, 0.1) !important;
+    }
 }
 
 .dropdown-menu-admin {
     background: #1e293b !important;
     border: 1px solid $border-glass !important;
+
     button {
         color: $text-main !important;
-        &:hover { background: rgba(255, 255, 255, 0.05) !important; }
+
+        &:hover {
+            background: rgba(255, 255, 255, 0.05) !important;
+        }
     }
 }
 
@@ -161,20 +173,31 @@ $primary-color: #4f46e5; // Indigo trầm chuyên nghiệp
     font-weight: 600;
     letter-spacing: 0.5px;
 
-    .status-dot { width: 6px; height: 6px; border-radius: 50%; box-shadow: 0 0 8px currentColor; }
+    .status-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        box-shadow: 0 0 8px currentColor;
+    }
 
     &.badge-active {
         background-color: rgba(16, 185, 129, 0.1);
         color: #34d399;
         border: 1px solid rgba(16, 185, 129, 0.2);
-        .status-dot { background-color: #34d399; }
+
+        .status-dot {
+            background-color: #34d399;
+        }
     }
 
     &.badge-inactive {
         background-color: rgba(239, 68, 68, 0.1);
         color: #f87171;
         border: 1px solid rgba(239, 68, 68, 0.2);
-        .status-dot { background-color: #f87171; }
+
+        .status-dot {
+            background-color: #f87171;
+        }
     }
 }
 
@@ -183,7 +206,7 @@ $primary-color: #4f46e5; // Indigo trầm chuyên nghiệp
     background: #1e293b !important;
     border: 1px solid $border-glass !important;
     border-radius: 20px !important;
-    box-shadow: 0 25px 50px rgba(0,0,0,0.5) !important;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5) !important;
 }
 
 .admin-input {

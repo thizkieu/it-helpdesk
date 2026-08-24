@@ -64,6 +64,14 @@ export class TicketService {
     { apiName: this.apiName,...config });
   
 
+  getAttachments = (ticketId: number, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, UploadAttachmentDto[]>({
+      method: 'GET',
+      url: `/api/app/ticket/${ticketId}/attachments`,
+    },
+    { apiName: this.apiName,...config });
+  
+
   getDashboardStats = (config?: Partial<Rest.Config>) =>
     this.restService.request<any, DashboardStatsDto>({
       method: 'GET',

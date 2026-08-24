@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
-using ItHelpdesk.Categories;
 using ItHelpdesk.Permissions;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;

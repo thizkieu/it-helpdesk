@@ -23,7 +23,7 @@
                 </h2>
             </div>
 
-            <!-- Đã gỡ *abpPermission ở đây để Employee có thể Sửa/Đóng yêu cầu của họ -->
+
             <div class="d-flex gap-2">
                 <button class="btn cute-outline-btn rounded-pill px-4 fw-semibold shadow-sm" (click)="openEditModal()">
                     <i class="fas fa-edit me-1"></i> Sửa yêu cầu
@@ -59,6 +59,30 @@
                         <p class="text-light opacity-85" style="line-height: 1.7; font-size: 1.05rem;">
                             {{ ticket.description || 'Chưa có mô tả chi tiết cho yêu cầu này.' }}
                         </p>
+
+                        <!-- HIỂN THỊ ẢNH Ở MỤC NỘI DUNG YÊU CẦU -->
+                        <div class="mt-4 pt-3 border-top border-secondary border-opacity-25"
+                            *ngIf="attachments.length > 0">
+                            <h6 class="text-info fw-bold mb-3"><i class="fas fa-paperclip me-2"></i>Tệp đính kèm đi kèm
+                                yêu cầu:</h6>
+                            <div class="d-flex flex-wrap gap-3">
+                                <div *ngFor="let file of attachments"
+                                    class="bg-dark bg-opacity-50 p-2 rounded-3 border border-secondary border-opacity-25"
+                                    style="max-width: 300px;">
+                                    <div class="d-flex align-items-center mb-2 px-2">
+                                        <i class="fas"
+                                            [ngClass]="file.type.includes('image') ? 'fa-image text-pink' : 'fa-file-alt text-info'"></i>
+                                        <span class="ms-2 text-light fw-semibold text-truncate"
+                                            style="font-size: 0.85rem;" title="{{ file.name }}">{{ file.name }}</span>
+                                    </div>
+                                    <!-- Render ảnh trực tiếp -->
+                                    <img *ngIf="file.type.includes('image')" [src]="file.url"
+                                        class="img-fluid rounded shadow-sm"
+                                        style="max-height: 180px; object-fit: contain; width: 100%;">
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
 
@@ -77,7 +101,7 @@
                             </div>
                             <div class="flex-grow-1">
 
-                                <!-- GỢI Ý TRẢ LỜI NHANH (Đã gỡ quyền để User/Employee có thể dùng) -->
+                                <!-- GỢI Ý TRẢ LỜI NHANH  -->
                                 <div class="d-flex flex-wrap gap-2 mb-3">
                                     <span *ngFor="let reply of quickReplies"
                                         class="badge rounded-pill bg-dark bg-opacity-25 text-info border border-info border-opacity-25 py-2 px-3 hover-shadow"
@@ -97,7 +121,7 @@
                                     <i class="fas fa-file-alt me-2 text-pink bounce-icon"></i>
                                     <span class="text-truncate" style="max-width: 250px;">{{ selectedFileName }}</span>
                                     <span class="ms-2 badge bg-success bg-opacity-75 text-white"
-                                        style="font-size: 0.65rem;">Đã tải tệp lên</span>
+                                        style="font-size: 0.65rem;">Đã chọn tệp</span>
                                 </div>
 
                                 <!-- CỤM NÚT CHỨC NĂNG BÊN DƯỚI (FILE + MICRO + GỬI) -->
@@ -141,12 +165,27 @@
                                     <div class="avatar bg-secondary bg-opacity-50 text-white rounded-circle d-flex justify-content-center align-items-center flex-shrink-0"
                                         style="width: 32px; height: 32px; font-size: 0.8rem;">
                                         <i class="fas"
-                                            [ngClass]="item.content.includes('Đã đính kèm tệp') ? 'fa-paperclip text-info' : 'fa-history text-warning'"></i>
+                                            [ngClass]="item.content && item.content.includes('Đã đính kèm tệp') ? 'fa-paperclip text-info' : 'fa-history text-warning'"></i>
                                     </div>
                                     <div class="flex-grow-1 border-bottom border-secondary border-opacity-25 pb-2">
                                         <span class="text-info fw-semibold">{{ item.content }}</span>
                                         <small class="text-muted ms-2"><i class="far fa-clock me-1"></i>{{
                                             item.creationTime | date:'dd/MM/yyyy HH:mm' }}</small>
+
+                                        <!-- HIỂN THỊ ẢNH NGAY TRONG TIMELINE NẾU CÓ -->
+                                        <div class="mt-2" *ngIf="item.attachmentUrl">
+                                            <img *ngIf="item.attachmentType?.includes('image')"
+                                                [src]="item.attachmentUrl"
+                                                class="img-fluid rounded mt-2 border border-secondary border-opacity-25 shadow-sm"
+                                                style="max-height: 250px; object-fit: contain;">
+                                            <div *ngIf="!item.attachmentType?.includes('image')"
+                                                class="d-flex align-items-center bg-dark bg-opacity-50 p-2 rounded-3 mt-2 border border-secondary border-opacity-25"
+                                                style="width: fit-content;">
+                                                <i class="fas fa-file-archive text-info me-2 fs-4"></i>
+                                                <span class="text-light small">{{ item.content ?
+                                                    item.content.replace('Đã đính kèm tệp:', '').trim() : '' }}</span>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
 
@@ -181,6 +220,7 @@
 
             <!-- CỘT PHẢI: Thông tin chung & SLA -->
             <div class="col-lg-4">
+
                 <!-- CARD THÔNG TIN SLA -->
                 <div class="card premium-glass-card border-0 shadow-lg mb-4">
                     <div class="card-body p-4">
@@ -252,7 +292,6 @@
                                 }}</span>
                         </div>
 
-                        <!-- VẪN GIỮ QUYỀN Ở ĐÂY VÌ ĐÂY LÀ CHỨC NĂNG DÀNH CHO IT ADMIN -->
                         <div class="d-grid mt-4" *abpPermission="'ItHelpdesk.Tickets.Edit'">
                             <button
                                 class="btn cute-outline-btn rounded-pill fw-semibold text-pink border-pink shadow-sm"

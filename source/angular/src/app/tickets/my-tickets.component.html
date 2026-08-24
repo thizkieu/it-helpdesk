@@ -1,7 +1,6 @@
 <div class="ticket-page-wrapper py-4">
   <div class="container-fluid">
 
-    <!-- TIÊU ĐỀ TRANG -->
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
       <div>
         <span class="badge cute-badge-pill mb-2">
@@ -17,12 +16,9 @@
       </div>
     </div>
 
-    <!-- THANH CÔNG CỤ TÌM KIẾM & LỌC -->
     <div class="card premium-glass-card border-0 shadow-lg mb-4 p-3 p-md-4">
       <div class="row align-items-center g-3">
-
-        <!-- Ô TÌM KIẾM THÔNG MINH -->
-        <div class="col-md-6 col-lg-5 position-relative search-wrapper">
+        <div class="col-md-6 col-lg-5 position-relative search-wrapper" style="z-index: 999;">
           <div class="input-group">
             <span class="input-group-text bg-transparent border-end-0 border-secondary border-opacity-25 text-pink">
               <i class="fas fa-search"></i>
@@ -39,10 +35,9 @@
             </button>
           </div>
 
-          <!-- DROPDOWN GỢI Ý & LỊCH SỬ KÍNH MỜ -->
           <ul *ngIf="showSearchSuggestions && recentSearches.length > 0"
             class="dropdown-menu show w-100 shadow-lg border-0 mt-2 p-2 rounded-4 position-absolute text-start"
-            style="background: rgba(22, 22, 35, 0.95); backdrop-filter: blur(16px); z-index: 1050; border: 1px solid rgba(255,255,255,0.1) !important; left: 0; right: 0;">
+            style="background: rgba(22, 22, 35, 0.95); backdrop-filter: blur(16px); top: 100%; z-index: 1050; border: 1px solid rgba(255,255,255,0.1) !important; left: 0; right: 0;">
 
             <li class="d-flex justify-content-between align-items-center px-3 py-1 mb-1">
               <span class="text-pink small fw-bold">
@@ -61,13 +56,11 @@
                 <span>{{ item }}</span>
               </div>
               <i class="fas fa-times text-muted hover-pink ms-2 p-1" title="Xóa mục này"
-                (click)="removeSearchHistoryItem(item, $event)">
-              </i>
+                (click)="removeSearchHistoryItem(item, $event)"></i>
             </li>
           </ul>
         </div>
 
-        <!-- BỘ LỌC TRẠNG THÁI -->
         <div class="col-md-4 col-lg-3">
           <select class="form-select custom-bordered-select py-2 shadow-none rounded-pill" [(ngModel)]="filters.status"
             (change)="onFilterChange()">
@@ -80,18 +73,16 @@
           </select>
         </div>
 
-        <!-- TỔNG SỐ KẾT QUẢ -->
         <div class="col-md-2 col-lg-4 text-md-end text-muted small">
           Tổng cộng: <span class="text-pink fw-bold">{{ data.totalCount }}</span> yêu cầu
         </div>
-
       </div>
     </div>
 
-    <!-- BẢNG DANH SÁCH TICKET -->
     <div class="card premium-glass-card border-0 shadow-lg overflow-hidden">
       <div class="card-body p-0">
-        <ngx-datatable [rows]="data.items" [count]="data.totalCount" [list]="list" default>
+        <ngx-datatable [rows]="data.items" [count]="data.totalCount" [list]="list" default [columnMode]="'force'"
+          [scrollbarH]="true">
 
           <ngx-datatable-column [name]="'::TicketNo' | abpLocalization" prop="ticketNo" [width]="160">
             <ng-template let-row="row" ngx-datatable-cell-template>
@@ -103,7 +94,10 @@
 
           <ngx-datatable-column [name]="'::TicketSubject' | abpLocalization" prop="title" [width]="300">
             <ng-template let-row="row" ngx-datatable-cell-template>
-              <span class="text-light fw-medium">{{ row.title }}</span>
+              <span class="fw-medium" [ngClass]="row.isOverdue ? 'text-danger fw-bold' : 'text-light'">
+                {{ row.title }}
+                <i *ngIf="row.isOverdue" class="fas fa-fire ms-2 text-danger" title="Quá hạn xử lý!"></i>
+              </span>
             </ng-template>
           </ngx-datatable-column>
 
@@ -121,18 +115,22 @@
             </ng-template>
           </ngx-datatable-column>
 
-          <ngx-datatable-column name="Thao tác" [sortable]="false" [width]="120">
+          <!-- FIX LỖI GIAO DIỆN NÚT LỆCH -->
+          <ngx-datatable-column name="Thao tác" [sortable]="false" [width]="150">
             <ng-template let-row="row" ngx-datatable-cell-template>
-              <a [routerLink]="['/tickets/detail', row.id]"
-                class="btn btn-sm cute-outline-btn rounded-pill px-3 text-pink border-pink fw-semibold">
-                <i class="fas fa-paw me-1"></i> Chi tiết
-              </a>
+              <div
+                style="display: flex; flex-direction: row; gap: 8px; align-items: center; white-space: nowrap; min-width: 120px;">
+                <a [routerLink]="['/tickets/detail', row.id]"
+                  class="btn btn-sm cute-outline-btn rounded-pill px-3 text-pink border-pink fw-semibold"
+                  style="white-space: nowrap;">
+                  <i class="fas fa-paw me-1"></i> Chi tiết
+                </a>
+              </div>
             </ng-template>
           </ngx-datatable-column>
 
         </ngx-datatable>
       </div>
     </div>
-
   </div>
 </div>

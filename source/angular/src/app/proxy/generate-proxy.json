@@ -6347,6 +6347,61 @@
               "description": null,
               "displayName": null
             },
+            "GetAttachmentsAsyncByTicketId": {
+              "uniqueName": "GetAttachmentsAsyncByTicketId",
+              "name": "GetAttachmentsAsync",
+              "httpMethod": "GET",
+              "url": "api/app/ticket/{ticketId}/attachments",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "ticketId",
+                  "typeAsString": "System.Int64, System.Private.CoreLib",
+                  "type": "System.Int64",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "summary": null,
+                  "description": null,
+                  "displayName": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "ticketId",
+                  "name": "ticketId",
+                  "jsonName": null,
+                  "type": "System.Int64",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": "",
+                  "summary": null,
+                  "description": null,
+                  "displayName": null
+                }
+              ],
+              "returnValue": {
+                "type": "System.Collections.Generic.List<ItHelpdesk.Tickets.UploadAttachmentDto>",
+                "typeSimple": "[ItHelpdesk.Tickets.UploadAttachmentDto]",
+                "summary": null,
+                "contentTypes": [
+                  "text/plain",
+                  "application/json",
+                  "text/json"
+                ],
+                "isRemoteStream": false
+              },
+              "allowAnonymous": null,
+              "authorizeDatas": [],
+              "implementFrom": "ItHelpdesk.Tickets.TicketAppService",
+              "summary": null,
+              "remarks": null,
+              "description": null,
+              "displayName": null
+            },
             "ChangeStatusAsyncByTicketIdAndNewStatusAndComment": {
               "uniqueName": "ChangeStatusAsyncByTicketIdAndNewStatusAndComment",
               "name": "ChangeStatusAsync",
@@ -15026,6 +15081,22 @@
           "maximum": null,
           "regex": null,
           "isNullable": true,
+          "summary": null,
+          "description": null,
+          "displayName": null
+        },
+        {
+          "name": "IsOverdue",
+          "jsonName": null,
+          "type": "System.Boolean",
+          "typeSimple": "boolean",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null,
+          "isNullable": false,
           "summary": null,
           "description": null,
           "displayName": null

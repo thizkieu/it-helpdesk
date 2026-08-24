@@ -1,6 +1,5 @@
 <div class="ticket-page-wrapper py-4">
     <div class="container-fluid">
-        <!-- HEADER VỚI LỜI CHÀO ĐỘNG -->
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
                 <span class="badge cute-badge-pill mb-2"><i class="fas fa-desktop me-1"></i> IT Workspace</span>
@@ -37,8 +36,7 @@
                     </li>
                 </ul>
 
-                <!-- Ô tìm kiếm thông minh có lịch sử -->
-                <div class="position-relative search-wrapper" style="width: 320px;">
+                <div class="position-relative search-wrapper" style="width: 320px; z-index: 999;">
                     <div class="input-group">
                         <span class="input-group-text bg-transparent border-end-0 border-secondary border-opacity-25 text-pink">
                             <i class="fas fa-search"></i>
@@ -54,10 +52,9 @@
                         </button>
                     </div>
 
-                    <!-- Dropdown Lịch sử & Gợi ý tìm kiếm -->
                     <ul *ngIf="showSearchSuggestions && recentSearches.length > 0"
                         class="dropdown-menu show w-100 shadow-lg border-0 mt-2 p-2 rounded-4 position-absolute text-start"
-                        style="background: rgba(22, 22, 35, 0.95); backdrop-filter: blur(12px); z-index: 1050; border: 1px solid rgba(255,255,255,0.1) !important;">
+                        style="background: rgba(22, 22, 35, 0.95); backdrop-filter: blur(12px); z-index: 1050; top: 100%; border: 1px solid rgba(255,255,255,0.1) !important;">
                         <li class="d-flex justify-content-between align-items-center px-3 py-1 mb-1">
                             <span class="text-pink small fw-bold">
                                 <i class="fas fa-history me-1"></i> Lịch sử tìm kiếm
@@ -83,15 +80,12 @@
 
         <div class="card premium-glass-card border-0 shadow-lg">
             <div class="card-body p-0">
-
-                <!-- HIỆU ỨNG SKELETON (HIỆN KHI ISLOADING = TRUE) -->
                 <div *ngIf="isLoading" class="p-4">
                     <div class="skeleton-row mb-3" *ngFor="let i of [1,2,3,4,5]"></div>
                 </div>
 
-                <!-- BẢNG DỮ LIỆU -->
                 <div *ngIf="!isLoading">
-                    <ngx-datatable [rows]="items" [count]="totalCount" [list]="list" default>
+                    <ngx-datatable [rows]="items" [count]="totalCount" [list]="list" default [columnMode]="'force'" [scrollbarH]="true">
                         <ngx-datatable-column name="Mã Ticket" prop="ticketNo" [width]="140">
                             <ng-template let-row="row" ngx-datatable-cell-template>
                                 <span class="text-pink fw-bold">{{ row.ticketNo }}</span>
@@ -100,7 +94,10 @@
 
                         <ngx-datatable-column name="Tiêu đề" prop="title" [width]="250">
                             <ng-template let-row="row" ngx-datatable-cell-template>
-                                <span class="text-light fw-medium">{{ row.title }}</span>
+                                <span class="fw-medium" [ngClass]="row.isOverdue ? 'text-danger fw-bold' : 'text-light'">
+                                    {{ row.title }}
+                                    <i *ngIf="row.isOverdue" class="fas fa-fire ms-2 text-danger" title="Quá hạn xử lý!"></i>
+                                </span>
                             </ng-template>
                         </ngx-datatable-column>
 
@@ -112,12 +109,10 @@
                             </ng-template>
                         </ngx-datatable-column>
 
-                        <!-- CỘT SLA ĐÃ ĐỔI MÀU CẢNH BÁO TỰ ĐỘNG -->
                         <ngx-datatable-column name="Hạn xử lý" prop="targetResolutionTime" [width]="180">
                             <ng-template let-row="row" let-value="value" ngx-datatable-cell-template>
                                 <div *ngIf="value">
-                                    <span class="badge px-2 py-1 rounded-pill"
-                                        [ngClass]="{
+                                    <span class="badge px-2 py-1 rounded-pill" [ngClass]="{
                                             'bg-danger text-white': getSlaStatus(value) === 'overdue',
                                             'bg-warning text-dark': getSlaStatus(value) === 'warning',
                                             'bg-secondary bg-opacity-50 text-light': getSlaStatus(value) === 'normal'
@@ -143,16 +138,14 @@
                             </ng-template>
                         </ngx-datatable-column>
 
-                        <!-- CỘT THAO TÁC CÓ NÚT PHÂN CÔNG -->
-                        <ngx-datatable-column name="Thao tác" [width]="200" [sortable]="false">
+                        <!-- FIX LỖI GIAO DIỆN NÚT LỆCH: Ép cứng flex-row và nowrap -->
+                        <ngx-datatable-column name="Thao tác" [width]="240" [sortable]="false">
                             <ng-template let-row="row" ngx-datatable-cell-template>
-                                <div class="d-flex gap-2">
-                                    <button class="btn btn-sm btn-outline-info rounded-pill px-2"
-                                        (click)="openAssignModal(row)" title="Phân công">
+                                <div style="display: flex; flex-direction: row; gap: 8px; align-items: center; white-space: nowrap; min-width: 210px;">
+                                    <button class="btn btn-sm btn-outline-info rounded-pill px-3" style="white-space: nowrap;" (click)="openAssignModal(row)" title="Phân công">
                                         <i class="fas fa-user-plus me-1"></i> Phân công
                                     </button>
-                                    <a [routerLink]="['/tickets/detail', row.id]"
-                                        class="btn btn-sm cute-outline-btn rounded-pill px-3 text-pink border-pink fw-semibold">
+                                    <a [routerLink]="['/tickets/detail', row.id]" class="btn btn-sm cute-outline-btn rounded-pill px-3 text-pink border-pink fw-semibold" style="white-space: nowrap;">
                                         <i class="fas fa-eye me-1"></i> Chi tiết
                                     </a>
                                 </div>
@@ -160,13 +153,11 @@
                         </ngx-datatable-column>
                     </ngx-datatable>
                 </div>
-
             </div>
         </div>
     </div>
 </div>
 
-<!-- MODAL PHÂN CÔNG / CHUYỂN TUYẾN KÍNH MỜ -->
 <div *ngIf="isAssignModalOpen" class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.65); backdrop-filter: blur(4px);">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content premium-glass-card border-secondary border-opacity-25 text-white shadow-2xl">

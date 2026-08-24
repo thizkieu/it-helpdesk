@@ -1,5 +1,4 @@
 ﻿using Volo.Abp.Application.Services;
-using ItHelpdesk.Categories;
 
 namespace ItHelpdesk.Categories
 {

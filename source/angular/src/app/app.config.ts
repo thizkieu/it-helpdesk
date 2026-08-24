@@ -2,7 +2,7 @@ import { provideAbpCore, withOptions } from '@abp/ng.core';
 import { provideAbpOAuth } from '@abp/ng.oauth';
 import { provideSettingManagementConfig } from '@abp/ng.setting-management/config';
 import { provideFeatureManagementConfig } from '@abp/ng.feature-management';
-import { provideAbpThemeShared,} from '@abp/ng.theme.shared';
+import { provideAbpThemeShared, } from '@abp/ng.theme.shared';
 import { provideIdentityConfig } from '@abp/ng.identity/config';
 import { provideAccountConfig } from '@abp/ng.account/config';
 import { provideTenantManagementConfig } from '@abp/ng.tenant-management/config';
@@ -19,7 +19,7 @@ import { APP_ROUTE_PROVIDER } from './route.provider';
 import { registerLocaleData } from '@angular/common';
 import localeVi from '@angular/common/locales/vi';
 
-// 🔥 BẮT BUỘC: đăng ký locale
+// BẮT BUỘC: đăng ký locale
 registerLocaleData(localeVi);
 
 export const appConfig: ApplicationConfig = {

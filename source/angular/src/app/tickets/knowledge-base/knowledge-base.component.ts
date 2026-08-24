@@ -71,23 +71,23 @@ export class KnowledgeBaseComponent implements OnInit, OnDestroy {
       method: 'GET',
       url: '/api/app/faq-item',
     }, { skipHandleError: true })
-    .pipe(
-      catchError(err => {
-        this.customToast.show('Đang sử dụng dữ liệu cẩm nang ngoại tuyến.', 'error');
-        return of({ items: [], totalCount: 0 });
-      })
-    )
-    .subscribe({
-      next: (res: any) => {
-        this.faqList = res?.items || [];
-        if (this.faqList.length === 0) {
-          this.loadMockData();
-        } else {
-          this.filteredFaqList = this.faqList;
+      .pipe(
+        catchError(err => {
+          this.customToast.show('Đang sử dụng dữ liệu cẩm nang ngoại tuyến.', 'error');
+          return of({ items: [], totalCount: 0 });
+        })
+      )
+      .subscribe({
+        next: (res: any) => {
+          this.faqList = res?.items || [];
+          if (this.faqList.length === 0) {
+            this.loadMockData();
+          } else {
+            this.filteredFaqList = this.faqList;
+          }
+          this.isLoading = false;
         }
-        this.isLoading = false;
-      }
-    });
+      });
   }
 
   loadMockData(): void {
@@ -157,8 +157,8 @@ export class KnowledgeBaseComponent implements OnInit, OnDestroy {
       this.filteredFaqList = this.faqList;
     } else {
       const keyword = this.searchText.toLowerCase();
-      this.filteredFaqList = this.faqList.filter(x => 
-        x.question?.toLowerCase().includes(keyword) || 
+      this.filteredFaqList = this.faqList.filter(x =>
+        x.question?.toLowerCase().includes(keyword) ||
         x.answer?.toLowerCase().includes(keyword) ||
         x.category?.toLowerCase().includes(keyword)
       );

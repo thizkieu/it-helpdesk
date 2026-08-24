@@ -63,7 +63,7 @@ export class MyTicketsComponent implements OnInit, OnDestroy {
       if (this.filters.status !== null) {
         query.status = this.filters.status;
       }
-      query.creatorId = currentUserId; 
+      query.creatorId = currentUserId;
 
       return this.ticketService.getList(query);
     };

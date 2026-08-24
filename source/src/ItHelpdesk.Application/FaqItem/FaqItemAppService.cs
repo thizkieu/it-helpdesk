@@ -6,7 +6,7 @@ using Volo.Abp.Domain.Repositories;
 
 namespace ItHelpdesk.KnowledgeBase
 {
-    // Đã gỡ bỏ [Authorize(...)] ở đầu class để End User có thể xem cẩm nang hướng dẫn
+    
     public class FaqItemAppService : CrudAppService<
         FaqItem,
         FaqItemDto,

@@ -4,7 +4,7 @@ import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { TicketService, TicketDto, AssignTicketDto } from '@proxy/tickets';
 import { TeamService, TeamDto } from '@proxy/teams';
-import { CoreModule, ListService, PagedResultDto, ConfigStateService } from '@abp/ng.core';
+import { CoreModule, ListService, PagedResultDto, ConfigStateService, RestService } from '@abp/ng.core';
 import { ThemeSharedModule } from '@abp/ng.theme.shared';
 import { NgxDatatableModule } from '@swimlane/ngx-datatable';
 import { CustomToastService } from '../../shared/services/custom-toast.service';
@@ -22,6 +22,7 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 export class ItQueueComponent implements OnInit, OnDestroy {
   private ticketService = inject(TicketService);
   private teamService = inject(TeamService);
+  private restService = inject(RestService); // Thêm RestService
   public readonly list = inject(ListService);
   private customToast = inject(CustomToastService);
   private config = inject(ConfigStateService);
@@ -34,11 +35,9 @@ export class ItQueueComponent implements OnInit, OnDestroy {
   searchFilter: string = '';
   currentUserId: string = '';
 
-  // Danh sách hỗ trợ phân công
   teams: TeamDto[] = [];
-  technicians: any[] = []; // Dùng any để tránh lỗi type identity
+  technicians: any[] = [];
 
-  // Modal phân công
   isAssignModalOpen: boolean = false;
   selectedTicket: TicketDto | null = null;
   assignForm: AssignTicketDto = {
@@ -112,17 +111,23 @@ export class ItQueueComponent implements OnInit, OnDestroy {
   }
 
   private loadDropdownData(): void {
-    // Tải danh sách Teams
     this.teamService.getList({ maxResultCount: 100 } as any).subscribe((res: any) => {
       this.teams = res.items || [];
     });
+
+    // FIX LỖI CHƯA GÁN: Gọi API lấy danh sách kỹ thuật viên để đổ vào Modal
+    this.restService.request<void, any>({
+      method: 'GET',
+      url: '/api/identity/users?maxResultCount=100',
+    }).subscribe(res => {
+      this.technicians = res.items || [];
+    });
   }
 
-  // --- MODAL PHÂN CÔNG ---
   openAssignModal(ticket: TicketDto): void {
     this.selectedTicket = ticket;
     this.assignForm = {
-      ticketId: ticket.id!, // Fix lỗi type number | undefined
+      ticketId: ticket.id!,
       assigneeId: ticket.assigneeId || undefined,
       teamId: ticket.teamId || undefined
     };
@@ -153,7 +158,6 @@ export class ItQueueComponent implements OnInit, OnDestroy {
     });
   }
 
-  // --- XỬ LÝ LỊCH SỬ TÌM KIẾM ---
   private loadSearchHistory(): void {
     const saved = localStorage.getItem(this.storageKey);
     this.recentSearches = saved ? JSON.parse(saved) : [];

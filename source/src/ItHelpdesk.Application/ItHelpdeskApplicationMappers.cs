@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using ItHelpdesk.Books;
+using ItHelpdesk.Categories;
 using ItHelpdesk.LocalizationManagement.Languages;
 using ItHelpdesk.LocalizationManagement.LanguageTexts;
 using ItHelpdesk.Provider;
@@ -129,17 +130,17 @@ public partial class ItHelpdesk_DeleteSysMasterListDto_To_SysMasterListDeleteReq
 #endregion
 #region Categories
 [Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Target)]
-public partial class ItHelpdeskCategoryToCategoryDtoMapper : MapperBase<Categories.Category, Categories.CategoryDto>
+public partial class ItHelpdeskCategoryToCategoryDtoMapper : MapperBase<Categories.Category, CategoryDto>
 {
-    public override partial Categories.CategoryDto Map(Categories.Category source);
-    public override partial void Map(Categories.Category source, Categories.CategoryDto destination);
+    public override partial CategoryDto Map(Categories.Category source);
+    public override partial void Map(Categories.Category source, CategoryDto destination);
 }
 
 [Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Target)]
-public partial class ItHelpdeskCreateUpdateCategoryDtoToCategoryMapper : MapperBase<Categories.CreateUpdateCategoryDto, Categories.Category>
+public partial class ItHelpdeskCreateUpdateCategoryDtoToCategoryMapper : MapperBase<CreateUpdateCategoryDto, Categories.Category>
 {
-    public override partial Categories.Category Map(Categories.CreateUpdateCategoryDto source);
-    public override partial void Map(Categories.CreateUpdateCategoryDto source, Categories.Category destination);
+    public override partial Categories.Category Map(CreateUpdateCategoryDto source);
+    public override partial void Map(CreateUpdateCategoryDto source, Categories.Category destination);
 }
 #endregion
 

@@ -18,5 +18,8 @@ namespace ItHelpdesk.Tickets
         public DateTime? ResolvedAt { get; set; }
         public DateTime? TargetResponseTime { get; set; }
         public DateTime? TargetResolutionTime { get; set; }
+
+        // THUỘC TÍNH MỚI ĐỂ FRONTEND NHẬN DIỆN QUÁ HẠN
+        public bool IsOverdue { get; set; }
     }
 }

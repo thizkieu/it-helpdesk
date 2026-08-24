@@ -9,7 +9,6 @@ using Volo.Abp.Domain.Repositories;
 
 namespace ItHelpdesk.Tickets
 {
-    // Đã gỡ bỏ [Authorize(...)] ở đầu class để người dùng cuối không bị chặn lỗi 403 khi xem comment của ticket
     public class TicketCommentAppService : ApplicationService, ITicketCommentAppService
     {
         private readonly IRepository<TicketComment, long> _repository;

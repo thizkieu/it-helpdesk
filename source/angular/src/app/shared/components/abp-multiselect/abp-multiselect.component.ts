@@ -83,6 +83,6 @@ export class AbpMultiselectComponent implements ControlValueAccessor, OnInit, On
     this.disabled = isDisabled;
   }
 
-  onChange = (_: any) => {};
-  onTouched = () => {};
+  onChange = (_: any) => { };
+  onTouched = () => { };
 }

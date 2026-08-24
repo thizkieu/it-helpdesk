@@ -10,7 +10,7 @@ export abstract class AdminBaseComponent implements OnInit, OnDestroy {
 
   // Biến dùng chung cho tất cả ô input [(ngModel)]="searchFilter" ở các trang con
   searchFilter: string = '';
-  
+
   search$ = new Subject<string>();
   searchSubscription?: Subscription;
 
@@ -37,11 +37,11 @@ export abstract class AdminBaseComponent implements OnInit, OnDestroy {
       distinctUntilChanged()
     ).subscribe(keyword => {
       this.searchFilter = keyword.trim();
-      
+
       if (this.searchFilter) {
         this.saveSearchHistory(this.searchFilter);
       }
-      
+
       // Kích hoạt ListService gọi API tải lại bảng ngay lập tức
       this.list.get();
     });
@@ -66,7 +66,7 @@ export abstract class AdminBaseComponent implements OnInit, OnDestroy {
   }
 
   // --- CÁC HÀNH ĐỘNG TÌM KIẾM ĐƯỢC GỌI TỪ HTML ---
-  
+
   onSearchInput(): void {
     this.showSearchSuggestions = true;
     this.search$.next(this.searchFilter); // Bắn tín hiệu đi ngay từ ký tự đầu tiên

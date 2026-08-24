@@ -9,7 +9,10 @@
     padding: 2.5rem 1.5rem !important;
     min-height: calc(100vh + 4rem) !important;
 
-    .page-title, h3, h2, h5 {
+    .page-title,
+    h3,
+    h2,
+    h5 {
         color: #ffffff !important;
     }
 
@@ -40,7 +43,7 @@
     .premium-input {
         background: transparent !important;
         color: #ffffff !important;
-        
+
         &::placeholder {
             color: rgba(255, 255, 255, 0.4) !important;
         }

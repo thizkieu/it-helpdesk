@@ -2,7 +2,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
-import { TicketService, CreateUpdateTicketDto } from '@proxy/tickets'; 
+import { TicketService, CreateUpdateTicketDto } from '@proxy/tickets';
 import { CategoryService, CategoryDto } from '@proxy/categories';
 import { ServiceService, ServiceDto } from '@proxy/services';
 import { PriorityService, PriorityDto } from '@proxy/priorities';
@@ -94,32 +94,47 @@ export class CreateTicketComponent implements OnInit {
       next: (createdTicket: any) => {
         const ticketId = createdTicket?.id;
 
+        // FIX LỖI 500: Chuyển đổi File sang Base64 chuẩn với UploadAttachmentDto
         if (this.selectedFiles.length > 0 && ticketId) {
           let uploadCount = 0;
           this.selectedFiles.forEach(file => {
-            const formData = new FormData();
-            formData.append('file', file);
-            formData.append('ticketId', ticketId.toString());
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => {
+              const base64String = (reader.result as string).split(',')[1];
 
-            this.restService.request<any, any>({
-              method: 'POST',
-              url: `/api/app/ticket/upload-attachment`,
-              body: formData
-            }).subscribe({
-              next: () => {
-                uploadCount++;
-                if (uploadCount === this.selectedFiles.length) {
-                  this.finalizeSuccess();
+              this.restService.request<any, void>({
+                method: 'POST',
+                url: `/api/app/ticket/upload-attachment`,
+                body: {
+                  ticketId: ticketId,
+                  fileName: file.name,
+                  contentType: file.type || 'application/octet-stream',
+                  base64Content: base64String
                 }
-              },
-              error: (err) => {
-                console.error('Lỗi khi tải file lên:', err);
-                uploadCount++;
-                if (uploadCount === this.selectedFiles.length) {
-                  this.finalizeSuccess();
+              }).subscribe({
+                next: () => {
+                  uploadCount++;
+                  if (uploadCount === this.selectedFiles.length) {
+                    this.finalizeSuccess();
+                  }
+                },
+                error: (err) => {
+                  console.error('Lỗi khi tải file lên:', err);
+                  uploadCount++;
+                  if (uploadCount === this.selectedFiles.length) {
+                    this.finalizeSuccess();
+                  }
                 }
+              });
+            };
+            reader.onerror = (error) => {
+              console.error('Lỗi đọc file:', error);
+              uploadCount++;
+              if (uploadCount === this.selectedFiles.length) {
+                this.finalizeSuccess();
               }
-            });
+            };
           });
         } else {
           this.finalizeSuccess();

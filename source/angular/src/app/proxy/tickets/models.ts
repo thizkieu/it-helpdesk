@@ -52,6 +52,7 @@ export interface TicketDto extends FullAuditedEntityDto<number> {
   resolvedAt?: string;
   targetResponseTime?: string;
   targetResolutionTime?: string;
+  isOverdue: boolean;
 }
 
 export interface TicketTimelineDto {

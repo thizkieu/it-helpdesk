@@ -37,7 +37,7 @@ public class ItHelpdeskDbContext :
     IIdentityDbContext
 {
     /* =========================================================
-       1. CÁC BẢNG CUSTOM CỦA BẠN
+       1. CÁC BẢNG CUSTOM
        ========================================================= */
     public DbSet<Book> Books { get; set; }
     public DbSet<Language> Languages { get; set; }
@@ -96,7 +96,7 @@ public class ItHelpdeskDbContext :
         builder.ConfigureTenantManagement();
         builder.ConfigureBlobStoring();
 
-        // Cấu hình các bảng của bạn
+        // Cấu hình các bảng
         builder.Entity<Book>(b =>
         {
             b.ToTable(ItHelpdeskConsts.DbTablePrefix + "Books", ItHelpdeskConsts.DbSchema);

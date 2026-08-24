@@ -15,23 +15,23 @@ import { AdminBaseComponent } from '../shared/base/admin-base.component';
   styleUrls: ['./service.component.scss'],
   standalone: true,
   imports: [
-    CommonModule, 
-    FormsModule, 
-    ReactiveFormsModule, 
-    NgxDatatableModule, 
-    NgbDropdownModule, 
-    ModalComponent, 
-    AutofocusDirective, 
-    NgxDatatableListDirective, 
-    NgxDatatableDefaultDirective, 
-    PermissionDirective, 
-    ModalCloseDirective, 
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    NgxDatatableModule,
+    NgbDropdownModule,
+    ModalComponent,
+    AutofocusDirective,
+    NgxDatatableListDirective,
+    NgxDatatableDefaultDirective,
+    PermissionDirective,
+    ModalCloseDirective,
     LocalizationPipe
   ],
   providers: [ListService],
 })
 export class ServiceComponent extends AdminBaseComponent implements OnInit {
-  private serviceService = inject(ServiceService) as any; 
+  private serviceService = inject(ServiceService) as any;
   private fb = inject(FormBuilder);
   private confirmation = inject(ConfirmationService);
   private toaster = inject(ToasterService);
@@ -50,8 +50,8 @@ export class ServiceComponent extends AdminBaseComponent implements OnInit {
 
     // Dùng this.searchFilter lấy từ BaseComponent
     const streamCreator = (query: any) => this.serviceService.getList({ ...query, filter: this.searchFilter });
-    
-    this.list.hookToQuery(streamCreator).subscribe((response: any) => { 
+
+    this.list.hookToQuery(streamCreator).subscribe((response: any) => {
       this.service = response;
     });
   }
@@ -62,8 +62,8 @@ export class ServiceComponent extends AdminBaseComponent implements OnInit {
     this.isModalOpen = true;
   }
 
-  editService(id: string) { 
-    this.serviceService.get(id).subscribe((data: any) => { 
+  editService(id: string) {
+    this.serviceService.get(id).subscribe((data: any) => {
       this.selectedService = data;
       this.buildForm();
       this.isModalOpen = true;
@@ -71,7 +71,7 @@ export class ServiceComponent extends AdminBaseComponent implements OnInit {
   }
 
   delete(id: string, name: string) {
-    this.confirmation.warn('::AreYouSureToDelete', '::AreYouSure').subscribe((status: any) => { 
+    this.confirmation.warn('::AreYouSureToDelete', '::AreYouSure').subscribe((status: any) => {
       if (status === Confirmation.Status.confirm) {
         this.serviceService.delete(id).subscribe(() => {
           this.list.get();

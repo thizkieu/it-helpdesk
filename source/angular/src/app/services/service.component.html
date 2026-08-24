@@ -19,56 +19,58 @@
                 </div>
 
                 <!-- Cụm chức năng Search thông minh và Thêm Mới -->
-                <div class="col-md-7 text-md-end mt-3 mt-md-0 d-flex flex-wrap justify-content-md-end align-items-center gap-3">
-                    
+                <div
+                    class="col-md-7 text-md-end mt-3 mt-md-0 d-flex flex-wrap justify-content-md-end align-items-center gap-3">
+
                     <!-- Ô Search thông minh có lịch sử -->
                     <div class="position-relative" style="width: 280px;">
                         <div class="input-group search-box-wrapper position-relative">
                             <span class="input-group-text border-end-0 ps-3 bg-transparent text-pink">
                                 <i class="fas fa-search"></i>
                             </span>
-                            
+
                             <!-- Ô input dùng [(ngModel)]="searchFilter" -->
-                            <input type="text" class="form-control border-start-0 ps-0 shadow-none text-white admin-input" 
-                                placeholder="Tìm kiếm mã hoặc tên..." 
-                                [(ngModel)]="searchFilter"
-                                (input)="onSearchInput()"
-                                (keyup.enter)="performSearch()"
+                            <input type="text"
+                                class="form-control border-start-0 ps-0 shadow-none text-white admin-input"
+                                placeholder="Tìm kiếm mã hoặc tên..." [(ngModel)]="searchFilter"
+                                (input)="onSearchInput()" (keyup.enter)="performSearch()"
                                 (focus)="showSearchSuggestions = true" />
-                                
-                            <button *ngIf="searchFilter" class="btn btn-link text-muted position-absolute end-0 top-50 translate-middle-y p-0 me-3" 
-                                type="button" style="z-index: 10;"
-                                (click)="clearSearch()" title="Xóa tìm kiếm">
+
+                            <button *ngIf="searchFilter"
+                                class="btn btn-link text-muted position-absolute end-0 top-50 translate-middle-y p-0 me-3"
+                                type="button" style="z-index: 10;" (click)="clearSearch()" title="Xóa tìm kiếm">
                                 <i class="fas fa-times"></i>
                             </button>
                         </div>
 
                         <!-- Dropdown Lịch sử & Gợi ý tìm kiếm (Hiệu ứng kính mờ) -->
-                        <ul *ngIf="showSearchSuggestions && recentSearches.length > 0" 
+                        <ul *ngIf="showSearchSuggestions && recentSearches.length > 0"
                             class="dropdown-menu show w-100 shadow-lg border-0 mt-2 p-2 rounded-4 position-absolute text-start"
                             style="background: rgba(22, 22, 35, 0.95); backdrop-filter: blur(12px); z-index: 1050; border: 1px solid rgba(255,255,255,0.1) !important;">
                             <li class="d-flex justify-content-between align-items-center px-3 py-1 mb-1">
                                 <span class="text-pink small fw-bold">
                                     <i class="fas fa-history me-1"></i> Lịch sử tìm kiếm
                                 </span>
-                                <button class="btn btn-link text-muted p-0 small text-decoration-none" style="font-size: 0.75rem;" (click)="clearAllSearchHistory($event)">
+                                <button class="btn btn-link text-muted p-0 small text-decoration-none"
+                                    style="font-size: 0.75rem;" (click)="clearAllSearchHistory($event)">
                                     Xóa tất cả
                                 </button>
                             </li>
-                            <li *ngFor="let item of recentSearches" 
-                                (click)="selectSearchSuggestion(item)"
+                            <li *ngFor="let item of recentSearches" (click)="selectSearchSuggestion(item)"
                                 class="dropdown-item text-light rounded-3 cursor-pointer px-3 py-2 my-1 d-flex justify-content-between align-items-center custom-dropdown-item">
                                 <div>
                                     <i class="fas fa-search text-purple-accent me-2 opacity-75"></i> {{ item }}
                                 </div>
-                                <i class="fas fa-times text-muted hover-pink ms-2 p-1" title="Xóa mục này" (click)="removeSearchHistoryItem(item, $event)"></i>
+                                <i class="fas fa-times text-muted hover-pink ms-2 p-1" title="Xóa mục này"
+                                    (click)="removeSearchHistoryItem(item, $event)"></i>
                             </li>
                         </ul>
                     </div>
 
                     <!-- Nút Thêm Mới -->
                     <button *abpPermission="'ItHelpdesk.Services.Create'" id="create"
-                        class="btn btn-action-primary rounded-3 px-4 fw-semibold" type="button" (click)="createService()">
+                        class="btn btn-action-primary rounded-3 px-4 fw-semibold" type="button"
+                        (click)="createService()">
                         <i class="fa fa-plus me-2"></i><span>{{ '::NewService' | abpLocalization }}</span>
                     </button>
                 </div>
@@ -77,20 +79,24 @@
 
         <!-- NỘI DUNG BẢNG QUẢN TRỊ -->
         <div class="card-body p-0">
-            <ngx-datatable [rows]="service.items" [count]="service.totalCount" [list]="list" default class="admin-datatable">
+            <ngx-datatable [rows]="service.items" [count]="service.totalCount" [list]="list" default
+                class="admin-datatable">
 
                 <!-- CỘT THAO TÁC -->
-                <ngx-datatable-column [name]="'::Actions' | abpLocalization" [width]="150" [maxWidth]="150" [sortable]="false">
+                <ngx-datatable-column [name]="'::Actions' | abpLocalization" [width]="150" [maxWidth]="150"
+                    [sortable]="false">
                     <ng-template let-row="row" ngx-datatable-cell-template>
                         <div ngbDropdown container="body" class="d-inline-block">
                             <button class="btn btn-sm btn-action-dropdown rounded-3" ngbDropdownToggle>
                                 <i class="fa fa-cog me-1"></i> Điều phối
                             </button>
                             <div ngbDropdownMenu class="dropdown-menu-admin shadow-lg border">
-                                <button *abpPermission="'ItHelpdesk.Services.Edit'" ngbDropdownItem (click)="editService(row.id)">
+                                <button *abpPermission="'ItHelpdesk.Services.Edit'" ngbDropdownItem
+                                    (click)="editService(row.id)">
                                     <i class="fas fa-pen-to-square me-2 text-info"></i>Hiệu chỉnh
                                 </button>
-                                <button *abpPermission="'ItHelpdesk.Services.Delete'" ngbDropdownItem (click)="delete(row.id, row.name)">
+                                <button *abpPermission="'ItHelpdesk.Services.Delete'" ngbDropdownItem
+                                    (click)="delete(row.id, row.name)">
                                     <i class="fas fa-trash-can me-2 text-danger"></i>Xóa dịch vụ
                                 </button>
                             </div>
@@ -99,7 +105,8 @@
                 </ngx-datatable-column>
 
                 <!-- CỘT MÃ DỊCH VỤ -->
-                <ngx-datatable-column [name]="'::ServiceCode' | abpLocalization" prop="code" [width]="200" [maxWidth]="250">
+                <ngx-datatable-column [name]="'::ServiceCode' | abpLocalization" prop="code" [width]="200"
+                    [maxWidth]="250">
                     <ng-template let-row="row" ngx-datatable-cell-template>
                         <div class="d-flex align-items-center gap-3">
                             <div class="service-avatar-square">
@@ -118,7 +125,8 @@
                 </ngx-datatable-column>
 
                 <!-- CỘT TRẠNG THÁI -->
-                <ngx-datatable-column [name]="'::Status' | abpLocalization" prop="isActive" [width]="150" [maxWidth]="180">
+                <ngx-datatable-column [name]="'::Status' | abpLocalization" prop="isActive" [width]="150"
+                    [maxWidth]="180">
                     <ng-template let-row="row" ngx-datatable-cell-template>
                         <span class="admin-status-badge" [ngClass]="row.isActive ? 'badge-active' : 'badge-inactive'">
                             <span class="status-dot"></span>
@@ -136,7 +144,8 @@
 <abp-modal [(visible)]="isModalOpen" class="admin-dark-modal">
     <ng-template #abpHeader>
         <div class="d-flex align-items-center gap-2">
-            <i class="fas fs-5" style="color: #6366f1;" [ngClass]="selectedService.id ? 'fa-sliders' : 'fa-folder-plus'"></i>
+            <i class="fas fs-5" style="color: #6366f1;"
+                [ngClass]="selectedService.id ? 'fa-sliders' : 'fa-folder-plus'"></i>
             <h5 class="modal-title fw-bold mb-0 text-white">
                 {{ (selectedService.id ? 'Thiết lập dịch vụ' : 'Khởi tạo dịch vụ') }}
             </h5>
@@ -149,14 +158,16 @@
                 <label for="service-code" class="form-label font-semibold small mb-2 text-light">
                     {{ '::ServiceCode' | abpLocalization }} <span class="text-danger">*</span>
                 </label>
-                <input type="text" id="service-code" class="form-control admin-input" formControlName="code" autofocus placeholder="VD: SVC_NET_01" />
+                <input type="text" id="service-code" class="form-control admin-input" formControlName="code" autofocus
+                    placeholder="VD: SVC_NET_01" />
             </div>
 
             <div class="mb-4">
                 <label for="service-name" class="form-label font-semibold small mb-2 text-light">
                     {{ '::ServiceName' | abpLocalization }} <span class="text-danger">*</span>
                 </label>
-                <input type="text" id="service-name" class="form-control admin-input" formControlName="name" placeholder="VD: Dịch vụ Hạ tầng Mạng" />
+                <input type="text" id="service-name" class="form-control admin-input" formControlName="name"
+                    placeholder="VD: Dịch vụ Hạ tầng Mạng" />
             </div>
 
             <div class="status-toggle-wrapper p-4 rounded-3 d-flex align-items-center justify-content-between mt-2">
@@ -167,7 +178,8 @@
                     <div class="text-muted-custom fs-7">Kích hoạt dịch vụ trên hệ thống Helpdesk</div>
                 </div>
                 <div class="form-check form-switch m-0">
-                    <input type="checkbox" id="service-active" class="form-check-input admin-switch" formControlName="isActive" />
+                    <input type="checkbox" id="service-active" class="form-check-input admin-switch"
+                        formControlName="isActive" />
                 </div>
             </div>
         </form>
@@ -177,7 +189,8 @@
         <button type="button" class="btn btn-outline-secondary px-4 rounded-3 text-light border-secondary" abpClose>
             Đóng
         </button>
-        <button form="service-form" class="btn btn-action-primary px-5 rounded-3" (click)="save()" [disabled]="form.invalid">
+        <button form="service-form" class="btn btn-action-primary px-5 rounded-3" (click)="save()"
+            [disabled]="form.invalid">
             <i class="fas fa-check-circle me-2"></i> Xác nhận lưu
         </button>
     </ng-template>

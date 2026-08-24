@@ -15,23 +15,23 @@ import { AdminBaseComponent } from '../shared/base/admin-base.component';
   styleUrls: ['./team.component.scss'],
   standalone: true,
   imports: [
-    CommonModule, 
-    FormsModule, 
-    ReactiveFormsModule, 
-    NgxDatatableModule, 
-    NgbDropdownModule, 
-    ModalComponent, 
-    AutofocusDirective, 
-    NgxDatatableListDirective, 
-    NgxDatatableDefaultDirective, 
-    PermissionDirective, 
-    ModalCloseDirective, 
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    NgxDatatableModule,
+    NgbDropdownModule,
+    ModalComponent,
+    AutofocusDirective,
+    NgxDatatableListDirective,
+    NgxDatatableDefaultDirective,
+    PermissionDirective,
+    ModalCloseDirective,
     LocalizationPipe
   ],
   providers: [ListService],
 })
 export class TeamComponent extends AdminBaseComponent implements OnInit {
-  private teamService = inject(TeamService) as any; 
+  private teamService = inject(TeamService) as any;
   private fb = inject(FormBuilder);
   private confirmation = inject(ConfirmationService);
   private toaster = inject(ToasterService);
@@ -50,8 +50,8 @@ export class TeamComponent extends AdminBaseComponent implements OnInit {
 
     // Dùng this.searchFilter lấy từ BaseComponent thay vì this.search$.value
     const streamCreator = (query: any) => this.teamService.getList({ ...query, filter: this.searchFilter });
-    
-    this.list.hookToQuery(streamCreator).subscribe((response: any) => { 
+
+    this.list.hookToQuery(streamCreator).subscribe((response: any) => {
       this.team = response;
     });
   }
@@ -62,8 +62,8 @@ export class TeamComponent extends AdminBaseComponent implements OnInit {
     this.isModalOpen = true;
   }
 
-  editTeam(id: string) { 
-    this.teamService.get(id).subscribe((data: any) => { 
+  editTeam(id: string) {
+    this.teamService.get(id).subscribe((data: any) => {
       this.selectedTeam = data;
       this.buildForm();
       this.isModalOpen = true;
@@ -71,7 +71,7 @@ export class TeamComponent extends AdminBaseComponent implements OnInit {
   }
 
   delete(id: string, name: string) {
-    this.confirmation.warn('::AreYouSureToDelete', '::AreYouSure').subscribe((status: any) => { 
+    this.confirmation.warn('::AreYouSureToDelete', '::AreYouSure').subscribe((status: any) => {
       if (status === Confirmation.Status.confirm) {
         this.teamService.delete(id).subscribe(() => {
           this.list.get();

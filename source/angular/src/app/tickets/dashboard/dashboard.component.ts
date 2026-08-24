@@ -50,7 +50,7 @@ export class DashboardComponent implements OnInit {
     this.ticketService.getDashboardStats().subscribe({
       next: (res: any) => {
         this.stats = res || {};
-        
+
         // Đồng bộ dữ liệu thật từ API vào biểu đồ ngx-charts
         this.ticketStatusData = [
           { name: 'Mới (New)', value: res.newTickets || 0 },
