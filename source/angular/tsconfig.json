@@ -14,8 +14,9 @@
     "module": "es2020",
     "lib": ["es2018", "dom"],
     "paths": {
+      "@proxy/*": ["src/app/proxy/*"]
     },
-    "useDefineForClassFields": false
+    "useDefineForClassFields": false,
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false

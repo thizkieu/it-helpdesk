@@ -91,5 +91,18 @@ export const APP_ROUTES: Routes = [
     path: 'tickets/knowledge-base',
     loadComponent: () => import('./tickets/knowledge-base/knowledge-base.component').then(c => c.KnowledgeBaseComponent),
     canActivate: [authGuard, permissionGuard],
+  },
+  {
+    path: 'tickets/knowledge-base',
+    loadComponent: () => import('./tickets/knowledge-base/knowledge-base.component').then(c => c.KnowledgeBaseComponent),
+    canActivate: [authGuard, permissionGuard],
+  },
+  // ==========================================
+  // ROUTE CHO TRANG ẢNH ĐẠI DIỆN
+  // ==========================================
+  {
+    path: 'profile-avatar',
+    loadComponent: () => import('./account/avatar-upload/avatar-upload.component').then(c => c.AvatarUploadComponent),
+    canActivate: [authGuard], // Chỉ cần đăng nhập là vào được, không cần check permission
   }
 ];
