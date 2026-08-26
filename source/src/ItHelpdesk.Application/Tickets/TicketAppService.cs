@@ -1,17 +1,21 @@
-﻿using System;
+﻿using ItHelpdesk.Permissions;
 using ItHelpdesk.Priorities;
+using ItHelpdesk.Provider;
+using ItHelpdesk.Provider.Request;
+using ItHelpdesk.Provider.Response;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.EntityFrameworkCore;
-using ItHelpdesk.Permissions;
+using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 using Volo.Abp.BlobStoring;
 using Volo.Abp.Domain.Repositories;
 using Volo.Abp.Identity;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 
 namespace ItHelpdesk.Tickets
 {
@@ -30,6 +34,9 @@ namespace ItHelpdesk.Tickets
         private readonly IRepository<Priority, long> _priorityRepository;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
+        // Khai báo biến Provider để gọi Store
+        private readonly ITicketProvider _ticketProvider;
+
         public TicketAppService(
             IRepository<Ticket, long> repository,
             IRepository<TicketActivity, long> ticketActivityRepository,
@@ -38,7 +45,8 @@ namespace ItHelpdesk.Tickets
             IBlobContainer blobContainer,
             IRepository<TicketAttachment, long> attachmentRepository,
             IRepository<Priority, long> priorityRepository,
-            IHttpContextAccessor httpContextAccessor)
+            IHttpContextAccessor httpContextAccessor,
+            ITicketProvider ticketProvider) // Tiêm ITicketProvider vào đây
             : base(repository)
         {
             _ticketActivityRepository = ticketActivityRepository;
@@ -48,10 +56,64 @@ namespace ItHelpdesk.Tickets
             _attachmentRepository = attachmentRepository;
             _priorityRepository = priorityRepository;
             _httpContextAccessor = httpContextAccessor;
+            _ticketProvider = ticketProvider;
 
             UpdatePolicyName = ItHelpdeskPermissions.Tickets.Edit;
             DeletePolicyName = ItHelpdeskPermissions.Tickets.Delete;
         }
+
+        // ==============================================================================
+        // GHI ĐÈ HÀM GETLIST ĐỂ DÙNG TICKET PROVIDER (GỌI STORE TRỰC TIẾP)
+        // ==============================================================================
+        public override async Task<PagedResultDto<TicketDto>> GetListAsync(GetTicketListDto input)
+        {
+            try
+            {
+                // 1. Đọc thêm các điều kiện lọc nâng cao từ QueryString nếu có (ví dụ: creatorId)
+                var creatorIdStr = _httpContextAccessor.HttpContext?.Request.Query["creatorId"].ToString();
+                Guid? creatorId = !string.IsNullOrEmpty(creatorIdStr) && Guid.TryParse(creatorIdStr, out var cId) ? cId : null;
+
+                // 2. Đóng gói tham số vào TicketListRequest để truyền vào Stored Procedure
+                var request = new TicketListRequest
+                {
+                    FilterText = input.Filter,
+                    Status = input.Status.HasValue ? (int)input.Status.Value : null,
+
+                    // Các điều kiện lọc mở rộng
+                    AssigneeId = input.AssigneeId,
+                    TeamId = input.TeamId,
+                    Unassigned = input.Unassigned,
+                    CreatorId = creatorId,
+
+                    // Thông số phân trang (chuyển đổi SkipCount/MaxResultCount sang PageIndex/PageSize)
+                    PageIndex = input.MaxResultCount > 0 ? input.SkipCount / input.MaxResultCount : 0,
+                    PageSize = input.MaxResultCount > 0 ? input.MaxResultCount : 10
+                };
+
+                // 3. Gọi Provider để thực thi Stored Procedure (sp_Ticket_GetList_V01)
+                var providerData = await _ticketProvider.GetListAsync(request);
+
+                // Tổng số lượng bản ghi (nếu Store có trả về tổng số hoặc lấy theo kích thước danh sách hiện tại)
+                var totalCount = providerData?.Count ?? 0;
+
+                if (providerData == null || totalCount == 0)
+                {
+                    return new PagedResultDto<TicketDto>(0, new List<TicketDto>());
+                }
+
+                // 4. Map từ Model trả về của Provider sang Dto của giao diện
+                var ticketDtos = ObjectMapper.Map<List<TicketListQueryResponse>, List<TicketDto>>(providerData);
+
+                // 5. Trả kết quả chuẩn PagedResultDto về cho Angular/Client
+                return new PagedResultDto<TicketDto>(totalCount, ticketDtos);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[LỖI TẠI TICKET PROVIDER GETLIST]: {ex.Message}");
+                throw;
+            }
+        }
+        // ==============================================================================
 
         public override async Task<TicketDto> CreateAsync(CreateUpdateTicketDto input)
         {
@@ -91,7 +153,6 @@ namespace ItHelpdesk.Tickets
             ticket.TargetResolutionTime = now.AddDays(5);
         }
 
-        // FIX LỖI ROUTING: Ép cứng đường dẫn tuyệt đối cho hàm Upload
         [HttpPost]
         [Route("api/app/ticket/upload-attachment")]
         public async Task UploadAttachmentAsync(UploadAttachmentDto input)
@@ -125,7 +186,6 @@ namespace ItHelpdesk.Tickets
             }
         }
 
-        // FIX LỖI ROUTING: Ép cứng đường dẫn tuyệt đối cho hàm Load Ảnh (Né lỗi 404)
         [HttpGet]
         [Route("api/app/ticket/{ticketId}/attachments")]
         public async Task<List<UploadAttachmentDto>> GetAttachmentsAsync(long ticketId)
@@ -250,45 +310,6 @@ namespace ItHelpdesk.Tickets
             }
 
             return timeline.OrderBy(x => x.CreationTime).ToList();
-        }
-
-        protected override async Task<IQueryable<Ticket>> CreateFilteredQueryAsync(GetTicketListDto input)
-        {
-            var query = await base.CreateFilteredQueryAsync(input);
-
-            if (!string.IsNullOrWhiteSpace(input.Filter))
-            {
-                query = query.Where(x => x.Title.Contains(input.Filter) || x.TicketNo.Contains(input.Filter));
-            }
-
-            if (input.Status.HasValue)
-            {
-                var statusEnum = (TicketStatus)input.Status.Value;
-                query = query.Where(x => x.Status == statusEnum);
-            }
-
-            if (input.AssigneeId.HasValue)
-            {
-                query = query.Where(x => x.AssigneeId == input.AssigneeId.Value);
-            }
-
-            if (input.TeamId.HasValue)
-            {
-                query = query.Where(x => x.TeamId == input.TeamId.Value);
-            }
-
-            if (input.Unassigned.HasValue && input.Unassigned.Value)
-            {
-                query = query.Where(x => x.AssigneeId == null);
-            }
-
-            var creatorIdStr = _httpContextAccessor.HttpContext?.Request.Query["creatorId"].ToString();
-            if (!string.IsNullOrEmpty(creatorIdStr) && Guid.TryParse(creatorIdStr, out var cId))
-            {
-                query = query.Where(x => x.CreatorId == cId);
-            }
-
-            return query;
         }
 
         protected override Ticket MapToEntity(CreateUpdateTicketDto createInput)

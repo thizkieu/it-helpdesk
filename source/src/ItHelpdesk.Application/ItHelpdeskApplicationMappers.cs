@@ -4,6 +4,8 @@ using ItHelpdesk.Categories;
 using ItHelpdesk.LocalizationManagement.Languages;
 using ItHelpdesk.LocalizationManagement.LanguageTexts;
 using ItHelpdesk.Provider;
+using ItHelpdesk.Provider.Request;
+using ItHelpdesk.Provider.Response;
 using ItHelpdesk.SysMasterLists;
 using Riok.Mapperly.Abstractions;
 using Volo.Abp.Mapperly;
@@ -15,7 +17,6 @@ namespace ItHelpdesk;
 public partial class ItHelpdeskBookToBookDtoMapper : MapperBase<Book, BookDto>
 {
     public override partial BookDto Map(Book source);
-
     public override partial void Map(Book source, BookDto destination);
 }
 
@@ -23,7 +24,6 @@ public partial class ItHelpdeskBookToBookDtoMapper : MapperBase<Book, BookDto>
 public partial class ItHelpdeskCreateUpdateBookDtoToBookMapper : MapperBase<CreateUpdateBookDto, Book>
 {
     public override partial Book Map(CreateUpdateBookDto source);
-
     public override partial void Map(CreateUpdateBookDto source, Book destination);
 }
 #endregion
@@ -33,7 +33,6 @@ public partial class ItHelpdeskCreateUpdateBookDtoToBookMapper : MapperBase<Crea
 public partial class ItHelpdeskLanguageToLanguageDtoMapper : MapperBase<Language, LanguageDto>
 {
     public override partial LanguageDto Map(Language source);
-
     public override partial void Map(Language source, LanguageDto destination);
 }
 
@@ -41,7 +40,6 @@ public partial class ItHelpdeskLanguageToLanguageDtoMapper : MapperBase<Language
 public partial class ItHelpdeskCreateUpdateLanguageDtoToLanguageMapper : MapperBase<CreateUpdateLanguageDto, Language>
 {
     public override partial Language Map(CreateUpdateLanguageDto source);
-
     public override partial void Map(CreateUpdateLanguageDto source, Language destination);
 }
 
@@ -49,7 +47,6 @@ public partial class ItHelpdeskCreateUpdateLanguageDtoToLanguageMapper : MapperB
 public partial class ItHelpdeskInputLanguageDtoToLanguageRequestMapper : MapperBase<InputLanguageDto, LanguageRequest>
 {
     public override partial LanguageRequest Map(InputLanguageDto source);
-
     public override partial void Map(InputLanguageDto source, LanguageRequest destination);
 }
 
@@ -57,7 +54,6 @@ public partial class ItHelpdeskInputLanguageDtoToLanguageRequestMapper : MapperB
 public partial class ItHelpdeskLanguageQueryResponseToLanguageDtoMapper : MapperBase<LanguageQueryResponse, LanguageDto>
 {
     public override partial LanguageDto Map(LanguageQueryResponse source);
-
     public override partial void Map(LanguageQueryResponse source, LanguageDto destination);
 }
 #endregion
@@ -67,7 +63,6 @@ public partial class ItHelpdeskLanguageQueryResponseToLanguageDtoMapper : Mapper
 public partial class ItHelpdeskLanguageTextToLanguageTextDtoMapper : MapperBase<LanguageText, LanguageTextDto>
 {
     public override partial LanguageTextDto Map(LanguageText source);
-
     public override partial void Map(LanguageText source, LanguageTextDto destination);
 }
 
@@ -75,7 +70,6 @@ public partial class ItHelpdeskLanguageTextToLanguageTextDtoMapper : MapperBase<
 public partial class ItHelpdeskCreateUpdateLanguageTextDtoToLanguageTextMapper : MapperBase<CreateUpdateLanguageTextDto, LanguageText>
 {
     public override partial LanguageText Map(CreateUpdateLanguageTextDto source);
-
     public override partial void Map(CreateUpdateLanguageTextDto source, LanguageText destination);
 }
 #endregion
@@ -85,7 +79,6 @@ public partial class ItHelpdeskCreateUpdateLanguageTextDtoToLanguageTextMapper :
 public partial class ItHelpdesk_GetSysMasterListInput_To_SysMasterListRequest_Mapper : MapperBase<GetSysMasterListInput, SysMasterListRequest>
 {
     public override partial SysMasterListRequest Map(GetSysMasterListInput source);
-
     public override partial void Map(GetSysMasterListInput source, SysMasterListRequest destination);
 }
 
@@ -93,7 +86,6 @@ public partial class ItHelpdesk_GetSysMasterListInput_To_SysMasterListRequest_Ma
 public partial class ItHelpdesk_PageSysMasterListQueryResponse_To_SysMasterListDto_Mapper : MapperBase<PageSysMasterListQueryResponse, SysMasterListDto>
 {
     public override partial SysMasterListDto Map(PageSysMasterListQueryResponse source);
-
     public override partial void Map(PageSysMasterListQueryResponse source, SysMasterListDto destination);
 }
 
@@ -101,7 +93,6 @@ public partial class ItHelpdesk_PageSysMasterListQueryResponse_To_SysMasterListD
 public partial class ItHelpdesk_InfoSysMasterListQueryResponse_To_SysMasterListDto_Mapper : MapperBase<InfoSysMasterListQueryResponse, SysMasterListDto>
 {
     public override partial SysMasterListDto Map(InfoSysMasterListQueryResponse source);
-
     public override partial void Map(InfoSysMasterListQueryResponse source, SysMasterListDto destination);
 }
 
@@ -109,7 +100,6 @@ public partial class ItHelpdesk_InfoSysMasterListQueryResponse_To_SysMasterListD
 public partial class ItHelpdesk_SysMasterListQueryResponse_To_SysMasterListDto_Mapper : MapperBase<SysMasterListQueryResponse, SysMasterListDto>
 {
     public override partial SysMasterListDto Map(SysMasterListQueryResponse source);
-
     public override partial void Map(SysMasterListQueryResponse source, SysMasterListDto destination);
 }
 
@@ -117,17 +107,17 @@ public partial class ItHelpdesk_SysMasterListQueryResponse_To_SysMasterListDto_M
 public partial class ItHelpdesk_CreateUpdateSysMasterListDto_To_SysMasterListInsertOrUpdateRequest_Mapper : MapperBase<CreateUpdateSysMasterListDto, SysMasterListInsertOrUpdateRequest>
 {
     public override partial SysMasterListInsertOrUpdateRequest Map(CreateUpdateSysMasterListDto source);
-
     public override partial void Map(CreateUpdateSysMasterListDto source, SysMasterListInsertOrUpdateRequest destination);
 }
+
 [Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Target)]
 public partial class ItHelpdesk_DeleteSysMasterListDto_To_SysMasterListDeleteRequest_Mapper : MapperBase<DeleteSysMasterListDto, SysMasterListDeleteRequest>
 {
     public override partial SysMasterListDeleteRequest Map(DeleteSysMasterListDto source);
-
     public override partial void Map(DeleteSysMasterListDto source, SysMasterListDeleteRequest destination);
 }
 #endregion
+
 #region Categories
 [Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Target)]
 public partial class ItHelpdeskCategoryToCategoryDtoMapper : MapperBase<Categories.Category, CategoryDto>
@@ -191,6 +181,7 @@ public partial class ItHelpdeskCreateUpdateTeamDtoToTeamMapper : MapperBase<Team
     public override partial void Map(Teams.CreateUpdateTeamDto source, Teams.Team destination);
 }
 #endregion
+
 #region Tickets
 [Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Target)]
 public partial class ItHelpdeskTicketToTicketDtoMapper : MapperBase<Tickets.Ticket, Tickets.TicketDto>
@@ -204,5 +195,46 @@ public partial class ItHelpdeskCreateUpdateTicketDtoToTicketMapper : MapperBase<
 {
     public override partial Tickets.Ticket Map(Tickets.CreateUpdateTicketDto source);
     public override partial void Map(Tickets.CreateUpdateTicketDto source, Tickets.Ticket destination);
+}
+
+[Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Target)]
+public partial class ItHelpdesk_TicketListQueryResponse_To_TicketDto_Mapper : MapperBase<TicketListQueryResponse, Tickets.TicketDto>
+{
+    // Ép kiểu tường minh trường Status từ int sang Enum TicketStatus
+    [MapProperty(nameof(TicketListQueryResponse.Status), nameof(Tickets.TicketDto.Status))]
+    public override partial Tickets.TicketDto Map(TicketListQueryResponse source);
+    public override partial void Map(TicketListQueryResponse source, Tickets.TicketDto destination);
+
+    // Hàm phụ trợ giúp Mapperly ép kiểu an toàn từ int sang TicketStatus enum
+    protected Tickets.TicketStatus MapStatus(int status) => (Tickets.TicketStatus)status;
+}
+
+[Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Target)]
+public partial class ItHelpdesk_GetTicketListDto_To_TicketListRequest_Mapper : MapperBase<Tickets.GetTicketListDto, TicketListRequest>
+{
+    public override partial TicketListRequest Map(Tickets.GetTicketListDto source);
+    public override partial void Map(Tickets.GetTicketListDto source, TicketListRequest destination);
+}
+
+[Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Target)]
+public partial class ItHelpdesk_CreateUpdateTicketDto_To_TicketInsertOrUpdateRequest_Mapper : MapperBase<Tickets.CreateUpdateTicketDto, TicketInsertOrUpdateRequest>
+{
+    public override partial TicketInsertOrUpdateRequest Map(Tickets.CreateUpdateTicketDto source);
+    public override partial void Map(Tickets.CreateUpdateTicketDto source, TicketInsertOrUpdateRequest destination);
+}
+#endregion
+#region KnowledgeBase
+[Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Target)]
+public partial class ItHelpdeskFaqItemToFaqItemDtoMapper : MapperBase<ItHelpdesk.KnowledgeBase.FaqItem, ItHelpdesk.KnowledgeBase.FaqItemDto>
+{
+    public override partial ItHelpdesk.KnowledgeBase.FaqItemDto Map(ItHelpdesk.KnowledgeBase.FaqItem source);
+    public override partial void Map(ItHelpdesk.KnowledgeBase.FaqItem source, ItHelpdesk.KnowledgeBase.FaqItemDto destination);
+}
+
+[Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Target)]
+public partial class ItHelpdeskCreateUpdateFaqDtoToFaqItemMapper : MapperBase<ItHelpdesk.KnowledgeBase.CreateUpdateFaqDto, ItHelpdesk.KnowledgeBase.FaqItem>
+{
+    public override partial ItHelpdesk.KnowledgeBase.FaqItem Map(ItHelpdesk.KnowledgeBase.CreateUpdateFaqDto source);
+    public override partial void Map(ItHelpdesk.KnowledgeBase.CreateUpdateFaqDto source, ItHelpdesk.KnowledgeBase.FaqItem destination);
 }
 #endregion

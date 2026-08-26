@@ -690,36 +690,53 @@
 body,
 .lpx-wrapper,
 .lpx-content-container {
-    background: radial-gradient(circle at 20% 20%, #1e1b4b 0%, #090d16 60%, #04060b 100%) !important;
+  background: radial-gradient(circle at 20% 20%, #1e1b4b 0%, #090d16 60%, #04060b 100%) !important;
 }
 
 /* Tạo khoảng cách lề (padding) cho vùng chứa nội dung để lộ ra bo góc đẹp mắt */
 .lpx-content {
-    background: transparent !important;
-    padding: 24px !important;
+  background: transparent !important;
+  padding: 24px !important;
 }
 
 /* Thêm hiệu ứng ánh sáng trang trí phía sau (Glow effects) để bớt đơn điệu */
 .lpx-content::before {
-    content: '';
-    position: fixed;
-    top: 10%;
-    left: 15%;
-    width: 400px;
-    height: 400px;
-    background: radial-gradient(circle, rgba(192, 132, 252, 0.08) 0%, transparent 70%);
-    z-index: 0;
-    pointer-events: none;
+  content: '';
+  position: fixed;
+  top: 10%;
+  left: 15%;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(192, 132, 252, 0.08) 0%, transparent 70%);
+  z-index: 0;
+  pointer-events: none;
 }
 
 .lpx-content::after {
-    content: '';
-    position: fixed;
-    bottom: 10%;
-    right: 15%;
-    width: 450px;
-    height: 450px;
-    background: radial-gradient(circle, rgba(236, 72, 153, 0.07) 0%, transparent 70%);
-    z-index: 0;
-    pointer-events: none;
+  content: '';
+  position: fixed;
+  bottom: 10%;
+  right: 15%;
+  width: 450px;
+  height: 450px;
+  background: radial-gradient(circle, rgba(236, 72, 153, 0.07) 0%, transparent 70%);
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* =========================================================
+   11. KHOẢNG CÁCH NAVBAR USER MENU (LEPTON THEME)
+   ========================================================= */
+abp-current-user, 
+.lpt-user-menu, 
+.lpx-nav-user, 
+.dropdown-user,
+.lpx-user-profile {
+  display: flex !important;
+  align-items: center !important;
+
+  /* Tìm mọi thẻ chứa chữ hoặc span ngay cạnh ảnh và ép dịch sang trái để kéo sát lại */
+  span, a, div {
+    margin-left: -5px !important; /* Kéo chữ xích lại gần ảnh, bạn có thể chỉnh từ -8px đến -15px tùy ý */
+  }
 }

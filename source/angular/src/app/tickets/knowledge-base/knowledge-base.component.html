@@ -57,20 +57,25 @@
 
         <div class="row g-4" *ngIf="filteredFaqList.length > 0">
             <div class="col-md-6" *ngFor="let item of filteredFaqList">
-                <div class="card premium-glass-card border-0 shadow-lg p-4 h-100">
+                <!-- Bắt sự kiện click tường minh -->
+                <div class="card premium-glass-card border-0 shadow-lg p-4 h-100 kb-card" style="cursor: pointer;"
+                    (click)="openArticle(item)">
                     <div class="d-flex align-items-start mb-3">
                         <div class="avatar bg-purple-soft bg-opacity-25 text-purple-accent rounded-circle d-flex justify-content-center align-items-center me-3 flex-shrink-0"
                             style="width: 40px; height: 40px;">
-                            <i class="fas fa-question"></i>
+                            <i class="fas {{ item.icon || item.Icon || 'fa-question' }}"></i>
                         </div>
                         <div>
-                            <span class="badge bg-secondary bg-opacity-25 text-info mb-1" *ngIf="item.category">{{
-                                item.category }}</span>
-                            <h5 class="fw-bold text-white mb-0">{{ item.question }}</h5>
+                            <span class="badge bg-secondary bg-opacity-25 text-info mb-1">
+                                {{ item.category || item.Category }}
+                            </span>
+                            <h5 class="fw-bold text-white mb-0 card-title-hover">{{ item.question || item.Question }}
+                            </h5>
                         </div>
                     </div>
-                    <p class="text-light opacity-75 mb-0 ps-5" style="line-height: 1.6;">
-                        {{ item.answer }}
+                    <p class="text-light opacity-75 mb-0 ps-5"
+                        style="line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                        {{ getPlainText(item.answer || item.Answer) }}
                     </p>
                 </div>
             </div>
@@ -79,6 +84,46 @@
         <div class="text-center py-5" *ngIf="filteredFaqList.length === 0">
             <i class="fas fa-search fa-3x mb-3 text-secondary opacity-50"></i>
             <p class="text-light opacity-50 mb-0">Không tìm thấy hướng dẫn phù hợp với từ khóa của bạn.</p>
+        </div>
+    </div>
+
+    <!-- ============================================== -->
+    <!-- ĐƯA MODAL NẰM TRONG KHUNG WRAPPER ĐỂ ĐẢM BẢO DOM BẮT ĐƯỢC -->
+    <!-- ============================================== -->
+    <div class="modal fade" id="faqModal" tabindex="-1" aria-labelledby="faqModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content premium-glass-card border-0 text-white" *ngIf="selectedFaq">
+
+                <div class="modal-header border-secondary border-bottom border-opacity-25">
+                    <div class="d-flex flex-column">
+                        <span class="badge bg-secondary bg-opacity-25 text-info mb-2" style="width: fit-content;">
+                            <i class="fas {{ selectedFaq.icon || selectedFaq.Icon || 'fa-tag' }} me-1"></i> {{
+                            selectedFaq.category || selectedFaq.Category }}
+                        </span>
+                        <h4 class="modal-title fw-bold text-white" id="faqModalLabel">{{ selectedFaq.question ||
+                            selectedFaq.Question }}</h4>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body p-4" style="line-height: 1.8; font-size: 15px;">
+                    <!-- Tóm tắt ngắn -->
+                    <p class="lead text-light opacity-75 mb-4 border-bottom border-secondary border-opacity-25 pb-3">
+                        <em>{{ getPlainText(selectedFaq.answer || selectedFaq.Answer) }}</em>
+                    </p>
+
+                    <!-- Nội dung HTML đầy đủ chuẩn A4 -->
+                    <div [innerHTML]="selectedFaq.fullContent || selectedFaq.answer || selectedFaq.Answer"></div>
+                </div>
+
+                <div class="modal-footer border-secondary border-top border-opacity-25">
+                    <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Đóng</button>
+                    <button type="button" class="btn cute-outline-btn rounded-pill px-4">
+                        <i class="fas fa-thumbs-up me-2"></i>Hữu ích
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 </div>

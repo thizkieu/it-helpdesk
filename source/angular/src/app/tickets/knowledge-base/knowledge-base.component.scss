@@ -25,6 +25,8 @@
         font-size: 0.85rem !important;
     }
 
+    /* CARD TỔNG QUAN - GIỮ NỀN KÍNH MỜ TỐI SANG TRỌNG */
+    .card,
     .premium-glass-card {
         background: rgba(23, 28, 48, 0.85) !important;
         backdrop-filter: blur(20px) !important;
@@ -33,6 +35,18 @@
         border-radius: 24px !important;
         box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6) !important;
         transition: transform 0.3s ease;
+        color: #ffffff !important;
+
+        .card-title,
+        h5,
+        p,
+        span {
+            color: #ffffff !important;
+        }
+
+        .text-light {
+            color: #cbd5e1 !important;
+        }
 
         &:hover {
             transform: translateY(-4px);
@@ -40,31 +54,42 @@
         }
     }
 
+    /* THANH TÌM KIẾM - ĐẸP, CHUẨN XÁC, CLICK ĐƯỢC 100% */
+    .input-group {
+        background: rgba(15, 23, 42, 0.8) !important;
+        border: 1px solid rgba(255, 255, 255, 0.15) !important;
+        border-radius: 16px !important;
+        overflow: hidden;
+        padding: 6px 10px;
+        display: flex;
+        align-items: center;
+
+        &:focus-within {
+            border-color: #f472b6 !important;
+            box-shadow: 0 0 15px rgba(244, 114, 182, 0.25) !important;
+        }
+
+        .input-group-text {
+            background: transparent !important;
+            border: none !important;
+            color: #f472b6 !important;
+        }
+    }
+
     .premium-input {
         background: transparent !important;
         color: #ffffff !important;
+        border: none !important;
+        box-shadow: none !important;
 
         &::placeholder {
-            color: rgba(255, 255, 255, 0.4) !important;
+            color: rgba(255, 255, 255, 0.45) !important;
         }
 
         &:focus {
             background: transparent !important;
             color: #ffffff !important;
             box-shadow: none !important;
-        }
-    }
-
-    .input-group {
-        background: rgba(15, 23, 42, 0.6);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 16px;
-        overflow: hidden;
-        padding: 4px;
-
-        &:focus-within {
-            border-color: #f472b6 !important;
-            box-shadow: 0 0 15px rgba(244, 114, 182, 0.2) !important;
         }
     }
 
@@ -89,8 +114,45 @@
     .text-purple-accent {
         color: #c084fc !important;
     }
+}
 
-    .bg-purple-soft {
-        background-color: #c084fc !important;
+/* --- HOVER CHO CARD & MODAL CHI TIẾT --- */
+.kb-card {
+    .card-title-hover {
+        transition: color 0.2s ease;
+    }
+
+    &:hover {
+        .card-title-hover {
+            color: #f472b6 !important;
+            text-decoration: underline;
+        }
+    }
+}
+
+::ng-deep {
+    #faqModal {
+        .modal-content {
+            background: rgba(15, 23, 42, 0.95) !important;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.15) !important;
+        }
+
+        .modal-body {
+
+            p,
+            li {
+                color: #cbd5e1;
+            }
+
+            code {
+                background-color: rgba(255, 255, 255, 0.1);
+                color: #f472b6;
+                padding: 2px 6px;
+                border-radius: 4px;
+                font-family: monospace;
+            }
+        }
     }
 }

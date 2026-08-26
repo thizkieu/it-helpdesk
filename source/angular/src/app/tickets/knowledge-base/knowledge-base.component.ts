@@ -9,6 +9,8 @@ import { of, Subject, Subscription } from 'rxjs';
 import { catchError, debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { CustomToastService } from '../../shared/services/custom-toast.service';
 
+declare var bootstrap: any;
+
 @Component({
   selector: 'app-knowledge-base',
   standalone: true,
@@ -27,7 +29,8 @@ export class KnowledgeBaseComponent implements OnInit, OnDestroy {
   searchText: string = '';
   isLoading = true;
 
-  // --- BIẾN CHO TÌM KIẾM THÔNG MINH & LỊCH SỬ ---
+  selectedFaq: any = null;
+
   private readonly storageKey = 'kb_search_history';
   recentSearches: string[] = [];
   showSearchSuggestions: boolean = false;
@@ -35,7 +38,6 @@ export class KnowledgeBaseComponent implements OnInit, OnDestroy {
   private searchSubject = new Subject<string>();
   private searchSubscription?: Subscription;
 
-  // Lắng nghe click toàn màn hình để tự động đóng dropdown lịch sử khi click ra ngoài
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent): void {
     if (!this.elementRef.nativeElement.querySelector('.search-wrapper')?.contains(event.target)) {
@@ -47,7 +49,6 @@ export class KnowledgeBaseComponent implements OnInit, OnDestroy {
     this.loadSearchHistory();
     this.loadFaqList();
 
-    // LÕI TÌM KIẾM REAL-TIME: Tự động lọc ngay từ chữ cái đầu tiên
     this.searchSubscription = this.searchSubject.pipe(
       debounceTime(350),
       distinctUntilChanged()
@@ -92,14 +93,31 @@ export class KnowledgeBaseComponent implements OnInit, OnDestroy {
 
   loadMockData(): void {
     this.faqList = [
-      { category: 'Mạng', question: 'Cách đổi mật khẩu Wi-Fi nội bộ công ty', answer: 'Truy cập vào trang quản trị mạng nội bộ, chọn mục Wireless Settings và tiến hành nhập mật khẩu mới theo chuẩn bảo mật.' },
-      { category: 'Phần cứng', question: 'Khắc phục lỗi máy in không kéo giấy', answer: 'Kiểm tra xem khay chứa giấy có bị lệch không, loại bỏ các tờ giấy bị kẹt bên trong bộ phận cuộn lăn.' },
-      { category: 'Bảo mật', question: 'Hướng dẫn kết nối mạng VPN làm việc từ xa', answer: 'Mở phần mềm VPN Client, nhập địa chỉ server công ty và điền tài khoản Active Directory cá nhân để đăng nhập.' }
+      {
+        category: 'Mạng',
+        icon: 'fa-wifi',
+        question: 'Cách đổi mật khẩu Wi-Fi nội bộ công ty',
+        answer: 'Hướng dẫn kiểm tra card mạng, xin lại cấp phát IP từ DHCP Server và cấu hình DNS khi không thể truy cập mạng nội bộ.',
+        fullContent: `
+          <h5 class="text-pink mb-3">1. Nguyên nhân phổ biến</h5>
+          <p>Lỗi này thường xảy ra do xung đột địa chỉ IP (IP Conflict), card mạng bị treo hoặc thiết bị mất kết nối với máy chủ DHCP.</p>
+          <h5 class="text-pink mb-3 mt-4">2. Các bước xử lý chuẩn</h5>
+          <ul>
+            <li class="mb-2"><strong>Bước 1:</strong> Chuột phải vào biểu tượng mạng ở góc phải, chọn <em>Open Network settings</em>.</li>
+            <li class="mb-2"><strong>Bước 2:</strong> Chọn <em>Change adapter options</em>. Chuột phải vào Wi-Fi, chọn <strong>Disable</strong> rồi <strong>Enable</strong> lại.</li>
+            <li class="mb-2"><strong>Bước 3:</strong> Mở CMD. Gõ lệnh <code>ipconfig /release</code> rồi <code>ipconfig /renew</code>.</li>
+          </ul>
+        `
+      }
     ];
     this.filteredFaqList = this.faqList;
   }
 
-  // --- QUẢN LÝ LỊCH SỬ TÌM KIẾM ---
+  getPlainText(html: string): string {
+    if (!html) return '';
+    return html.replace(/<[^>]*>/g, '').substring(0, 150) + '...';
+  }
+
   private loadSearchHistory(): void {
     const saved = localStorage.getItem(this.storageKey);
     this.recentSearches = saved ? JSON.parse(saved) : [];
@@ -124,7 +142,6 @@ export class KnowledgeBaseComponent implements OnInit, OnDestroy {
     localStorage.removeItem(this.storageKey);
   }
 
-  // --- CÁC HÀNH ĐỘNG TÌM KIẾM ---
   onSearchInput(): void {
     this.showSearchSuggestions = true;
     this.searchSubject.next(this.searchText);
@@ -163,5 +180,17 @@ export class KnowledgeBaseComponent implements OnInit, OnDestroy {
         x.category?.toLowerCase().includes(keyword)
       );
     }
+  }
+
+  // Chủ động kích hoạt Modal bằng Bootstrap JS để đảm bảo 100% click là mở lên
+  openArticle(item: any): void {
+    this.selectedFaq = item;
+    setTimeout(() => {
+      const modalElement = document.getElementById('faqModal');
+      if (modalElement && typeof bootstrap !== 'undefined') {
+        const modal = bootstrap.Modal.getOrCreateInstance(modalElement);
+        modal.show();
+      }
+    }, 50);
   }
 }

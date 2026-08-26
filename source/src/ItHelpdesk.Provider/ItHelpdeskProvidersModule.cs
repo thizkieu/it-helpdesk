@@ -13,5 +13,6 @@ public class ItHelpdeskProvidersModule : AbpModule
     {
         context.Services.AddTransient<ILanguagesProvider, LanguagesProvider>();
         context.Services.AddTransient<ISysMasterListsProvider, SysMasterListsProvider>();
+        context.Services.AddTransient<ITicketProvider, TicketProvider>();
     }
 }
