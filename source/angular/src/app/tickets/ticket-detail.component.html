@@ -72,7 +72,7 @@
                                     <div class="d-flex align-items-center mb-2 px-2">
                                         <i class="fas"
                                             [ngClass]="file.type.includes('image') ? 'fa-image text-pink' : 'fa-file-alt text-info'"></i>
-                                        <!-- FIX TRÀN TÊN FILE: Đã thêm max-width và text-truncate chuẩn xác -->
+                                        <!-- Thêm max-width và text-truncate -->
                                         <span class="ms-2 text-light fw-semibold text-truncate"
                                             style="font-size: 0.85rem; max-width: 200px; display: inline-block; vertical-align: middle;"
                                             [title]="file.name">{{ file.name }}</span>
@@ -224,82 +224,91 @@
             <!-- CỘT PHẢI: Thông tin chung & SLA -->
             <div class="col-lg-4">
 
-                <!-- CARD THÔNG TIN SLA -->
-                <div class="card premium-glass-card border-0 shadow-lg mb-4">
+                <!-- CARD THÔNG TIN SLA - Giao diện thẻ hiện đại -->
+                <div class="card premium-glass-card border-0 shadow-lg mb-4 rounded-4"
+                    style="background: rgba(23, 28, 48, 0.85) !important; backdrop-filter: blur(20px);">
                     <div class="card-body p-4">
-                        <h6 class="fw-bold text-pink border-bottom border-secondary border-opacity-25 pb-3 mb-4">
-                            <i class="fas fa-stopwatch me-2"></i>Cam kết chất lượng (SLA)
+                        <h6
+                            class="fw-bold text-pink border-bottom border-secondary border-opacity-25 pb-3 mb-4 d-flex align-items-center">
+                            <i class="fas fa-stopwatch me-2 fs-5"></i> Cam kết chất lượng (SLA)
                         </h6>
 
-                        <div class="mb-3">
-                            <span class="text-muted small text-uppercase d-block mb-1">Hạn tiếp nhận (Response
-                                SLA)</span>
-                            <span class="fw-bold fs-6"
+                        <div class="p-3 rounded-3 mb-3"
+                            style="background: rgba(15, 23, 42, 0.5); border: 1px solid rgba(255, 255, 255, 0.08);">
+                            <span class="text-muted small text-uppercase fw-semibold d-block mb-1">Hạn tiếp nhận
+                                (Response SLA)</span>
+                            <div class="d-flex align-items-center fw-bold fs-6"
                                 [class.text-danger]="getSlaStatus(ticket.targetResponseTime) === 'overdue'"
                                 [class.text-warning]="getSlaStatus(ticket.targetResponseTime) === 'warning'"
                                 [class.text-light]="getSlaStatus(ticket.targetResponseTime) === 'normal'">
-                                <i class="fas"
-                                    [ngClass]="{'fa-exclamation-circle': getSlaStatus(ticket.targetResponseTime) === 'overdue', 'fa-exclamation-triangle': getSlaStatus(ticket.targetResponseTime) === 'warning', 'fa-clock': getSlaStatus(ticket.targetResponseTime) === 'normal'}"
-                                    class="me-1"></i>
-                                {{ ticket.targetResponseTime ? (ticket.targetResponseTime | date: 'dd/MM/yyyy HH:mm') :
-                                'Chưa xác định' }}
-                            </span>
+                                <i class="fas me-2 fs-5"
+                                    [ngClass]="{'fa-exclamation-circle': getSlaStatus(ticket.targetResponseTime) === 'overdue', 'fa-exclamation-triangle': getSlaStatus(ticket.targetResponseTime) === 'warning', 'fa-clock': getSlaStatus(ticket.targetResponseTime) === 'normal'}"></i>
+                                <span>{{ ticket.targetResponseTime ? (ticket.targetResponseTime | date: 'dd/MM/yyyy
+                                    HH:mm') : 'Chưa xác định' }}</span>
+                            </div>
                         </div>
 
-                        <div class="mb-3">
-                            <span class="text-muted small text-uppercase d-block mb-1">Hạn xử lý (Resolution SLA)</span>
-                            <span class="fw-bold fs-6"
+                        <div class="p-3 rounded-3 mb-3"
+                            style="background: rgba(15, 23, 42, 0.5); border: 1px solid rgba(255, 255, 255, 0.08);">
+                            <span class="text-muted small text-uppercase fw-semibold d-block mb-1">Hạn xử lý (Resolution
+                                SLA)</span>
+                            <div class="d-flex align-items-center fw-bold fs-6"
                                 [class.text-danger]="getSlaStatus(ticket.targetResolutionTime) === 'overdue'"
                                 [class.text-warning]="getSlaStatus(ticket.targetResolutionTime) === 'warning'"
                                 [class.text-light]="getSlaStatus(ticket.targetResolutionTime) === 'normal'">
-                                <i class="fas"
-                                    [ngClass]="{'fa-exclamation-circle': getSlaStatus(ticket.targetResolutionTime) === 'overdue', 'fa-exclamation-triangle': getSlaStatus(ticket.targetResolutionTime) === 'warning', 'fa-hourglass-half': getSlaStatus(ticket.targetResolutionTime) === 'normal'}"
-                                    class="me-1"></i>
-                                {{ ticket.targetResolutionTime ? (ticket.targetResolutionTime | date: 'dd/MM/yyyy
-                                HH:mm') : 'Chưa xác định' }}
-                            </span>
+                                <i class="fas me-2 fs-5"
+                                    [ngClass]="{'fa-exclamation-circle': getSlaStatus(ticket.targetResolutionTime) === 'overdue', 'fa-exclamation-triangle': getSlaStatus(ticket.targetResolutionTime) === 'warning', 'fa-hourglass-half': getSlaStatus(ticket.targetResolutionTime) === 'normal'}"></i>
+                                <span>{{ ticket.targetResolutionTime ? (ticket.targetResolutionTime | date: 'dd/MM/yyyy
+                                    HH:mm') : 'Chưa xác định' }}</span>
+                            </div>
                         </div>
 
                         <div class="mt-3 pt-3 border-top border-secondary border-opacity-25" *ngIf="ticket.resolvedAt">
                             <span class="text-success small fw-semibold d-flex align-items-center">
-                                <i class="fas fa-check-circle me-1"></i> Thời gian hoàn tất:
-                                <strong class="ms-1">{{ ticket.resolvedAt | date: 'dd/MM/yyyy HH:mm' }}</strong>
+                                <i class="fas fa-check-circle me-2"></i> Thời gian hoàn tất:
+                                <strong class="ms-1 text-white">{{ ticket.resolvedAt | date: 'dd/MM/yyyy HH:mm'
+                                    }}</strong>
                             </span>
                         </div>
                     </div>
                 </div>
 
                 <!-- Card Thông tin chung -->
-                <div class="card premium-glass-card border-0 shadow-lg mb-4">
+                <div class="card premium-glass-card border-0 shadow-lg mb-4 rounded-4"
+                    style="background: rgba(23, 28, 48, 0.85) !important; backdrop-filter: blur(20px);">
                     <div class="card-body p-4">
-                        <h6 class="fw-bold text-pink border-bottom border-secondary border-opacity-25 pb-3 mb-4">
-                            <i class="fas fa-info-circle me-2"></i>Thông tin chung
+                        <h6
+                            class="fw-bold text-pink border-bottom border-secondary border-opacity-25 pb-3 mb-4 d-flex align-items-center">
+                            <i class="fas fa-info-circle me-2 fs-5"></i> Thông tin chung
                         </h6>
 
-                        <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-3 p-2 rounded-2"
+                            style="background: rgba(15, 23, 42, 0.3);">
                             <span class="text-muted small text-uppercase">Mã Yêu Cầu</span>
-                            <span class="fw-bold text-light bg-dark bg-opacity-50 px-2 py-1 rounded">{{ ticket.ticketNo
-                                }}</span>
+                            <span class="fw-bold text-white font-mono px-2 py-1 rounded"
+                                style="background: rgba(255,255,255,0.08);">{{ ticket.ticketNo }}</span>
                         </div>
 
-                        <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-3 p-2 rounded-2"
+                            style="background: rgba(15, 23, 42, 0.3);">
                             <span class="text-muted small text-uppercase">Trạng thái</span>
                             <span class="badge rounded-pill bg-primary bg-opacity-75 text-white px-3 py-2 shadow-sm">
                                 {{ '::Enum:TicketStatus.' + ticket.status | abpLocalization }}
                             </span>
                         </div>
 
-                        <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-3 p-2 rounded-2"
+                            style="background: rgba(15, 23, 42, 0.3);">
                             <span class="text-muted small text-uppercase">Kỹ thuật viên</span>
-                            <span class="text-light fw-medium">{{ ticket.assigneeId ? 'Đã phân công' : 'Chưa phân công'
-                                }}</span>
+                            <span class="text-info fw-semibold"><i class="fas fa-user-shield me-1"></i> {{
+                                ticket.assigneeId ? 'Đã phân công' : 'Chưa phân công' }}</span>
                         </div>
 
                         <div class="d-grid mt-4" *abpPermission="'ItHelpdesk.Tickets.Edit'">
                             <button
-                                class="btn cute-outline-btn rounded-pill fw-semibold text-pink border-pink shadow-sm"
+                                class="btn cute-outline-btn rounded-pill fw-semibold text-pink border-pink shadow-sm py-2"
                                 (click)="openAssignModal()">
-                                <i class="fas fa-users-cog me-1"></i> Phân công / Chuyển tuyến
+                                <i class="fas fa-users-cog me-2"></i> Phân công / Chuyển tuyến
                             </button>
                         </div>
                     </div>
@@ -308,30 +317,48 @@
 
             <!-- MODAL PHÂN CÔNG / CHUYỂN TUYẾN -->
             <div class="modal fade" [ngClass]="{'show d-block': isAssignModalOpen}" tabindex="-1" aria-hidden="true"
-                [style.background-color]="isAssignModalOpen ? 'rgba(0,0,0,0.5)' : 'transparent'">
+                [style.background-color]="isAssignModalOpen ? 'rgba(0,0,0,0.7)' : 'transparent'"
+                style="backdrop-filter: blur(6px);">
                 <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content premium-glass-card border-0 shadow-lg text-light">
-                        <div class="modal-header border-bottom border-secondary border-opacity-25">
-                            <h5 class="modal-title fw-bold text-pink">
-                                <i class="fas fa-users-cog me-2"></i>Phân công hoặc Chuyển tuyến
-                            </h5>
+                    <div class="modal-content border-0 shadow-2xl text-light rounded-4 overflow-hidden"
+                        style="background: rgba(20, 24, 41, 0.95) !important; backdrop-filter: blur(25px); border: 1px solid rgba(255, 255, 255, 0.1) !important;">
+
+                        <div class="modal-header border-bottom border-secondary border-opacity-25 py-4 px-4">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="rounded-3 d-flex align-items-center justify-content-center"
+                                    style="width: 42px; height: 42px; background: rgba(244, 114, 182, 0.15); color: #f472b6; font-size: 1.2rem;">
+                                    <i class="fas fa-users-cog"></i>
+                                </div>
+                                <div>
+                                    <h5 class="modal-title fw-bold text-white mb-0">Phân công hoặc Chuyển tuyến</h5>
+                                    <small class="text-muted">Điều phối nhân sự và nhóm xử lý yêu cầu kỹ thuật</small>
+                                </div>
+                            </div>
                             <button type="button" class="btn-close btn-close-white" aria-label="Close"
                                 (click)="closeAssignModal()"></button>
                         </div>
+
                         <div class="modal-body p-4">
 
                             <!-- CHỌN KỸ THUẬT VIÊN -->
-                            <div class="mb-3 position-relative">
-                                <label class="form-label text-muted small text-uppercase fw-semibold">Chọn Kỹ thuật viên
-                                    (Assignee)</label>
-                                <input type="text"
-                                    class="form-control premium-input shadow-none p-3 text-white rounded-pill"
-                                    [ngModel]="assigneeSearchText" (ngModelChange)="onSearchTechnician($event)"
-                                    (focus)="showTechDropdown = true" placeholder="Gõ tên kỹ thuật viên để tìm kiếm...">
+                            <div class="mb-4 position-relative">
+                                <label class="form-label text-muted small text-uppercase fw-semibold mb-2">
+                                    <i class="fas fa-user-gear text-pink me-1"></i> Chọn Kỹ thuật viên (Assignee)
+                                </label>
+                                <div class="input-group align-items-center rounded-pill px-3 py-1"
+                                    style="background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(255, 255, 255, 0.15);">
+                                    <span class="text-pink bg-transparent border-0 pe-2"><i
+                                            class="fas fa-search"></i></span>
+                                    <input type="text"
+                                        class="form-control bg-transparent border-0 shadow-none text-white p-2"
+                                        [ngModel]="assigneeSearchText" (ngModelChange)="onSearchTechnician($event)"
+                                        (focus)="showTechDropdown = true"
+                                        placeholder="Gõ tên kỹ thuật viên để tìm kiếm...">
+                                </div>
 
                                 <ul *ngIf="showTechDropdown"
                                     class="dropdown-menu show w-100 shadow-lg border-0 mt-2 p-2 rounded-4"
-                                    style="background: rgba(22, 22, 35, 0.95); backdrop-filter: blur(12px); max-height: 250px; overflow-y: auto; z-index: 1050; border: 1px solid rgba(255,255,255,0.1) !important;">
+                                    style="background: rgba(22, 22, 35, 0.98); backdrop-filter: blur(16px); max-height: 250px; overflow-y: auto; z-index: 1050; border: 1px solid rgba(255,255,255,0.1) !important;">
 
                                     <li *ngIf="recentTechnicians.length > 0 && !assigneeSearchText"
                                         class="dropdown-header text-pink small fw-bold px-3 py-1">
@@ -342,7 +369,7 @@
                                         <div class="d-flex align-items-center">
                                             <i class="fas fa-user-check text-pink me-2 opacity-75"></i>
                                             <div>
-                                                <div class="fw-semibold">{{ item.name }}</div>
+                                                <div class="fw-semibold text-white">{{ item.name }}</div>
                                                 <small class="text-muted" style="font-size: 0.75rem;">{{ item.email
                                                     }}</small>
                                             </div>
@@ -358,7 +385,7 @@
                                     <li *ngFor="let tech of (assigneeSearchText ? filteredTechnicians : allTechnicians)"
                                         (click)="selectTechnician(tech)"
                                         class="dropdown-item text-light rounded-3 cursor-pointer px-3 py-2 my-1 custom-dropdown-item">
-                                        <div class="fw-semibold">{{ tech.name }}</div>
+                                        <div class="fw-semibold text-white">{{ tech.name }}</div>
                                         <small class="text-muted" style="font-size: 0.75rem;">{{ tech.email }}</small>
                                     </li>
                                 </ul>
@@ -366,22 +393,28 @@
 
                             <!-- CHỌN NHÓM (TEAM) -->
                             <div class="mb-3 position-relative">
-                                <label class="form-label text-muted small text-uppercase fw-semibold">Chọn Nhóm phụ
-                                    trách (Team)</label>
-                                <input type="text"
-                                    class="form-control premium-input shadow-none p-3 text-white rounded-pill"
-                                    [ngModel]="teamSearchText" (ngModelChange)="onSearchTeam($event)"
-                                    (focus)="showTeamDropdown = true" placeholder="Gõ tên nhóm / phòng ban...">
+                                <label class="form-label text-muted small text-uppercase fw-semibold mb-2">
+                                    <i class="fas fa-shield-halved text-pink me-1"></i> Chọn Nhóm phụ trách (Team)
+                                </label>
+                                <div class="input-group align-items-center rounded-pill px-3 py-1"
+                                    style="background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(255, 255, 255, 0.15);">
+                                    <span class="text-pink bg-transparent border-0 pe-2"><i
+                                            class="fas fa-search"></i></span>
+                                    <input type="text"
+                                        class="form-control bg-transparent border-0 shadow-none text-white p-2"
+                                        [ngModel]="teamSearchText" (ngModelChange)="onSearchTeam($event)"
+                                        (focus)="showTeamDropdown = true" placeholder="Gõ tên nhóm / phòng ban...">
+                                </div>
 
                                 <ul *ngIf="showTeamDropdown"
                                     class="dropdown-menu show w-100 shadow-lg border-0 mt-2 p-2 rounded-4"
-                                    style="background: rgba(22, 22, 35, 0.95); backdrop-filter: blur(12px); max-height: 250px; overflow-y: auto; z-index: 1050; border: 1px solid rgba(255,255,255,0.1) !important;">
+                                    style="background: rgba(22, 22, 35, 0.98); backdrop-filter: blur(16px); max-height: 250px; overflow-y: auto; z-index: 1050; border: 1px solid rgba(255,255,255,0.1) !important;">
 
                                     <li class="dropdown-header text-info small fw-bold px-3 py-1">Danh sách nhóm</li>
                                     <li *ngFor="let team of (teamSearchText ? filteredTeams : allTeams)"
                                         (click)="selectTeam(team)"
                                         class="dropdown-item text-light rounded-3 cursor-pointer px-3 py-2 my-1 custom-dropdown-item">
-                                        <div class="fw-semibold">{{ team.name }}</div>
+                                        <div class="fw-semibold text-white">{{ team.name }}</div>
                                         <small class="text-muted" style="font-size: 0.75rem;">Mã: {{ team.code
                                             }}</small>
                                     </li>
@@ -389,11 +422,11 @@
                             </div>
 
                         </div>
-                        <div class="modal-footer border-top border-secondary border-opacity-25">
+
+                        <div class="modal-footer border-top border-secondary border-opacity-25 py-3 px-4">
                             <button type="button" class="btn btn-outline-light rounded-pill px-4"
                                 (click)="closeAssignModal()">Hủy</button>
-                            <button type="button"
-                                class="btn premium-btn-submit rounded-pill px-4 text-white fw-semibold"
+                            <button type="button" class="btn cute-gradient-btn rounded-pill px-5 text-white fw-semibold"
                                 (click)="submitAssign()">
                                 <i class="fas fa-check me-1"></i> Xác nhận
                             </button>

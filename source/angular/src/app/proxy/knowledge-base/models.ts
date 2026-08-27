@@ -5,6 +5,7 @@ export interface CreateUpdateFaqDto {
   answer?: string;
   category?: string;
   displayOrder: number;
+  icon?: string;
 }
 
 export interface FaqItemDto extends FullAuditedEntityDto<number> {
@@ -12,4 +13,5 @@ export interface FaqItemDto extends FullAuditedEntityDto<number> {
   answer?: string;
   category?: string;
   displayOrder: number;
+  icon?: string;
 }

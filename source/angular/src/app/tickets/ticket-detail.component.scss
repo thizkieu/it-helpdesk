@@ -199,7 +199,7 @@
         border-color: rgba(255, 255, 255, 0.1) !important;
     }
 
-    /* --- TÙY CHỈNH DROPDOWN GỢI Ý THÔNG MINH (AUTOCOMPLETE) ĐẸP MẮT --- */
+    /* --- TÙY CHỈNH DROPDOWN GỢI Ý THÔNG MINH (AUTOCOMPLETE) --- */
     .dropdown-menu {
         &.show {
             display: block;
@@ -232,7 +232,7 @@
         }
     }
 
-    /* Thanh cuộn tinh tế, gọn gàng cho danh sách gợi ý dài */
+    /* Thanh cuộn cho danh sách gợi ý dài */
     .dropdown-menu::-webkit-scrollbar {
         width: 5px;
     }

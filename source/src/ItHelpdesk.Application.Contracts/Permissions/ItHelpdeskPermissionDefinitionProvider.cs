@@ -56,22 +56,16 @@ namespace ItHelpdesk.Permissions
             teamPermission.AddChild(ItHelpdeskPermissions.Teams.Edit, L("Permission:Teams.Edit"));
             teamPermission.AddChild(ItHelpdeskPermissions.Teams.Delete, L("Permission:Teams.Delete"));
 
-            // ==========================================
             // TICKET PERMISSIONS
-            // ==========================================
             var ticketPermission = myGroup.AddPermission(ItHelpdeskPermissions.Tickets.Default, L("Permission:Tickets"));
             ticketPermission.AddChild(ItHelpdeskPermissions.Tickets.Create, L("Permission:Tickets.Create"));
             ticketPermission.AddChild(ItHelpdeskPermissions.Tickets.Edit, L("Permission:Tickets.Edit"));
             ticketPermission.AddChild(ItHelpdeskPermissions.Tickets.Delete, L("Permission:Tickets.Delete"));
 
-            // ==========================================
             // DASHBOARD PERMISSIONS
-            // ==========================================
             myGroup.AddPermission(ItHelpdeskPermissions.Dashboard.Default, L("Permission:Dashboard"));
 
-            // ==========================================
             // KNOWLEDGE BASE PERMISSIONS
-            // ==========================================
             myGroup.AddPermission(ItHelpdeskPermissions.KnowledgeBase.Default, L("Permission:KnowledgeBase"));
         }
 

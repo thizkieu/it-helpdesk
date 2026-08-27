@@ -1,38 +1,46 @@
-<div class="ticket-page-wrapper py-4" *ngIf="!isLoading">
-    <div class="container-fluid">
+<div class="ticket-page-wrapper py-4 text-white" *ngIf="!isLoading">
+    <div class="container-fluid" style="max-width: 1400px;">
+
+        <!-- HEADER TRANG -->
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
-                <span class="badge cute-badge-pill mb-2"><i class="fas fa-book me-1"></i> Help Center</span>
+                <span class="badge cute-badge-pill mb-2 px-3 py-2"><i class="fas fa-book me-1"></i> Help Center</span>
                 <h2 class="fw-bold page-title mb-0 text-white">Cẩm nang hướng dẫn (Knowledge Base)</h2>
             </div>
             <div>
-                <a routerLink="/tickets/it-queue" class="btn cute-outline-btn rounded-pill px-4 text-pink border-pink">
+                <a routerLink="/tickets/it-queue"
+                    class="btn cute-outline-btn rounded-pill px-4 text-pink border-pink fw-semibold">
                     <i class="fas fa-ticket-alt me-1"></i> Trở về hàng đợi
                 </a>
             </div>
         </div>
 
-        <div class="card premium-glass-card border-0 shadow-lg mb-4 p-4 position-relative search-wrapper"
-            style="z-index: 999;">
-            <div class="input-group">
-                <span class="input-group-text bg-transparent border-end-0 border-secondary text-pink ps-3">
-                    <i class="fas fa-search"></i>
+        <!-- THANH TÌM KIẾM DÀI RỘNG VÀ VIỀN TRẮNG ĐẬM PHÁT SÁNG RÕ RÀNG -->
+        <div class="card premium-glass-card border-0 shadow-lg mb-4 p-4 position-relative search-wrapper rounded-4"
+            style="z-index: 999; background: rgba(23, 28, 48, 0.85) !important; backdrop-filter: blur(20px);">
+
+            <div class="input-group align-items-center rounded-pill px-3 py-1 position-relative"
+                style="background: rgba(15, 23, 42, 0.9); border: 2.5px solid #ffffff; box-shadow: 0 0 25px rgba(255, 255, 255, 0.5), inset 0 0 15px rgba(255, 255, 255, 0.2); backdrop-filter: blur(12px);">
+
+                <span class="text-white opacity-90 bg-transparent border-0 pe-2 ps-2">
+                    <i class="fas fa-search fs-5"></i>
                 </span>
-                <input type="text" class="form-control premium-input text-white border-start-0 ps-2 shadow-none"
+
+                <input type="text" class="form-control bg-transparent border-0 shadow-none text-white p-2"
                     [(ngModel)]="searchText" (input)="onSearchInput()" (keyup.enter)="performSearch()"
                     (focus)="showSearchSuggestions = true"
                     placeholder="Bạn cần tìm hướng dẫn về vấn đề gì (vd: đổi mật khẩu, lỗi máy in, VPN...)?">
 
-                <button *ngIf="searchText"
-                    class="btn btn-link text-muted position-absolute end-0 top-50 translate-middle-y p-0 me-4"
-                    type="button" style="z-index: 10;" (click)="clearSearch()" title="Xóa">
+                <button *ngIf="searchText" class="btn btn-link text-white opacity-75 p-0 ms-2 text-decoration-none me-2"
+                    type="button" (click)="clearSearch()" title="Xóa">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
 
+            <!-- DROPDOWN LỊCH SỬ TÌM KIẾM -->
             <ul *ngIf="showSearchSuggestions && recentSearches.length > 0"
                 class="dropdown-menu show w-100 shadow-lg border-0 mt-2 p-2 rounded-4 position-absolute text-start"
-                style="background: rgba(22, 22, 35, 0.95); backdrop-filter: blur(12px); top: 100%; z-index: 1050; border: 1px solid rgba(255,255,255,0.1) !important; left: 0; right: 0; width: calc(100% - 3rem) !important; margin-left: 1.5rem;">
+                style="background: rgba(22, 22, 35, 0.95); backdrop-filter: blur(16px); top: 100%; z-index: 1050; border: 1px solid rgba(255,255,255,0.1) !important; left: 0; right: 0; width: calc(100% - 3rem) !important; margin-left: 1.5rem;">
 
                 <li class="d-flex justify-content-between align-items-center px-3 py-1 mb-1">
                     <span class="text-pink small fw-bold">
@@ -55,18 +63,19 @@
             </ul>
         </div>
 
+        <!-- DANH SÁCH BÀI VIẾT KNOWLEDGE BASE -->
         <div class="row g-4" *ngIf="filteredFaqList.length > 0">
             <div class="col-md-6" *ngFor="let item of filteredFaqList">
-                <!-- Bắt sự kiện click tường minh -->
-                <div class="card premium-glass-card border-0 shadow-lg p-4 h-100 kb-card" style="cursor: pointer;"
+                <div class="card premium-glass-card border-0 shadow-lg p-4 h-100 kb-card rounded-4"
+                    style="cursor: pointer; background: rgba(23, 28, 48, 0.85) !important; backdrop-filter: blur(20px);"
                     (click)="openArticle(item)">
                     <div class="d-flex align-items-start mb-3">
-                        <div class="avatar bg-purple-soft bg-opacity-25 text-purple-accent rounded-circle d-flex justify-content-center align-items-center me-3 flex-shrink-0"
-                            style="width: 40px; height: 40px;">
+                        <div class="avatar bg-purple-soft bg-opacity-25 text-purple-accent rounded-circle d-flex justify-content-center align-items-center me-3 flex-shrink-0 shadow-sm"
+                            style="width: 44px; height: 44px; background: rgba(244, 114, 182, 0.15); color: #f472b6;">
                             <i class="fas {{ item.icon || item.Icon || 'fa-question' }}"></i>
                         </div>
                         <div>
-                            <span class="badge bg-secondary bg-opacity-25 text-info mb-1">
+                            <span class="badge bg-secondary bg-opacity-25 text-info mb-1 px-2 py-1 rounded">
                                 {{ item.category || item.Category }}
                             </span>
                             <h5 class="fw-bold text-white mb-0 card-title-hover">{{ item.question || item.Question }}
@@ -81,22 +90,24 @@
             </div>
         </div>
 
+        <!-- TRẠNG THÁI KHÔNG TÌM THẤY -->
         <div class="text-center py-5" *ngIf="filteredFaqList.length === 0">
             <i class="fas fa-search fa-3x mb-3 text-secondary opacity-50"></i>
             <p class="text-light opacity-50 mb-0">Không tìm thấy hướng dẫn phù hợp với từ khóa của bạn.</p>
         </div>
     </div>
 
-    <!-- ============================================== -->
-    <!-- ĐƯA MODAL NẰM TRONG KHUNG WRAPPER ĐỂ ĐẢM BẢO DOM BẮT ĐƯỢC -->
-    <!-- ============================================== -->
-    <div class="modal fade" id="faqModal" tabindex="-1" aria-labelledby="faqModalLabel" aria-hidden="true">
+    <!-- MODAL XEM CHI TIẾT BÀI VIẾT -->
+    <div class="modal fade" id="faqModal" tabindex="-1" aria-labelledby="faqModalLabel" aria-hidden="true"
+        style="backdrop-filter: blur(4px);">
         <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-            <div class="modal-content premium-glass-card border-0 text-white" *ngIf="selectedFaq">
+            <div class="modal-content border-0 text-white rounded-4 overflow-hidden" *ngIf="selectedFaq"
+                style="background: rgba(20, 24, 41, 0.95) !important; backdrop-filter: blur(25px); border: 1px solid rgba(255, 255, 255, 0.1) !important;">
 
-                <div class="modal-header border-secondary border-bottom border-opacity-25">
+                <div class="modal-header border-secondary border-bottom border-opacity-25 py-4 px-4">
                     <div class="d-flex flex-column">
-                        <span class="badge bg-secondary bg-opacity-25 text-info mb-2" style="width: fit-content;">
+                        <span class="badge bg-secondary bg-opacity-25 text-info mb-2 px-2 py-1 rounded"
+                            style="width: fit-content;">
                             <i class="fas {{ selectedFaq.icon || selectedFaq.Icon || 'fa-tag' }} me-1"></i> {{
                             selectedFaq.category || selectedFaq.Category }}
                         </span>
@@ -108,18 +119,16 @@
                 </div>
 
                 <div class="modal-body p-4" style="line-height: 1.8; font-size: 15px;">
-                    <!-- Tóm tắt ngắn -->
                     <p class="lead text-light opacity-75 mb-4 border-bottom border-secondary border-opacity-25 pb-3">
                         <em>{{ getPlainText(selectedFaq.answer || selectedFaq.Answer) }}</em>
                     </p>
-
-                    <!-- Nội dung HTML đầy đủ chuẩn A4 -->
                     <div [innerHTML]="selectedFaq.fullContent || selectedFaq.answer || selectedFaq.Answer"></div>
                 </div>
 
-                <div class="modal-footer border-secondary border-top border-opacity-25">
-                    <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Đóng</button>
-                    <button type="button" class="btn cute-outline-btn rounded-pill px-4">
+                <div class="modal-footer border-secondary border-top border-opacity-25 py-3 px-4">
+                    <button type="button" class="btn btn-outline-light rounded-pill px-4"
+                        data-bs-dismiss="modal">Đóng</button>
+                    <button type="button" class="btn cute-outline-btn rounded-pill px-4 text-pink border-pink">
                         <i class="fas fa-thumbs-up me-2"></i>Hữu ích
                     </button>
                 </div>
@@ -128,8 +137,12 @@
     </div>
 </div>
 
-<div class="text-center py-5 min-vh-100 d-flex justify-content-center align-items-center" *ngIf="isLoading">
-    <div class="spinner-border text-pink" role="status" style="width: 3rem; height: 3rem;">
-        <span class="visually-hidden">Loading...</span>
+<!-- LOADING STATE -->
+<div class="text-center py-5 min-vh-100 d-flex justify-content-center align-items-center text-white" *ngIf="isLoading">
+    <div class="d-flex flex-column align-items-center">
+        <i class="fas fa-cat fa-3x text-pink bounce-icon mb-3"></i>
+        <div class="spinner-border text-pink" role="status" style="width: 2rem; height: 2rem;">
+            <span class="visually-hidden">Đang tải dữ liệu...</span>
+        </div>
     </div>
 </div>

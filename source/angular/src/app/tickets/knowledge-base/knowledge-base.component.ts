@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, inject, ElementRef, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { FaqItemService } from '@proxy/knowledge-base';
 import { CoreModule, RestService } from '@abp/ng.core';
@@ -8,8 +8,6 @@ import { ThemeSharedModule } from '@abp/ng.theme.shared';
 import { of, Subject, Subscription } from 'rxjs';
 import { catchError, debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { CustomToastService } from '../../shared/services/custom-toast.service';
-
-declare var bootstrap: any;
 
 @Component({
   selector: 'app-knowledge-base',
@@ -23,13 +21,12 @@ export class KnowledgeBaseComponent implements OnInit, OnDestroy {
   private restService = inject(RestService);
   private customToast = inject(CustomToastService);
   private elementRef = inject(ElementRef);
+  private router = inject(Router); // Inject Router để chuyển trang
 
   faqList: any[] = [];
   filteredFaqList: any[] = [];
   searchText: string = '';
   isLoading = true;
-
-  selectedFaq: any = null;
 
   private readonly storageKey = 'kb_search_history';
   recentSearches: string[] = [];
@@ -94,6 +91,7 @@ export class KnowledgeBaseComponent implements OnInit, OnDestroy {
   loadMockData(): void {
     this.faqList = [
       {
+        id: 1, // Thêm ID giả lập để chuyển trang không bị lỗi
         category: 'Mạng',
         icon: 'fa-wifi',
         question: 'Cách đổi mật khẩu Wi-Fi nội bộ công ty',
@@ -182,15 +180,11 @@ export class KnowledgeBaseComponent implements OnInit, OnDestroy {
     }
   }
 
-  // Chủ động kích hoạt Modal bằng Bootstrap JS để đảm bảo 100% click là mở lên
+  // Hàm xử lý click vào card - Chuyển sang trang detail mới
   openArticle(item: any): void {
-    this.selectedFaq = item;
-    setTimeout(() => {
-      const modalElement = document.getElementById('faqModal');
-      if (modalElement && typeof bootstrap !== 'undefined') {
-        const modal = bootstrap.Modal.getOrCreateInstance(modalElement);
-        modal.show();
-      }
-    }, 50);
+    // Truyền dữ liệu bài viết sang trang detail thông qua router state
+    this.router.navigate(['/tickets/knowledge-base', item.id || 1], {
+      state: { article: item }
+    });
   }
 }

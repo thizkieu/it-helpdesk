@@ -1,46 +1,55 @@
-<div class="ticket-page-wrapper py-4">
-  <div class="container-fluid">
+<div class="ticket-page-wrapper py-4 text-white">
+  <div class="container-fluid" style="max-width: 1400px;">
 
+    <!-- HEADER TRANG -->
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
       <div>
-        <span class="badge cute-badge-pill mb-2">
+        <span class="badge cute-badge-pill mb-2 px-3 py-2"
+          style="background: rgba(192, 132, 252, 0.15); border: 1px dashed rgba(192, 132, 252, 0.45); color: #c084fc;">
           <i class="fas fa-paw me-1"></i> Quản Lý Yêu Cầu • IT Helpdesk
         </span>
         <h2 class="fw-bold page-title mb-0 text-white">Yêu Cầu Của Tôi</h2>
       </div>
       <div>
-        <a routerLink="/tickets/create"
-          class="btn cute-outline-btn rounded-pill px-4 text-pink border-pink fw-semibold">
+        <a routerLink="/tickets/create" class="btn rounded-pill px-4 fw-semibold"
+          style="border: 1px solid #c084fc; color: #c084fc; background: transparent;">
           <i class="fas fa-plus me-2"></i> Tạo yêu cầu mới
         </a>
       </div>
     </div>
 
-    <div class="card premium-glass-card border-0 shadow-lg mb-4 p-3 p-md-4">
-      <div class="row align-items-center g-3">
-        <div class="col-md-6 col-lg-5 position-relative search-wrapper" style="z-index: 999;">
-          <div class="input-group">
-            <span class="input-group-text bg-transparent border-end-0 border-secondary border-opacity-25 text-pink">
-              <i class="fas fa-search"></i>
+    <!-- THANH TÌM KIẾM & BỘ LỌC -->
+    <div class="card premium-glass-card border-0 shadow-lg mb-4 p-4 rounded-4"
+      style="background: rgba(23, 28, 48, 0.85) !important; backdrop-filter: blur(20px);">
+      <div class="row align-items-center justify-content-between g-4">
+
+        <!-- Ô Search -->
+        <div class="col-xl-5 col-lg-5 position-relative search-wrapper" style="z-index: 999;">
+          <div class="input-group align-items-center rounded-pill px-3 py-1 position-relative"
+            style="background: rgba(15, 23, 42, 0.9); border: 2.5px solid #ffffff; box-shadow: 0 0 25px rgba(255, 255, 255, 0.5), inset 0 0 15px rgba(255, 255, 255, 0.2); backdrop-filter: blur(12px);">
+
+            <span class="text-white opacity-90 bg-transparent border-0 pe-2 ps-2">
+              <i class="fas fa-search fs-5"></i>
             </span>
 
-            <input type="text" class="form-control premium-input text-white border-start-0 ps-0 shadow-none"
+            <input type="text" class="form-control bg-transparent border-0 shadow-none text-white p-2"
               placeholder="Tìm theo mã ticket, tiêu đề..." [(ngModel)]="filters.filterText" (input)="onSearchInput()"
-              (keyup.enter)="performSearch()" (focus)="showSearchSuggestions = true" />
+              (keyup.enter)="performSearch()" (focus)="showSearchSuggestions = true" style="font-size: 0.9rem;" />
 
             <button *ngIf="filters.filterText"
-              class="btn btn-link text-muted position-absolute end-0 top-50 translate-middle-y p-0 me-3" type="button"
-              style="z-index: 10;" (click)="clearSearch()" title="Xóa tìm kiếm">
+              class="btn btn-link text-white opacity-75 p-0 ms-2 text-decoration-none me-2" type="button"
+              (click)="clearSearch()" title="Xóa tìm kiếm">
               <i class="fas fa-times"></i>
             </button>
           </div>
 
+          <!-- Dropdown Lịch sử tìm kiếm -->
           <ul *ngIf="showSearchSuggestions && recentSearches.length > 0"
             class="dropdown-menu show w-100 shadow-lg border-0 mt-2 p-2 rounded-4 position-absolute text-start"
             style="background: rgba(22, 22, 35, 0.95); backdrop-filter: blur(16px); top: 100%; z-index: 1050; border: 1px solid rgba(255,255,255,0.1) !important; left: 0; right: 0;">
 
             <li class="d-flex justify-content-between align-items-center px-3 py-1 mb-1">
-              <span class="text-pink small fw-bold">
+              <span class="small fw-bold" style="color: #c084fc;">
                 <i class="fas fa-history me-1"></i> Lịch sử tìm kiếm
               </span>
               <button class="btn btn-link text-muted p-0 small text-decoration-none" style="font-size: 0.75rem;"
@@ -55,77 +64,142 @@
                 <i class="fas fa-search text-purple-accent me-2 opacity-75"></i>
                 <span>{{ item }}</span>
               </div>
-              <i class="fas fa-times text-muted hover-pink ms-2 p-1" title="Xóa mục này"
+              <i class="fas fa-times text-muted ms-2 p-1" title="Xóa mục này"
                 (click)="removeSearchHistoryItem(item, $event)"></i>
             </li>
           </ul>
         </div>
 
-        <div class="col-md-4 col-lg-3">
-          <select class="form-select custom-bordered-select py-2 shadow-none rounded-pill" [(ngModel)]="filters.status"
-            (change)="onFilterChange()">
-            <option [ngValue]="null">-- Tất cả trạng thái --</option>
-            <option [ngValue]="1">Mới (New)</option>
-            <option [ngValue]="2">Đã phân công</option>
-            <option [ngValue]="3">Đang xử lý</option>
-            <option [ngValue]="6">Đã giải quyết</option>
-            <option [ngValue]="7">Đã đóng</option>
-          </select>
+        <!-- Dropdown Trạng thái & Tổng số yêu cầu -->
+        <div class="col-xl-7 col-lg-7 d-flex flex-wrap justify-content-lg-end align-items-center gap-3">
+          <div style="min-width: 240px;">
+            <select
+              class="form-select custom-bordered-select py-2 px-3 shadow-none rounded-pill bg-dark text-white border-secondary border-opacity-75"
+              [(ngModel)]="filters.status" (change)="onFilterChange()">
+              <option [ngValue]="null">-- Tất cả trạng thái --</option>
+              <option [ngValue]="1">Mới (New)</option>
+              <option [ngValue]="2">Đã phân công</option>
+              <option [ngValue]="3">Đang xử lý</option>
+              <option [ngValue]="6">Đã giải quyết</option>
+              <option [ngValue]="7">Đã đóng</option>
+            </select>
+          </div>
+
+          <div class="text-muted small px-3">
+            Tổng cộng: <span class="fw-bold" style="color: #c084fc;">{{ data.totalCount }}</span> yêu cầu
+          </div>
         </div>
 
-        <div class="col-md-2 col-lg-4 text-md-end text-muted small">
-          Tổng cộng: <span class="text-pink fw-bold">{{ data.totalCount }}</span> yêu cầu
-        </div>
       </div>
     </div>
 
-    <div class="card premium-glass-card border-0 shadow-lg overflow-hidden">
+    <!-- KHUNG BẢNG DỮ LIỆU -->
+    <div class="card premium-glass-card border-0 shadow-lg overflow-hidden rounded-4"
+      style="background: rgba(23, 28, 48, 0.85) !important; backdrop-filter: blur(20px);">
       <div class="card-body p-0">
-        <ngx-datatable [rows]="data.items" [count]="data.totalCount" [list]="list" default [columnMode]="'force'"
-          [scrollbarH]="true">
 
-          <ngx-datatable-column [name]="'::TicketNo' | abpLocalization" prop="ticketNo" [width]="160">
+        <!-- CSS CĂN CHỈNH BẢNG THẲNG TẮP & GIÃN ĐỀU -->
+        <style>
+          ::ng-deep .ngx-datatable.admin-datatable .datatable-header .datatable-header-cell {
+            color: #ffffff !important;
+            font-weight: 700 !important;
+            padding: 16px 20px !important;
+          }
+
+          ::ng-deep .ngx-datatable.admin-datatable .datatable-body-cell {
+            padding: 16px 20px !important;
+          }
+
+          /* ÉP CĂN GIỮA (Trạng thái, Thời gian, Thao tác) */
+          ::ng-deep .ngx-datatable.admin-datatable .align-center-col .datatable-header-cell-template-wrap {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+          }
+
+          ::ng-deep .ngx-datatable.admin-datatable .align-center-col {
+            display: flex !important;
+            justify-content: center !important;
+            align-items: center !important;
+          }
+
+          /* ÉP CĂN TRÁI ĐỂ CHỮ ĐỀU NHAU (Mã Ticket, Tiêu đề) */
+          ::ng-deep .ngx-datatable.admin-datatable .align-left-col .datatable-header-cell-template-wrap {
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            width: 100%;
+          }
+
+          ::ng-deep .ngx-datatable.admin-datatable .align-left-col {
+            display: flex !important;
+            justify-content: flex-start !important;
+            align-items: center !important;
+            text-align: left !important;
+            overflow: hidden;
+            /* Cực kỳ quan trọng để text-truncate hoạt động */
+          }
+        </style>
+
+        <!-- Dùng lại 'force' để bảng tự giãn đều lấp đầy chỗ trống -->
+        <ngx-datatable [rows]="data.items" [count]="data.totalCount" [list]="list" default [columnMode]="'force'"
+          [scrollbarH]="true" [rowHeight]="'auto'" class="admin-datatable w-100">
+
+          <!-- CỘT MÃ YÊU CẦU -->
+          <ngx-datatable-column [name]="'::TicketNo' | abpLocalization" prop="ticketNo" [minWidth]="260"
+            headerClass="align-left-col" cellClass="align-left-col">
             <ng-template let-row="row" ngx-datatable-cell-template>
-              <a [routerLink]="['/tickets/detail', row.id]" class="fw-bold text-decoration-none text-purple-accent">
+              <a [routerLink]="['/tickets/detail', row.id]"
+                class="fw-bold text-decoration-none w-100 text-truncate text-start"
+                style="color: #a78bfa; letter-spacing: 0.5px;">
                 {{ row.ticketNo }}
               </a>
             </ng-template>
           </ngx-datatable-column>
 
-          <ngx-datatable-column [name]="'::TicketSubject' | abpLocalization" prop="title" [width]="300">
+          <!-- CỘT TIÊU ĐỀ YÊU CẦU-->
+          <ngx-datatable-column [name]="'::TicketSubject' | abpLocalization" prop="title" [minWidth]="400"
+            headerClass="align-left-col" cellClass="align-left-col">
             <ng-template let-row="row" ngx-datatable-cell-template>
-              <span class="fw-medium" [ngClass]="row.isOverdue ? 'text-danger fw-bold' : 'text-light'">
-                {{ row.title }}
-                <i *ngIf="row.isOverdue" class="fas fa-fire ms-2 text-danger" title="Quá hạn xử lý!"></i>
-              </span>
+              <div class="d-flex align-items-center w-100" style="max-width: 100%;">
+                <span class="fw-medium text-truncate" title="{{ row.title }}"
+                  [ngClass]="row.isOverdue ? 'text-danger fw-bold' : 'text-light'">
+                  {{ row.title }}
+                </span>
+                <i *ngIf="row.isOverdue" class="fas fa-fire ms-2 text-danger flex-shrink-0" title="Quá hạn xử lý!"></i>
+              </div>
             </ng-template>
           </ngx-datatable-column>
 
-          <ngx-datatable-column [name]="'::Status' | abpLocalization" prop="status" [width]="150">
+          <!-- CỘT TRẠNG THÁI -->
+          <ngx-datatable-column [name]="'::Status' | abpLocalization" prop="status" [minWidth]="160"
+            headerClass="align-center-col" cellClass="align-center-col">
             <ng-template let-row="row" ngx-datatable-cell-template>
-              <span class="badge bg-primary bg-opacity-75 rounded-pill px-3 py-2">
+              <span class="badge bg-primary bg-opacity-75 rounded-pill px-4 py-2 text-white shadow-sm">
                 {{ '::Enum:TicketStatus.' + row.status | abpLocalization }}
               </span>
             </ng-template>
           </ngx-datatable-column>
 
-          <ngx-datatable-column [name]="'::CreationTime' | abpLocalization" prop="creationTime" [width]="180">
+          <!-- CỘT THỜI GIAN TẠO -->
+          <ngx-datatable-column [name]="'::CreationTime' | abpLocalization" prop="creationTime" [minWidth]="180"
+            headerClass="align-center-col" cellClass="align-center-col">
             <ng-template let-row="row" ngx-datatable-cell-template>
-              <span class="small text-muted">{{ row.creationTime | date:'dd/MM/yyyy HH:mm' }}</span>
+              <span class="text-muted fw-medium" style="font-size: 0.95rem;">{{ row.creationTime | date:'dd/MM/yyyy
+                HH:mm' }}</span>
             </ng-template>
           </ngx-datatable-column>
 
-          <!-- FIX LỖI GIAO DIỆN NÚT LỆCH -->
-          <ngx-datatable-column name="Thao tác" [sortable]="false" [width]="150">
+          <!-- CỘT THAO TÁC -->
+          <ngx-datatable-column name="Thao tác" [sortable]="false" [minWidth]="160" headerClass="align-center-col"
+            cellClass="align-center-col">
             <ng-template let-row="row" ngx-datatable-cell-template>
-              <div
-                style="display: flex; flex-direction: row; gap: 8px; align-items: center; white-space: nowrap; min-width: 120px;">
-                <a [routerLink]="['/tickets/detail', row.id]"
-                  class="btn btn-sm cute-outline-btn rounded-pill px-3 text-pink border-pink fw-semibold"
-                  style="white-space: nowrap;">
-                  <i class="fas fa-paw me-1"></i> Chi tiết
-                </a>
-              </div>
+              <a [routerLink]="['/tickets/detail', row.id]"
+                class="btn btn-sm cute-outline-btn rounded-pill px-4 py-1 fw-semibold d-inline-flex justify-content-center align-items-center gap-2"
+                style="white-space: nowrap; border: 1px solid #f472b6; color: #f472b6; background: rgba(244, 114, 182, 0.05); transition: all 0.3s ease;">
+                <i class="fas fa-paw"></i> Chi tiết
+              </a>
             </ng-template>
           </ngx-datatable-column>
 

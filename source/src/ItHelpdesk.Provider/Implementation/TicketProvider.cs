@@ -10,7 +10,7 @@ namespace ItHelpdesk.Provider
 {
     public class TicketProvider : ITicketProvider
     {
-        // Interface thực thi SQL thuần nội bộ của team bạn
+        // Interface thực thi SQL thuần nội bộ của team
         private readonly IConnectSqlExecute _sql;
         private readonly ILogger<TicketProvider> _logger;
 

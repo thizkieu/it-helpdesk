@@ -94,7 +94,7 @@ export class CreateTicketComponent implements OnInit {
       next: (createdTicket: any) => {
         const ticketId = createdTicket?.id;
 
-        // FIX LỖI 500: Chuyển đổi File sang Base64 chuẩn với UploadAttachmentDto
+        //Chuyển đổi File sang Base64 chuẩn với UploadAttachmentDto
         if (this.selectedFiles.length > 0 && ticketId) {
           let uploadCount = 0;
           this.selectedFiles.forEach(file => {

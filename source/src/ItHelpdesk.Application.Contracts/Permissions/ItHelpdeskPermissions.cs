@@ -72,9 +72,7 @@ namespace ItHelpdesk.Permissions
             public const string Delete = Default + ".Delete";
         }
 
-        // ==========================================
-        // BỔ SUNG: Phân quyền cho Tickets
-        // ==========================================
+        // Phân quyền cho Tickets
         public static class Tickets
         {
             public const string Default = GroupName + ".Tickets";
@@ -83,17 +81,13 @@ namespace ItHelpdesk.Permissions
             public const string Delete = Default + ".Delete";
         }
 
-        // ==========================================
-        // BỔ SUNG: Phân quyền cho Dashboard
-        // ==========================================
+        // Phân quyền cho Dashboard
         public static class Dashboard
         {
             public const string Default = GroupName + ".Dashboard";
         }
 
-        // ==========================================
-        // BỔ SUNG: Phân quyền cho Knowledge Base
-        // ==========================================
+        // Phân quyền cho Knowledge Base
         public static class KnowledgeBase
         {
             public const string Default = GroupName + ".KnowledgeBase";

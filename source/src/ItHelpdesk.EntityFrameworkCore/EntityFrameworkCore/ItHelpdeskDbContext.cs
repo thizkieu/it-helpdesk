@@ -190,8 +190,9 @@ public class ItHelpdeskDbContext :
             b.ConfigureByConvention();
 
             b.Property(x => x.Question).IsRequired().HasMaxLength(500);
-            b.Property(x => x.Answer).IsRequired();
+            b.Property(x => x.Answer).IsRequired(); // Answer để NVARCHAR(MAX) vì chứa HTML dài
             b.Property(x => x.Category).HasMaxLength(128);
+            b.Property(x => x.Icon).HasMaxLength(50); // <-- THÊM DÒNG NÀY ĐỂ TỐI ƯU CỘT ICON
         });
 
         builder.ApplyConfiguration(new LanguageEfCoreMapping());

@@ -8,4 +8,5 @@ import * as Services from './services';
 import * as SysMasterLists from './sys-master-lists';
 import * as Teams from './teams';
 import * as Tickets from './tickets';
-export { Books, Categories, KnowledgeBase, LocalizationManagement, Priorities, Profile, Services, SysMasterLists, Teams, Tickets };
+import * as Users from './users';
+export { Books, Categories, KnowledgeBase, LocalizationManagement, Priorities, Profile, Services, SysMasterLists, Teams, Tickets, Users };

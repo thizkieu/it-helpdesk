@@ -61,14 +61,44 @@
     &::placeholder {
         color: #64748b !important;
     }
+}
 
-    option {
-        background-color: #0f172a;
-        color: #f8fafc;
+// Ép màu tối cho thẻ select và danh sách option sổ xuống
+.custom-select-box {
+    background-color: rgba(15, 23, 42, 0.8) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    color: #f8fafc !important;
+    border-radius: 14px !important;
+
+    &:focus {
+        background-color: rgba(15, 23, 42, 0.95) !important;
+        border-color: #c084fc !important;
+        box-shadow: 0 0 15px rgba(192, 132, 252, 0.35) !important;
+        color: #ffffff !important;
+        outline: none;
     }
 }
 
-// Khu vực upload có con mèo dễ thương
+::ng-deep {
+    select.custom-select-box {
+        option {
+            background-color: #0f172a !important;
+            color: #ffffff !important;
+            padding: 12px !important;
+        }
+        
+        /* Cố định chữ luôn sáng rõ, chống chìm màu khi hover/chọn */
+        option:checked,
+        option:hover,
+        option:focus {
+            background-color: #312e81 !important;
+            color: #ffffff !important;
+            font-weight: 600 !important;
+        }
+    }
+}
+
+// Khu vực upload
 .upload-zone {
     background-color: rgba(15, 23, 42, 0.5);
     border: 2px dashed rgba(244, 114, 182, 0.3);
@@ -112,12 +142,10 @@
 }
 
 @keyframes bounceCat {
-
     0%,
     100% {
         transform: translateY(0);
     }
-
     50% {
         transform: translateY(-5px);
     }

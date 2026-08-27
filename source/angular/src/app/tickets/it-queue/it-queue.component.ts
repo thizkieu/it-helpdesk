@@ -22,7 +22,7 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 export class ItQueueComponent implements OnInit, OnDestroy {
   private ticketService = inject(TicketService);
   private teamService = inject(TeamService);
-  private restService = inject(RestService); // Thêm RestService
+  private restService = inject(RestService); 
   public readonly list = inject(ListService);
   private customToast = inject(CustomToastService);
   private config = inject(ConfigStateService);
@@ -115,7 +115,7 @@ export class ItQueueComponent implements OnInit, OnDestroy {
       this.teams = res.items || [];
     });
 
-    // FIX LỖI CHƯA GÁN: Gọi API lấy danh sách kỹ thuật viên để đổ vào Modal
+    //Gọi API lấy danh sách kỹ thuật viên để đổ vào Modal
     this.restService.request<void, any>({
       method: 'GET',
       url: '/api/identity/users?maxResultCount=100',

@@ -1,5 +1,5 @@
 ﻿using Volo.Abp.Account;
-using Volo.Abp.BlobStoring; // 1. Thêm namespace này vào đầu file
+using Volo.Abp.BlobStoring;
 using Volo.Abp.FeatureManagement;
 using Volo.Abp.Identity;
 using Volo.Abp.Modularity;

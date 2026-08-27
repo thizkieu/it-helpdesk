@@ -1,10 +1,12 @@
 <div class="admin-page-container">
     <div class="card card-admin-main shadow-lg border-0 rounded-4">
 
-        <!-- HEADER TRANG QUẢN TRỊ -->
+        <!-- HEADER TRANG QUẢN TRỊ & THANH TÌM KIẾM / THÊM MỚI TÍCH HỢP -->
         <div class="card-header border-bottom py-4 px-4">
-            <div class="row align-items-center">
-                <div class="col-md-6">
+            <div class="row align-items-center justify-content-between g-3">
+
+                <!-- Tiêu đề trang -->
+                <div class="col-xl-5 col-lg-4">
                     <div class="d-flex align-items-center gap-3">
                         <span class="header-icon-box">
                             <i class="fas fa-layer-group"></i>
@@ -13,15 +15,65 @@
                             <h4 class="card-title fw-bold mb-1 title-gradient">
                                 {{ '::Menu:Categories' | abpLocalization }}
                             </h4>
-                            <small class="text-muted-custom fs-7">Hệ thống phân loại sự cố và điều phối yêu cầu IT cấp
-                                cao</small>
+                            <small class="text-muted-custom fs-7">Hệ thống phân loại sự cố và điều phối yêu cầu IT cấp cao</small>
                         </div>
                     </div>
                 </div>
 
-                <div class="col-md-6 text-md-end mt-3 mt-md-0">
+                <!-- Cụm chức năng Search -->
+                <div class="col-xl-7 col-lg-8 d-flex flex-wrap justify-content-lg-end align-items-center gap-3">
+
+                    <!-- Ô Search -->
+                    <div class="position-relative flex-grow-1 flex-lg-grow-0"
+                        style="min-width: 320px; max-width: 420px;">
+                        
+                        <div class="input-group align-items-center rounded-pill px-3 py-1 position-relative"
+                            style="background: rgba(15, 23, 42, 0.75); border: 1.5px solid rgba(255, 255, 255, 0.6); box-shadow: 0 0 15px rgba(255, 255, 255, 0.25), inset 0 0 10px rgba(255, 255, 255, 0.08); backdrop-filter: blur(12px);">
+                            
+                            <span class="text-white opacity-75 bg-transparent border-0 pe-2">
+                                <i class="fas fa-search"></i>
+                            </span>
+
+                            <input type="text"
+                                class="form-control bg-transparent border-0 shadow-none text-white p-0"
+                                placeholder="Tra cứu theo mã hoặc tên danh mục..." [(ngModel)]="searchFilter"
+                                (input)="onSearchInput()" (keyup.enter)="performSearch()"
+                                (focus)="showSearchSuggestions = true" style="font-size: 0.9rem;" />
+
+                            <button *ngIf="searchFilter"
+                                class="btn btn-link text-muted p-0 ms-2 text-decoration-none"
+                                type="button" (click)="clearSearch()" title="Xóa tìm kiếm">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+
+                        <!-- Dropdown Lịch sử & Gợi ý tìm kiếm -->
+                        <ul *ngIf="showSearchSuggestions && recentSearches.length > 0"
+                            class="dropdown-menu show w-100 shadow-lg border-0 mt-2 p-2 rounded-4 position-absolute text-start"
+                            style="background: rgba(22, 22, 35, 0.95); backdrop-filter: blur(12px); z-index: 1050; border: 1px solid rgba(255,255,255,0.1) !important;">
+                            <li class="d-flex justify-content-between align-items-center px-3 py-1 mb-1">
+                                <span class="text-pink small fw-bold">
+                                    <i class="fas fa-history me-1"></i> Lịch sử tìm kiếm gần đây
+                                </span>
+                                <button class="btn btn-link text-muted p-0 small text-decoration-none"
+                                    style="font-size: 0.75rem;" (click)="clearAllSearchHistory($event)">
+                                    Xóa tất cả
+                                </button>
+                            </li>
+                            <li *ngFor="let item of recentSearches" (click)="selectSearchSuggestion(item)"
+                                class="dropdown-item text-light rounded-3 cursor-pointer px-3 py-2 my-1 d-flex justify-content-between align-items-center custom-dropdown-item">
+                                <div>
+                                    <i class="fas fa-search text-purple-accent me-2 opacity-75"></i> {{ item }}
+                                </div>
+                                <i class="fas fa-times text-muted hover-pink ms-2 p-1" title="Xóa mục này"
+                                    (click)="removeSearchHistoryItem(item, $event)"></i>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Nút Thêm Mới -->
                     <button *abpPermission="'ItHelpdesk.Categories.Create'" id="create"
-                        class="btn btn-action-primary rounded-3 px-4 fw-semibold" type="button"
+                        class="btn btn-action-primary rounded-3 px-4 fw-semibold text-nowrap" type="button"
                         (click)="createCategory()">
                         <i class="fa fa-plus me-2"></i><span>{{ '::NewCategory' | abpLocalization }}</span>
                     </button>
@@ -29,211 +81,210 @@
             </div>
         </div>
 
-        <!-- THANH CÔNG CỤ TÌM KIẾM & BỘ LỌC THÔNG MINH -->
+        <!-- THANH CÔNG CỤ TỔNG SỐ BẢN GHI -->
         <div class="card-body border-bottom toolbar-wrapper py-3 px-4">
-            <div class="row g-3 align-items-center">
-                <div class="col-md-6 position-relative">
-                    <div class="input-group search-box-wrapper position-relative">
-                        <span class="input-group-text border-end-0 ps-3 bg-transparent text-pink">
-                            <i class="fas fa-search"></i>
-                        </span>
-
-                        <!-- Ô tìm kiếm thông minh đồng bộ với Base Component -->
-                        <input type="text" class="form-control border-start-0 ps-0 shadow-none text-white"
-                            placeholder="Tra cứu theo mã hoặc tên danh mục..." [(ngModel)]="searchFilter"
-                            (input)="onSearchInput()" (keyup.enter)="performSearch()"
-                            (focus)="showSearchSuggestions = true" />
-
-                        <!-- Nút xóa (chỉ hiện khi có chữ) -->
-                        <button *ngIf="searchFilter"
-                            class="btn btn-link text-muted position-absolute end-0 top-50 translate-middle-y p-0 me-3"
-                            type="button" style="z-index: 10;" (click)="clearSearch()" title="Xóa tìm kiếm">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </div>
-
-                    <!-- Dropdown Lịch sử & Gợi ý tìm kiếm -->
-                    <ul *ngIf="showSearchSuggestions && recentSearches.length > 0"
-                        class="dropdown-menu show w-100 shadow-lg border-0 mt-2 p-2 rounded-4 position-absolute"
-                        style="background: rgba(22, 22, 35, 0.95); backdrop-filter: blur(12px); z-index: 1050; border: 1px solid rgba(255,255,255,0.1) !important;">
-                        <li class="d-flex justify-content-between align-items-center px-3 py-1 mb-1">
-                            <span class="text-pink small fw-bold">
-                                <i class="fas fa-history me-1"></i> Lịch sử tìm kiếm gần đây
-                            </span>
-                            <button class="btn btn-link text-muted p-0 small text-decoration-none"
-                                style="font-size: 0.75rem;" (click)="clearAllSearchHistory($event)">
-                                Xóa tất cả
-                            </button>
-                        </li>
-                        <li *ngFor="let item of recentSearches" (click)="selectSearchSuggestion(item)"
-                            class="dropdown-item text-light rounded-3 cursor-pointer px-3 py-2 my-1 d-flex justify-content-between align-items-center custom-dropdown-item">
-                            <div>
-                                <i class="fas fa-search text-purple-accent me-2 opacity-75"></i> {{ item }}
-                            </div>
-                            <i class="fas fa-times text-muted hover-pink ms-2 p-1" title="Xóa mục này"
-                                (click)="removeSearchHistoryItem(item, $event)"></i>
-                        </li>
-                    </ul>
-
-                    <div class="col-md-6 text-md-end">
-                        <span class="text-muted-custom fs-7 me-2">
-                            Tổng số hệ thống ghi nhận: <strong class="text-white ms-1">{{ category.totalCount
-                                }}</strong> danh mục
-                        </span>
-                    </div>
+            <div class="row align-items-center justify-content-end">
+                <div class="col-md-6 text-md-end">
+                    <span class="text-muted-custom fs-7">
+                        Tổng số hệ thống ghi nhận: <strong class="text-white ms-1">{{ category.totalCount }}</strong>
+                        danh mục
+                    </span>
                 </div>
-            </div>
-
-            <!-- NỘI DUNG BẢNG QUẢN TRỊ -->
-            <div class="card-body p-0">
-                <ngx-datatable [rows]="category.items" [count]="category.totalCount" [list]="list" default
-                    class="admin-datatable">
-
-                    <!-- CỘT THAO TÁC -->
-                    <ngx-datatable-column [name]="'::Actions' | abpLocalization" [width]="150" [maxWidth]="150"
-                        [sortable]="false">
-                        <ng-template let-row="row" ngx-datatable-cell-template>
-                            <div ngbDropdown container="body" class="d-inline-block">
-                                <button class="btn btn-sm btn-action-dropdown rounded-3" ngbDropdownToggle>
-                                    <i class="fa fa-cog me-1"></i> Điều phối
-                                </button>
-                                <div ngbDropdownMenu class="dropdown-menu-admin shadow-lg border">
-                                    <button *abpPermission="'ItHelpdesk.Categories.Edit'" ngbDropdownItem
-                                        (click)="editCategory(row.id)">
-                                        <i class="fas fa-pen-to-square me-2 text-info"></i>Hiệu chỉnh
-                                    </button>
-                                    <button *abpPermission="'ItHelpdesk.Categories.Delete'" ngbDropdownItem
-                                        (click)="delete(row.id, row.name)">
-                                        <i class="fas fa-trash-can me-2 text-danger"></i>Xóa hệ thống
-                                    </button>
-                                </div>
-                            </div>
-                        </ng-template>
-                    </ngx-datatable-column>
-
-                    <!-- CỘT MÃ DANH MỤC -->
-                    <ngx-datatable-column [name]="'::CategoryCode' | abpLocalization" prop="code" [width]="200"
-                        [maxWidth]="250">
-                        <ng-template let-row="row" ngx-datatable-cell-template>
-                            <div class="d-flex align-items-center gap-3">
-                                <div class="category-avatar-square">
-                                    {{ row.code ? (row.code.charAt(0) | uppercase) : 'C' }}
-                                </div>
-                                <span class="fw-bold font-mono fs-6 text-white">{{ row.code }}</span>
-                            </div>
-                        </ng-template>
-                    </ngx-datatable-column>
-
-                    <!-- CỘT TÊN DANH MỤC -->
-                    <ngx-datatable-column [name]="'::CategoryName' | abpLocalization" prop="name">
-                        <ng-template let-row="row" ngx-datatable-cell-template>
-                            <span class="fw-medium text-light">{{ row.name }}</span>
-                        </ng-template>
-                    </ngx-datatable-column>
-
-                    <!-- CỘT ĐỘI NGŨ MẶC ĐỊNH -->
-                    <ngx-datatable-column [name]="'::DefaultTeam' | abpLocalization" prop="defaultTeamId" [width]="220"
-                        [maxWidth]="250">
-                        <ng-template let-row="row" ngx-datatable-cell-template>
-                            <span class="team-badge">
-                                <i class="fas fa-shield-halved me-2"></i> {{ row.defaultTeamId || 'Chưa phân bổ' }}
-                            </span>
-                        </ng-template>
-                    </ngx-datatable-column>
-
-                    <!-- CỘT TRẠNG THÁI -->
-                    <ngx-datatable-column [name]="'::Status' | abpLocalization" prop="isActive" [width]="150"
-                        [maxWidth]="180">
-                        <ng-template let-row="row" ngx-datatable-cell-template>
-                            <span class="admin-status-badge"
-                                [ngClass]="row.isActive ? 'badge-active' : 'badge-inactive'">
-                                <span class="status-dot"></span>
-                                {{ (row.isActive ? '::Active' : '::Inactive') | abpLocalization }}
-                            </span>
-                        </ng-template>
-                    </ngx-datatable-column>
-
-                </ngx-datatable>
             </div>
         </div>
-    </div>
 
-    <!-- MODAL CẤU HÌNH DANH MỤC -->
-    <abp-modal [(visible)]="isModalOpen" size="lg" class="admin-dark-modal">
-        <ng-template #abpHeader>
-            <div class="d-flex align-items-center gap-2">
-                <i class="fas fs-5" style="color: #6366f1;"
-                    [ngClass]="selectedCategory.id ? 'fa-sliders' : 'fa-folder-plus'"></i>
-                <h5 class="modal-title fw-bold mb-0 text-white">
-                    {{ (selectedCategory.id ? 'Thiết lập danh mục' : 'Khởi tạo danh mục') }}
-                </h5>
-            </div>
-        </ng-template>
+        <!-- NỘI DUNG BẢNG QUẢN TRỊ -->
+        <div class="card-body p-0">
+            
+            <!-- CSS ÉP CĂN LỀ & GIÃN ĐỀU CỘT CHO BẢNG -->
+            <style>
+                ::ng-deep .ngx-datatable.admin-datatable .datatable-header .datatable-header-cell {
+                    color: #ffffff !important;
+                    font-weight: 700 !important;
+                    padding: 16px 20px !important;
+                }
+                ::ng-deep .ngx-datatable.admin-datatable .datatable-body-cell {
+                    padding: 16px 20px !important; 
+                }
+                
+                /* Ép căn giữa */
+                ::ng-deep .ngx-datatable.admin-datatable .align-center-col .datatable-header-cell-template-wrap {
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    width: 100%;
+                }
+                ::ng-deep .ngx-datatable.admin-datatable .align-center-col {
+                    display: flex !important;
+                    justify-content: center !important;
+                    align-items: center !important;
+                }
 
-        <ng-template #abpBody>
-            <form [formGroup]="form" (ngSubmit)="save()" id="category-form" class="admin-form-container">
-                <div class="row">
-                    <div class="col-md-6 mb-4">
-                        <label class="form-label font-semibold small mb-2 text-light">
-                            {{ '::CategoryCode' | abpLocalization }} <span class="text-danger">*</span>
-                        </label>
-                        <input type="text" class="form-control admin-input" formControlName="code" autofocus
-                            placeholder="VD: SYS_NETWORK" />
-                    </div>
+                /* Ép căn trái */
+                ::ng-deep .ngx-datatable.admin-datatable .align-left-col .datatable-header-cell-template-wrap {
+                    display: flex;
+                    justify-content: flex-start;
+                    align-items: center;
+                    width: 100%;
+                }
+                ::ng-deep .ngx-datatable.admin-datatable .align-left-col {
+                    display: flex !important;
+                    justify-content: flex-start !important;
+                    align-items: center !important;
+                    text-align: left !important;
+                    overflow: hidden; 
+                }
+            </style>
 
-                    <div class="col-md-6 mb-4">
-                        <label class="form-label font-semibold small mb-2 text-light">
-                            {{ '::CategoryName' | abpLocalization }} <span class="text-danger">*</span>
-                        </label>
-                        <input type="text" class="form-control admin-input" formControlName="name"
-                            placeholder="VD: Hạ tầng mạng" />
-                    </div>
-                </div>
+            <!-- BẢNG DỮ LIỆU: Bật columnMode = 'force' để tự giãn đều -->
+            <ngx-datatable [rows]="category.items" [count]="category.totalCount" [list]="list" default
+                [columnMode]="'force'" [scrollbarH]="true" [rowHeight]="'auto'" class="admin-datatable w-100">
 
-                <div class="row">
-                    <div class="col-md-6 mb-4">
-                        <label class="form-label font-semibold small mb-2 text-light">
-                            {{ '::ParentCategory' | abpLocalization }}
-                        </label>
-                        <select class="form-select admin-input" formControlName="parentId">
-                            <option [ngValue]="null">-- Root (Cấp cao nhất) --</option>
-                            <option *ngFor="let cat of parentCategories" [value]="cat.id">{{ cat.name }}</option>
-                        </select>
-                    </div>
-
-                    <div class="col-md-6 mb-4">
-                        <label class="form-label font-semibold small mb-2 text-light">
-                            {{ '::DefaultTeam' | abpLocalization }}
-                        </label>
-                        <select class="form-select admin-input" formControlName="defaultTeamId">
-                            <option [ngValue]="null">-- Chọn nhóm nghiệp vụ --</option>
-                            <option *ngFor="let team of teams" [value]="team.id">{{ team.name }}</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="status-toggle-wrapper p-4 rounded-3 d-flex align-items-center justify-content-between mt-2">
-                    <div>
-                        <label class="form-label fw-bold mb-1 cursor-pointer text-white">
-                            Trạng thái hoạt động
-                        </label>
-                        <div class="text-muted-custom fs-7">Cho phép người dùng cuối nhìn thấy và chọn danh mục này
+                <!-- CỘT THAO TÁC (Căn giữa) -->
+                <ngx-datatable-column [name]="'::Actions' | abpLocalization" [width]="150" [minWidth]="140"
+                    [sortable]="false" headerClass="align-center-col" cellClass="align-center-col">
+                    <ng-template let-row="row" ngx-datatable-cell-template>
+                        <div ngbDropdown container="body" class="d-inline-block">
+                            <button class="btn btn-sm btn-action-dropdown rounded-3" ngbDropdownToggle>
+                                <i class="fa fa-cog me-1"></i> Điều phối
+                            </button>
+                            <div ngbDropdownMenu class="dropdown-menu-admin shadow-lg border">
+                                <button *abpPermission="'ItHelpdesk.Categories.Edit'" ngbDropdownItem
+                                    (click)="editCategory(row.id)">
+                                    <i class="fas fa-pen-to-square me-2 text-info"></i>Hiệu chỉnh
+                                </button>
+                                <button *abpPermission="'ItHelpdesk.Categories.Delete'" ngbDropdownItem
+                                    (click)="delete(row.id, row.name)">
+                                    <i class="fas fa-trash-can me-2 text-danger"></i>Xóa hệ thống
+                                </button>
+                            </div>
                         </div>
-                    </div>
-                    <div class="form-check form-switch m-0">
-                        <input type="checkbox" class="form-check-input admin-switch" formControlName="isActive" />
+                    </ng-template>
+                </ngx-datatable-column>
+
+                <!-- CỘT MÃ DANH MỤC (Căn trái) -->
+                <ngx-datatable-column [name]="'::CategoryCode' | abpLocalization" prop="code" [width]="250" [minWidth]="200"
+                    headerClass="align-left-col" cellClass="align-left-col">
+                    <ng-template let-row="row" ngx-datatable-cell-template>
+                        <div class="d-flex align-items-center gap-3 w-100">
+                            <div class="category-avatar-square flex-shrink-0">
+                                {{ row.code ? (row.code.charAt(0) | uppercase) : 'C' }}
+                            </div>
+                            <span class="fw-bold font-mono fs-6 text-white text-truncate">{{ row.code }}</span>
+                        </div>
+                    </ng-template>
+                </ngx-datatable-column>
+
+                <!-- CỘT TÊN DANH MỤC (Căn trái) -->
+                <ngx-datatable-column [name]="'::CategoryName' | abpLocalization" prop="name" [width]="350" [minWidth]="250"
+                    headerClass="align-left-col" cellClass="align-left-col">
+                    <ng-template let-row="row" ngx-datatable-cell-template>
+                        <span class="fw-medium text-light text-truncate w-100">{{ row.name }}</span>
+                    </ng-template>
+                </ngx-datatable-column>
+
+                <!-- CỘT ĐỘI NGŨ MẶC ĐỊNH (Căn giữa) -->
+                <ngx-datatable-column [name]="'::DefaultTeam' | abpLocalization" prop="defaultTeamId" [width]="250" [minWidth]="200"
+                    headerClass="align-center-col" cellClass="align-center-col">
+                    <ng-template let-row="row" ngx-datatable-cell-template>
+                        <span class="team-badge text-truncate text-center" style="max-width: 100%;">
+                            <i class="fas fa-shield-halved me-2"></i> {{ row.defaultTeamId || 'Chưa phân bổ' }}
+                        </span>
+                    </ng-template>
+                </ngx-datatable-column>
+
+                <!-- CỘT TRẠNG THÁI (Căn giữa) -->
+                <ngx-datatable-column [name]="'::Status' | abpLocalization" prop="isActive" [width]="180" [minWidth]="160"
+                    headerClass="align-center-col" cellClass="align-center-col">
+                    <ng-template let-row="row" ngx-datatable-cell-template>
+                        <span class="admin-status-badge d-inline-block text-center" [ngClass]="row.isActive ? 'badge-active' : 'badge-inactive'" style="min-width: 120px;">
+                            <span class="status-dot"></span>
+                            {{ (row.isActive ? '::Active' : '::Inactive') | abpLocalization }}
+                        </span>
+                    </ng-template>
+                </ngx-datatable-column>
+
+            </ngx-datatable>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL CẤU HÌNH DANH MỤC (Giữ nguyên) -->
+<abp-modal [(visible)]="isModalOpen" size="lg" class="admin-dark-modal">
+    <ng-template #abpHeader>
+        <div class="d-flex align-items-center gap-2">
+            <i class="fas fs-5" style="color: #6366f1;"
+                [ngClass]="selectedCategory.id ? 'fa-sliders' : 'fa-folder-plus'"></i>
+            <h5 class="modal-title fw-bold mb-0 text-white">
+                {{ (selectedCategory.id ? 'Thiết lập danh mục' : 'Khởi tạo danh mục') }}
+            </h5>
+        </div>
+    </ng-template>
+
+    <ng-template #abpBody>
+        <form [formGroup]="form" (ngSubmit)="save()" id="category-form" class="admin-form-container">
+            <div class="row">
+                <div class="col-md-6 mb-4">
+                    <label class="form-label font-semibold small mb-2 text-light">
+                        {{ '::CategoryCode' | abpLocalization }} <span class="text-danger">*</span>
+                    </label>
+                    <input type="text" class="form-control admin-input" formControlName="code" autofocus
+                        placeholder="VD: SYS_NETWORK" />
+                </div>
+
+                <div class="col-md-6 mb-4">
+                    <label class="form-label font-semibold small mb-2 text-light">
+                        {{ '::CategoryName' | abpLocalization }} <span class="text-danger">*</span>
+                    </label>
+                    <input type="text" class="form-control admin-input" formControlName="name"
+                        placeholder="VD: Hạ tầng mạng" />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-4">
+                    <label class="form-label font-semibold small mb-2 text-light">
+                        {{ '::ParentCategory' | abpLocalization }}
+                    </label>
+                    <select class="form-select admin-input" formControlName="parentId">
+                        <option [ngValue]="null">-- Root (Cấp cao nhất) --</option>
+                        <option *ngFor="let cat of parentCategories" [value]="cat.id">{{ cat.name }}</option>
+                    </select>
+                </div>
+
+                <div class="col-md-6 mb-4">
+                    <label class="form-label font-semibold small mb-2 text-light">
+                        {{ '::DefaultTeam' | abpLocalization }}
+                    </label>
+                    <select class="form-select admin-input" formControlName="defaultTeamId">
+                        <option [ngValue]="null">-- Chọn nhóm nghiệp vụ --</option>
+                        <option *ngFor="let team of teams" [value]="team.id">{{ team.name }}</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="status-toggle-wrapper p-4 rounded-3 d-flex align-items-center justify-content-between mt-2">
+                <div>
+                    <label class="form-label fw-bold mb-1 cursor-pointer text-white">
+                        Trạng thái hoạt động
+                    </label>
+                    <div class="text-muted-custom fs-7">Cho phép người dùng cuối nhìn thấy và chọn danh mục này
                     </div>
                 </div>
-            </form>
-        </ng-template>
+                <div class="form-check form-switch m-0">
+                    <input type="checkbox" class="form-check-input admin-switch" formControlName="isActive" />
+                </div>
+            </div>
+        </form>
+    </ng-template>
 
-        <ng-template #abpFooter>
-            <button type="button" class="btn btn-outline-secondary px-4 rounded-3 text-light border-secondary" abpClose>
-                Đóng
-            </button>
-            <button form="category-form" class="btn btn-action-primary px-5 rounded-3" (click)="save()"
-                [disabled]="form.invalid">
-                <i class="fas fa-check-circle me-2"></i> Xác nhận lưu
-            </button>
-        </ng-template>
-    </abp-modal>
+    <ng-template #abpFooter>
+        <button type="button" class="btn btn-outline-secondary px-4 rounded-3 text-light border-secondary" abpClose>
+            Đóng
+        </button>
+        <button form="category-form" class="btn btn-action-primary px-5 rounded-3" (click)="save()"
+            [disabled]="form.invalid">
+            <i class="fas fa-check-circle me-2"></i> Xác nhận lưu
+        </button>
+    </ng-template>
+</abp-modal>

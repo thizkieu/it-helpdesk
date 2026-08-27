@@ -149,6 +149,34 @@
     "Menu:Dashboard": "Bảng điều khiển KPI",
     "Menu:KnowledgeBase": "Cẩm nang hướng dẫn (KB)",
     "Permission:Dashboard": "Xem Bảng điều khiển KPI",
-    "Permission:KnowledgeBase": "Quản lý Cẩm nang hướng dẫn"
+    "Permission:KnowledgeBase": "Quản lý Cẩm nang hướng dẫn",
+
+    "FaqItem": "Cẩm nang",
+    "Menu:KnowledgeBaseDetail": "Chi tiết cẩm nang",
+
+    "Question": "Câu hỏi / Tiêu đề",
+    "Answer": "Nội dung chi tiết",
+    "Icon": "Biểu tượng (Icon)",
+    "DisplayOrder": "Thứ tự hiển thị",
+
+    "NewFaqItem": "Thêm bài viết mới",
+    "EditFaqItem": "Sửa bài viết",
+    "FaqItemDeletionConfirmationMessage": "Bạn có chắc chắn muốn xóa bài hướng dẫn '{0}' không?",
+
+    "Permission:KnowledgeBase.Create": "Tạo bài viết cẩm nang",
+    "Permission:KnowledgeBase.Edit": "Cập nhật bài viết cẩm nang",
+    "Permission:KnowledgeBase.Delete": "Xóa bài viết cẩm nang",
+
+    "KnowledgeBase:SearchPlaceholder": "Bạn cần tìm hướng dẫn về vấn đề gì (vd: đổi mật khẩu, lỗi máy in, VPN...)?",
+    "KnowledgeBase:RecentSearches": "Lịch sử tìm kiếm gần đây",
+    "KnowledgeBase:ClearAll": "Xóa tất cả",
+    "KnowledgeBase:NotFound": "Không tìm thấy hướng dẫn phù hợp với từ khóa của bạn.",
+    "KnowledgeBase:HelpfulQuestion": "Tài liệu này có hữu ích với bạn không?",
+    "KnowledgeBase:Yes": "Có",
+    "KnowledgeBase:No": "Không",
+    "KnowledgeBase:BackToLibrary": "Quay lại cẩm nang",
+    "KnowledgeBase:LastUpdated": "Cập nhật gần đây",
+    "KnowledgeBase:ITDepartment": "IT Helpdesk",
+    "KnowledgeBase:FetchError": "Lỗi tải dữ liệu cẩm nang từ máy chủ."
   }
 }

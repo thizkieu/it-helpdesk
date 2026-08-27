@@ -46,7 +46,7 @@ namespace ItHelpdesk.Tickets
             IRepository<TicketAttachment, long> attachmentRepository,
             IRepository<Priority, long> priorityRepository,
             IHttpContextAccessor httpContextAccessor,
-            ITicketProvider ticketProvider) // Tiêm ITicketProvider vào đây
+            ITicketProvider ticketProvider)
             : base(repository)
         {
             _ticketActivityRepository = ticketActivityRepository;
@@ -63,17 +63,27 @@ namespace ItHelpdesk.Tickets
         }
 
         // ==============================================================================
-        // GHI ĐÈ HÀM GETLIST ĐỂ DÙNG TICKET PROVIDER (GỌI STORE TRỰC TIẾP)
+        // GHI ĐÈ HÀM GETLIST: BẢO MẬT & PHÂN QUYỀN XEM TICKET THEO VAI TRÒ
         // ==============================================================================
         public override async Task<PagedResultDto<TicketDto>> GetListAsync(GetTicketListDto input)
         {
             try
             {
-                // 1. Đọc thêm các điều kiện lọc nâng cao từ QueryString nếu có (ví dụ: creatorId)
-                var creatorIdStr = _httpContextAccessor.HttpContext?.Request.Query["creatorId"].ToString();
-                Guid? creatorId = !string.IsNullOrEmpty(creatorIdStr) && Guid.TryParse(creatorIdStr, out var cId) ? cId : null;
+                // 1. Chỉ định rõ: Chỉ Admin hoặc IT mới có quyền xem toàn bộ ticket hệ thống
+                // (Bạn có thể bổ sung thêm tên role khác vào đây nếu muốn, ví dụ: || CurrentUser.IsInRole("HR"))
+                bool isPrivilegedUser = CurrentUser.IsInRole("admin")
+                                     || CurrentUser.IsInRole("Admin")
+                                     || CurrentUser.IsInRole("IT");
 
-                // 2. Đóng gói tham số vào TicketListRequest để truyền vào Stored Procedure
+                Guid? secureCreatorId = null;
+
+                // 2. Nếu KHÔNG phải Admin hoặc IT (tức là User bình thường) -> Ép buộc chỉ lấy ticket của chính họ tạo
+                if (!isPrivilegedUser)
+                {
+                    secureCreatorId = CurrentUser.Id;
+                }
+
+                // 3. Đóng gói tham số vào TicketListRequest để truyền vào Stored Procedure
                 var request = new TicketListRequest
                 {
                     FilterText = input.Filter,
@@ -83,17 +93,18 @@ namespace ItHelpdesk.Tickets
                     AssigneeId = input.AssigneeId,
                     TeamId = input.TeamId,
                     Unassigned = input.Unassigned,
-                    CreatorId = creatorId,
 
-                    // Thông số phân trang (chuyển đổi SkipCount/MaxResultCount sang PageIndex/PageSize)
+                    // Gắn ID người tạo đã được phân quyền chặt chẽ từ Backend
+                    CreatorId = secureCreatorId,
+
+                    // Thông số phân trang
                     PageIndex = input.MaxResultCount > 0 ? input.SkipCount / input.MaxResultCount : 0,
                     PageSize = input.MaxResultCount > 0 ? input.MaxResultCount : 10
                 };
 
-                // 3. Gọi Provider để thực thi Stored Procedure (sp_Ticket_GetList_V01)
+                // 4. Gọi Provider để thực thi Stored Procedure
                 var providerData = await _ticketProvider.GetListAsync(request);
 
-                // Tổng số lượng bản ghi (nếu Store có trả về tổng số hoặc lấy theo kích thước danh sách hiện tại)
                 var totalCount = providerData?.Count ?? 0;
 
                 if (providerData == null || totalCount == 0)
@@ -101,10 +112,9 @@ namespace ItHelpdesk.Tickets
                     return new PagedResultDto<TicketDto>(0, new List<TicketDto>());
                 }
 
-                // 4. Map từ Model trả về của Provider sang Dto của giao diện
+                // 5. Map dữ liệu trả về cho giao diện
                 var ticketDtos = ObjectMapper.Map<List<TicketListQueryResponse>, List<TicketDto>>(providerData);
 
-                // 5. Trả kết quả chuẩn PagedResultDto về cho Angular/Client
                 return new PagedResultDto<TicketDto>(totalCount, ticketDtos);
             }
             catch (Exception ex)
@@ -384,9 +394,9 @@ namespace ItHelpdesk.Tickets
 
             var now = DateTime.Now;
             var overdueTickets = await query.CountAsync(x => x.Status != TicketStatus.Resolved &&
-                                                             x.Status != TicketStatus.Closed &&
-                                                             x.TargetResolutionTime.HasValue &&
-                                                             x.TargetResolutionTime.Value < now);
+                                                           x.Status != TicketStatus.Closed &&
+                                                           x.TargetResolutionTime.HasValue &&
+                                                           x.TargetResolutionTime.Value < now);
 
             var totalCompletedTickets = await query.CountAsync(x =>
                 (x.Status == TicketStatus.Resolved || x.Status == TicketStatus.Closed) &&

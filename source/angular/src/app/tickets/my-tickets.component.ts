@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy, inject, ElementRef, HostListener } from '
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { ListService, PagedResultDto, CoreModule, ConfigStateService } from '@abp/ng.core';
+import { ListService, PagedResultDto, CoreModule } from '@abp/ng.core';
 import { ThemeSharedModule } from '@abp/ng.theme.shared';
 import { TicketService, TicketDto } from '@proxy/tickets';
 import { NgxDatatableModule } from '@swimlane/ngx-datatable';
@@ -27,7 +27,6 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 export class MyTicketsComponent implements OnInit, OnDestroy {
   readonly list = inject(ListService);
   private ticketService = inject(TicketService);
-  private config = inject(ConfigStateService);
   private elementRef = inject(ElementRef);
 
   data: PagedResultDto<TicketDto> = { items: [], totalCount: 0 };
@@ -55,15 +54,13 @@ export class MyTicketsComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.loadSearchHistory();
 
-    const currentUser = this.config.getOne('currentUser');
-    const currentUserId = currentUser?.id || '';
-
     const streamCreator = (query: any) => {
       query.filter = this.filters.filterText?.trim() || '';
       if (this.filters.status !== null) {
         query.status = this.filters.status;
       }
-      query.creatorId = currentUserId;
+
+      // Backend tự động định danh người dùng qua Token, không cần gửi creatorId từ đây nữa
 
       return this.ticketService.getList(query);
     };
@@ -72,7 +69,7 @@ export class MyTicketsComponent implements OnInit, OnDestroy {
       this.data = res;
     });
 
-    // TỰ ĐỘNG TÌM KIẾM MƯỢT MÀ TỪ KÝ TỰ ĐẦU TIÊN
+    // TỰ ĐỘNG TÌM KIẾM TỪ KÝ TỰ ĐẦU TIÊN
     this.searchSubscription = this.searchSubject.pipe(
       debounceTime(350),
       distinctUntilChanged()

@@ -1,44 +1,129 @@
+:host {
+    display: block;
+    width: 100%;
+    min-height: 100vh;
+    background: radial-gradient(circle at 50% 10%, #1e1b4b 0%, #0c0f1d 100%) !important;
+}
+
+.ticket-page-wrapper {
+    background: transparent;
+}
+
+.page-title {
+    color: #ffffff !important;
+    text-shadow: 0 0 20px rgba(192, 132, 252, 0.4);
+}
+
+.cute-badge-pill {
+    background: rgba(244, 114, 182, 0.15) !important;
+    color: #f472b6 !important;
+    border: 1px dashed rgba(244, 114, 182, 0.45);
+    border-radius: 50rem;
+    padding: 6px 16px;
+    font-size: 0.85rem;
+}
+
+.premium-glass-card {
+    background: rgba(23, 28, 48, 0.85) !important;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 24px !important;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6) !important;
+}
+
+/* CUSTOM NAV PILLS - MÀU TRẮNG SÁNG NỔI BẬT TRÊN NỀN TỐI */
 .custom-pills {
     .nav-link {
-        /* Đổi thành màu xám đậm để hiển thị rõ trên nền trắng */
-        color: #6b7280;
+        color: #ffffff !important; 
+        font-weight: 600;
         transition: all 0.3s ease;
 
         &:hover {
-            /* Hover vào sẽ hiện màu hồng nhạt báo hiệu có thể click */
-            color: #ec4899;
-            background-color: rgba(236, 72, 153, 0.08);
+            color: #f472b6 !important;
+            background-color: rgba(236, 72, 153, 0.12);
         }
 
         &.active {
-            background-color: rgba(236, 72, 153, 0.2) !important;
-            color: #ec4899 !important;
+            background-color: rgba(236, 72, 153, 0.25) !important;
+            color: #f472b6 !important;
             box-shadow: inset 0 0 10px rgba(236, 72, 153, 0.3);
-            border: 1px solid rgba(236, 72, 153, 0.4);
-        }
-
-        /* HIỆU ỨNG SKELETON LOADING */
-        ::ng-deep {
-            .skeleton-row {
-                height: 45px;
-                border-radius: 8px;
-                background: linear-gradient(90deg,
-                        rgba(30, 41, 59, 0.4) 25%,
-                        rgba(51, 65, 85, 0.6) 50%,
-                        rgba(30, 41, 59, 0.4) 75%);
-                background-size: 200% 100%;
-                animation: shimmer 1.5s infinite;
-            }
-
-            @keyframes shimmer {
-                0% {
-                    background-position: -200% 0;
-                }
-
-                100% {
-                    background-position: 200% 0;
-                }
-            }
+            border: 1px solid rgba(236, 72, 153, 0.5);
         }
     }
+}
+
+/* HIỆU ỨNG SKELETON LOADING */
+::ng-deep {
+    .skeleton-row {
+        height: 45px;
+        border-radius: 8px;
+        background: linear-gradient(90deg,
+                rgba(30, 41, 59, 0.4) 25%,
+                rgba(51, 65, 85, 0.6) 50%,
+                rgba(30, 41, 59, 0.4) 75%);
+        background-size: 200% 100%;
+        animation: shimmer 1.5s infinite;
+    }
+
+    @keyframes shimmer {
+        0% {
+            background-position: -200% 0;
+        }
+
+        100% {
+            background-position: 200% 0;
+        }
+    }
+
+    /* ĐỊNH DẠNG BẢNG EXCEL: CĂN GIỮA TUYỆT ĐỐI CẢ CHIỀU DỌC VÀ NGANG CHO MỌI Ô */
+    .table {
+        th {
+            color: #ffffff !important;
+            font-weight: 700 !important;
+            background: transparent !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
+            vertical-align: middle !important;
+            text-align: center;
+        }
+
+        td {
+            color: #f8fafc !important;
+            background: transparent !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+            vertical-align: middle !important;
+            text-align: center;
+            padding-top: 16px !important;
+            padding-bottom: 16px !important;
+        }
+    }
+
+    .table td.text-start-col {
+        text-align: left !important;
+    }
+
+    /* Ép màu tối và chữ trắng cho các thẻ select trong modal phân công */
+    select.custom-select-box {
+        option {
+            background-color: #0f172a !important;
+            color: #ffffff !important;
+            padding: 12px !important;
+        }
+        
+        option:checked,
+        option:hover,
+        option:focus {
+            background-color: #312e81 !important;
+            color: #ffffff !important;
+            font-weight: 600 !important;
+        }
+    }
+}
+
+.text-pink {
+    color: #f472b6 !important;
+}
+
+.hover-pink:hover {
+    color: #f472b6 !important;
 }

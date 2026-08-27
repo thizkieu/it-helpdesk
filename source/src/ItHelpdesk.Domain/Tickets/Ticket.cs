@@ -5,9 +5,9 @@ namespace ItHelpdesk.Tickets
 {
     public class Ticket : FullAuditedEntity<long>
     {
-        public string TicketNo { get; set; }
-        public string Title { get; set; }
-        public string Description { get; set; }
+        public string TicketNo { get; set; } = string.Empty;
+        public string Title { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
 
         public long CategoryId { get; set; }
         public long PriorityId { get; set; }
@@ -22,7 +22,6 @@ namespace ItHelpdesk.Tickets
         public DateTime? TargetResponseTime { get; set; }
         public DateTime? TargetResolutionTime { get; set; }
 
-        // THUỘC TÍNH MỚI BỔ SUNG ĐỂ WORKER XỬ LÝ
         public bool IsOverdue { get; set; } = false;
 
         public Ticket()

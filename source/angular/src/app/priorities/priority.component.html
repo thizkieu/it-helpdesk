@@ -19,25 +19,27 @@
                     </div>
                 </div>
 
-                <!-- THANH TÌM KIẾM THÔNG MINH & NÚT THÊM MỚI -->
+                <!-- THANH TÌM KIẾM -->
                 <div
                     class="col-md-7 text-md-end mt-3 mt-md-0 d-flex flex-wrap justify-content-md-end align-items-center gap-3">
 
-                    <!-- Ô Search thông minh có lịch sử -->
-                    <div class="position-relative" style="width: 280px;">
-                        <div class="input-group search-box-wrapper position-relative">
-                            <span class="input-group-text border-end-0 ps-3 bg-transparent text-pink">
+                    <div class="position-relative flex-grow-1 flex-lg-grow-0"
+                        style="min-width: 320px; max-width: 420px;">
+
+                        <div class="input-group align-items-center rounded-pill px-3 py-1 position-relative"
+                            style="background: rgba(15, 23, 42, 0.75); border: 1.5px solid rgba(255, 255, 255, 0.6); box-shadow: 0 0 15px rgba(255, 255, 255, 0.25), inset 0 0 10px rgba(255, 255, 255, 0.08); backdrop-filter: blur(12px);">
+
+                            <span class="text-white opacity-75 bg-transparent border-0 pe-2">
                                 <i class="fas fa-search"></i>
                             </span>
-                            <input type="text"
-                                class="form-control border-start-0 ps-0 shadow-none text-white admin-input"
+
+                            <input type="text" class="form-control bg-transparent border-0 shadow-none text-white p-0"
                                 placeholder="Tìm kiếm mã hoặc tên..." [(ngModel)]="searchFilter"
                                 (input)="onSearchInput()" (keyup.enter)="performSearch()"
-                                (focus)="showSearchSuggestions = true" />
+                                (focus)="showSearchSuggestions = true" style="font-size: 0.9rem;" />
 
-                            <button *ngIf="searchFilter"
-                                class="btn btn-link text-muted position-absolute end-0 top-50 translate-middle-y p-0 me-3"
-                                type="button" style="z-index: 10;" (click)="clearSearch()" title="Xóa tìm kiếm">
+                            <button *ngIf="searchFilter" class="btn btn-link text-muted p-0 ms-2 text-decoration-none"
+                                type="button" (click)="clearSearch()" title="Xóa tìm kiếm">
                                 <i class="fas fa-times"></i>
                             </button>
                         </div>
@@ -56,8 +58,9 @@
                         </ul>
                     </div>
 
+                    <!-- Nút thêm mới -->
                     <button *abpPermission="'ItHelpdesk.Priorities.Create'" id="create"
-                        class="btn btn-action-primary rounded-3 px-4 fw-semibold" type="button"
+                        class="btn btn-action-primary rounded-3 px-4 fw-semibold text-nowrap" type="button"
                         (click)="createPriority()">
                         <i class="fa fa-plus me-2"></i><span>{{ '::NewPriority' | abpLocalization }}</span>
                     </button>
@@ -67,12 +70,56 @@
 
         <!-- NỘI DUNG BẢNG QUẢN TRỊ -->
         <div class="card-body p-0">
-            <ngx-datatable [rows]="priority.items" [count]="priority.totalCount" [list]="list" default
-                class="admin-datatable">
 
-                <!-- CỘT THAO TÁC -->
-                <ngx-datatable-column [name]="'::Actions' | abpLocalization" [width]="150" [maxWidth]="150"
-                    [sortable]="false">
+            <!-- CSS ÉP CĂN LỀ & GIÃN ĐỀU CỘT CHO BẢNG -->
+            <style>
+                ::ng-deep .ngx-datatable.admin-datatable .datatable-header .datatable-header-cell {
+                    color: #ffffff !important;
+                    font-weight: 700 !important;
+                    padding: 16px 20px !important;
+                }
+
+                ::ng-deep .ngx-datatable.admin-datatable .datatable-body-cell {
+                    padding: 16px 20px !important;
+                }
+
+                /* Ép căn giữa */
+                ::ng-deep .ngx-datatable.admin-datatable .align-center-col .datatable-header-cell-template-wrap {
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    width: 100%;
+                }
+
+                ::ng-deep .ngx-datatable.admin-datatable .align-center-col {
+                    display: flex !important;
+                    justify-content: center !important;
+                    align-items: center !important;
+                }
+
+                /* Ép căn trái */
+                ::ng-deep .ngx-datatable.admin-datatable .align-left-col .datatable-header-cell-template-wrap {
+                    display: flex;
+                    justify-content: flex-start;
+                    align-items: center;
+                    width: 100%;
+                }
+
+                ::ng-deep .ngx-datatable.admin-datatable .align-left-col {
+                    display: flex !important;
+                    justify-content: flex-start !important;
+                    align-items: center !important;
+                    text-align: left !important;
+                    overflow: hidden;
+                }
+            </style>
+
+            <ngx-datatable [rows]="priority.items" [count]="priority.totalCount" [list]="list" default
+                [columnMode]="'force'" [scrollbarH]="true" [rowHeight]="'auto'" class="admin-datatable w-100">
+
+                <!-- CỘT THAO TÁC (Căn giữa) -->
+                <ngx-datatable-column [name]="'::Actions' | abpLocalization" [width]="150" [minWidth]="140"
+                    [sortable]="false" headerClass="align-center-col" cellClass="align-center-col">
                     <ng-template let-row="row" ngx-datatable-cell-template>
                         <div ngbDropdown container="body" class="d-inline-block">
                             <button class="btn btn-sm btn-action-dropdown rounded-3" ngbDropdownToggle>
@@ -92,31 +139,33 @@
                     </ng-template>
                 </ngx-datatable-column>
 
-                <!-- CỘT MÃ ĐỘ ƯU TIÊN -->
-                <ngx-datatable-column [name]="'::PriorityCode' | abpLocalization" prop="code" [width]="200"
-                    [maxWidth]="250">
+                <!-- CỘT MÃ ĐỘ ƯU TIÊN (Căn trái) -->
+                <ngx-datatable-column [name]="'::PriorityCode' | abpLocalization" prop="code" [width]="250"
+                    [minWidth]="200" headerClass="align-left-col" cellClass="align-left-col">
                     <ng-template let-row="row" ngx-datatable-cell-template>
-                        <div class="d-flex align-items-center gap-3">
-                            <div class="priority-avatar-square">
+                        <div class="d-flex align-items-center gap-3 w-100">
+                            <div class="priority-avatar-square flex-shrink-0">
                                 {{ row.code ? (row.code.charAt(0) | uppercase) : 'P' }}
                             </div>
-                            <span class="fw-bold font-mono fs-6 text-white">{{ row.code }}</span>
+                            <span class="fw-bold font-mono fs-6 text-white text-truncate">{{ row.code }}</span>
                         </div>
                     </ng-template>
                 </ngx-datatable-column>
 
-                <!-- CỘT TÊN ĐỘ ƯU TIÊN -->
-                <ngx-datatable-column [name]="'::PriorityName' | abpLocalization" prop="name">
+                <!-- CỘT TÊN ĐỘ ƯU TIÊN (Căn trái) -->
+                <ngx-datatable-column [name]="'::PriorityName' | abpLocalization" prop="name" [width]="350"
+                    [minWidth]="250" headerClass="align-left-col" cellClass="align-left-col">
                     <ng-template let-row="row" ngx-datatable-cell-template>
-                        <span class="fw-medium text-light">{{ row.name }}</span>
+                        <span class="fw-medium text-light text-truncate w-100">{{ row.name }}</span>
                     </ng-template>
                 </ngx-datatable-column>
 
-                <!-- CỘT TRẠNG THÁI -->
-                <ngx-datatable-column [name]="'::Status' | abpLocalization" prop="isActive" [width]="150"
-                    [maxWidth]="180">
+                <!-- CỘT TRẠNG THÁI (Căn giữa) -->
+                <ngx-datatable-column [name]="'::Status' | abpLocalization" prop="isActive" [width]="180"
+                    [minWidth]="160" headerClass="align-center-col" cellClass="align-center-col">
                     <ng-template let-row="row" ngx-datatable-cell-template>
-                        <span class="admin-status-badge" [ngClass]="row.isActive ? 'badge-active' : 'badge-inactive'">
+                        <span class="admin-status-badge d-inline-block text-center"
+                            [ngClass]="row.isActive ? 'badge-active' : 'badge-inactive'" style="min-width: 120px;">
                             <span class="status-dot"></span>
                             {{ (row.isActive ? '::Active' : '::Inactive') | abpLocalization }}
                         </span>

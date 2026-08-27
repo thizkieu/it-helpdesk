@@ -58,10 +58,6 @@ export const APP_ROUTES: Routes = [
     loadComponent: () => import('./sys-master-lists/sys-mastert-list.component').then(c => c.SysMasterListComponent),
     canActivate: [authGuard, permissionGuard],
   },
-
-  // ==========================================
-  // NHÓM ROUTE TICKET & HELPDESK
-  // ==========================================
   {
     path: 'tickets/create',
     loadComponent: () => import('./tickets/create-ticket.component').then(c => c.CreateTicketComponent),
@@ -93,8 +89,18 @@ export const APP_ROUTES: Routes = [
     canActivate: [authGuard, permissionGuard],
   },
   {
+    path: 'tickets/knowledge-base/:id',
+    loadComponent: () => import('./tickets/knowledge-detail/knowledge-detail.component').then(c => c.KnowledgeDetailComponent),
+    canActivate: [authGuard, permissionGuard],
+  },
+  {
     path: 'profile-avatar',
     loadComponent: () => import('./account/avatar-upload/avatar-upload.component').then(c => c.AvatarUploadComponent),
+    canActivate: [authGuard],
+  },
+  {
+    path: 'user-management',
+    loadComponent: () => import('./users/users.component').then(c => c.UsersComponent),
     canActivate: [authGuard],
   }
 ];

@@ -1,0 +1,86 @@
+/* Thiết lập không gian cho trang quản trị */
+.admin-page-container {
+    padding-bottom: 2rem;
+
+    .card-admin-main {
+        background: rgba(23, 28, 48, 0.85);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .title-gradient {
+        background: linear-gradient(135deg, #fff 0%, #c084fc 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .text-muted-custom {
+        color: #94a3b8;
+    }
+
+    /* Tùy chỉnh table ngx-datatable trực tiếp tại đây để tránh bị lỗi ViewEncapsulation */
+    ::ng-deep {
+        .ngx-datatable.admin-datatable {
+            background: transparent !important;
+
+            /* Ép cứng chiều cao và hiển thị của Header */
+            .datatable-header {
+                background: rgba(15, 23, 42, 0.6) !important;
+                height: 60px !important;
+                min-height: 60px !important;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+
+                .datatable-header-cell {
+                    height: 60px !important;
+                    min-height: 60px !important;
+                    padding: 0 20px !important;
+                    display: flex !important;
+                    align-items: center !important;
+                    color: #ffffff !important;
+                    font-weight: 700 !important;
+                    font-size: 0.9rem !important;
+                    overflow: visible !important;
+                    /* Đảm bảo chữ không bị ẩn */
+                }
+            }
+
+            .datatable-body {
+                background: transparent !important;
+            }
+
+            .datatable-row-wrapper {
+                border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+                transition: background 0.2s ease;
+
+                &:hover {
+                    background: rgba(255, 255, 255, 0.02);
+                }
+            }
+
+            .datatable-body-cell {
+                padding: 18px 20px !important;
+                color: #ffffff !important;
+                display: flex !important;
+                align-items: center !important;
+            }
+
+            .align-center-col {
+                justify-content: center !important;
+                text-align: center !important;
+            }
+
+            .align-left-col {
+                justify-content: flex-start !important;
+                text-align: left !important;
+                overflow: hidden;
+            }
+
+            .datatable-footer {
+                background: transparent !important;
+                color: #94a3b8;
+                padding: 15px;
+            }
+        }
+    }
+}

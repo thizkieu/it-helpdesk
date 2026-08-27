@@ -26,7 +26,7 @@ function configureRoutes() {
       iconClass: 'fas fa-ticket-alt',
       order: 3,
       layout: eLayoutType.application,
-      requiredPolicy: 'ItHelpdesk.Tickets', // Khớp hoàn toàn với Tickets.Default ở Backend
+      requiredPolicy: 'ItHelpdesk.Tickets',
     },
     {
       path: '/tickets/dashboard',
@@ -51,6 +51,33 @@ function configureRoutes() {
       order: 6,
       layout: eLayoutType.application,
       requiredPolicy: 'ItHelpdesk.KnowledgeBase',
+    },
+    {
+      path: '/user-management', // Đổi path mới hoàn toàn để không bị trùng lặp
+      name: 'Quản lý người dùng',
+      iconClass: 'fas fa-users-gear',
+      layout: eLayoutType.application,
+      order: 7,
+    },
+    {
+      path: '/language-texts',
+      name: '::Menu:LanguageTexts',
+      iconClass: 'fa fa-language',
+      layout: eLayoutType.application,
+      parentName: 'AbpUiNavigation::Menu:Administration',
+      requiredPolicy: 'ItHelpdesk.LanguageTexts',
+      order: 100,
+      invisible: true,
+    },
+    {
+      path: '/sys-master-lists',
+      name: '::Menu:SysMasterLists',
+      iconClass: 'fa fa-language',
+      layout: eLayoutType.application,
+      parentName: 'AbpUiNavigation::Menu:Administration',
+      requiredPolicy: 'ItHelpdesk.SysMasterLists',
+      order: 101,
+      invisible: true,
     },
     {
       path: '/categories',
@@ -89,24 +116,12 @@ function configureRoutes() {
       order: 105,
     },
     {
-      path: '/language-texts',
-      name: '::Menu:LanguageTexts',
-      iconClass: 'fa fa-language',
+      path: '/profile-avatar',
+      name: 'Đổi ảnh đại diện',
+      iconClass: 'fas fa-camera-retro',
+      order: 106,
       layout: eLayoutType.application,
-      parentName: 'AbpUiNavigation::Menu:Administration',
-      requiredPolicy: 'ItHelpdesk.LanguageTexts',
-      order: 100,
-      invisible: true,
-    },
-    {
-      path: '/sys-master-lists',
-      name: '::Menu:SysMasterLists',
-      iconClass: 'fa fa-language',
-      layout: eLayoutType.application,
-      parentName: 'AbpUiNavigation::Menu:Administration',
-      requiredPolicy: 'ItHelpdesk.SysMasterLists',
-      order: 101,
-      invisible: true,
+      // Không cần requiredPolicy để bất kỳ tài khoản nào đăng nhập cũng thấy và dùng được!
     }
   ]);
 }

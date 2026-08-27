@@ -1,0 +1,122 @@
+:host {
+    display: block;
+    width: 100%;
+}
+
+.ticket-page-wrapper {
+    background: radial-gradient(circle at 50% 10%, #1e1b4b 0%, #0c0f1d 100%) !important;
+    margin: -2rem !important;
+    padding: 2.5rem 1.5rem !important;
+    min-height: calc(100vh + 4rem) !important;
+}
+
+.premium-glass-card {
+    background: rgba(23, 28, 48, 0.85) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 24px !important;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6) !important;
+    color: #ffffff !important;
+}
+
+.cute-badge-pill {
+    background: rgba(244, 114, 182, 0.15) !important;
+    color: #f472b6 !important;
+    border: 1px dashed rgba(244, 114, 182, 0.45) !important;
+}
+
+.cute-outline-btn {
+    color: #f472b6 !important;
+    border: 1px solid rgba(244, 114, 182, 0.4) !important;
+    background: transparent !important;
+    transition: all 0.2s ease;
+
+    &:hover {
+        background: linear-gradient(135deg, #c084fc 0%, #ec4899 100%) !important;
+        border-color: transparent !important;
+        color: white !important;
+        box-shadow: 0 4px 12px rgba(236, 72, 153, 0.3) !important;
+    }
+}
+
+/* Tùy chỉnh làm đẹp riêng cho phần nội dung HTML được lấy từ CSDL */
+.article-content {
+    ::ng-deep {
+
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+            color: #ffffff;
+            margin-top: 1.5rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        h5,
+        h4 {
+            color: #f472b6 !important;
+            /* Màu hồng cho các tiểu mục */
+        }
+
+        p,
+        li {
+            color: #cbd5e1;
+            /* Màu xám nhạt dễ đọc */
+            margin-bottom: 0.75rem;
+        }
+
+        ul,
+        ol {
+            padding-left: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        strong,
+        b {
+            color: #ffffff;
+        }
+
+        em,
+        i {
+            color: #94a3b8;
+        }
+
+        /* THÊM ĐOẠN NÀY ĐỂ LÀM ĐẸP ĐƯỜNG LINK THAM KHẢO */
+        a {
+            color: #38bdf8 !important;
+            /* Xanh dương sáng nổi bật trên nền tối */
+            text-decoration: underline !important;
+            text-underline-offset: 3px;
+            transition: all 0.2s ease;
+
+            &:hover {
+                color: #7dd3fc !important;
+                opacity: 0.85;
+            }
+        }
+
+        /* Tùy chỉnh thẻ code */
+        code {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: #c084fc;
+            padding: 3px 6px;
+            border-radius: 6px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9em;
+        }
+
+        /* Làm đẹp thẻ alert/khung chú ý nếu có */
+        .alert {
+            background: rgba(56, 189, 248, 0.1);
+            border-left: 4px solid #38bdf8;
+            color: #38bdf8;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+    }
+}

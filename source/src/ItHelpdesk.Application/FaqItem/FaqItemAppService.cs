@@ -20,7 +20,7 @@ namespace ItHelpdesk.KnowledgeBase
             // GetPolicyName = ItHelpdeskPermissions.KnowledgeBase.Default;
             // GetListPolicyName = ItHelpdeskPermissions.KnowledgeBase.Default;
 
-            // Giữ lại hoặc mở khóa quyền Thêm/Sửa/Xóa tùy theo phân quyền thực tế của bạn
+            // Giữ lại hoặc mở khóa quyền Thêm/Sửa/Xóa tùy theo phân quyền thực tế
             CreatePolicyName = ItHelpdeskPermissions.KnowledgeBase.Default;
             UpdatePolicyName = ItHelpdeskPermissions.KnowledgeBase.Default;
             DeletePolicyName = ItHelpdeskPermissions.KnowledgeBase.Default;

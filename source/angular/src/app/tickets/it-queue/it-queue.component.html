@@ -1,60 +1,72 @@
-<div class="ticket-page-wrapper py-4">
-    <div class="container-fluid">
+<div class="ticket-page-wrapper py-4 text-white">
+    <div class="container-fluid" style="max-width: 1550px;">
+
+        <!-- HEADER TRANG -->
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
-                <span class="badge cute-badge-pill mb-2"><i class="fas fa-desktop me-1"></i> IT Workspace</span>
+                <span class="badge cute-badge-pill mb-2 px-3 py-2"><i class="fas fa-desktop me-1"></i> IT Workspace</span>
                 <h2 class="fw-bold page-title mb-0 text-white">{{ greetingMessage }}</h2>
             </div>
         </div>
 
-        <div class="card premium-glass-card border-0 shadow-lg mb-4">
-            <div class="card-body p-4 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+        <!-- THANH ĐIỀU HƯỚNG TAB & Ô TÌM KIẾM -->
+        <div class="card premium-glass-card border-0 shadow-lg mb-4 rounded-4"
+            style="background: rgba(23, 28, 48, 0.85) !important; backdrop-filter: blur(20px);">
+            <div class="card-body p-4 d-flex flex-column flex-xl-row justify-content-between align-items-xl-center gap-4">
+                
+                <!-- TABS ĐIỀU HƯỚNG -->
                 <ul class="nav nav-pills custom-pills mb-0">
                     <li class="nav-item">
-                        <a class="nav-link fw-semibold cursor-pointer rounded-pill px-4"
+                        <a class="nav-link fw-semibold cursor-pointer rounded-pill px-4 text-light"
                             [class.active]="currentTab === 'all'" (click)="changeTab('all')">
                             <i class="fas fa-list-ul me-2"></i> Tất cả
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link fw-semibold cursor-pointer rounded-pill px-4"
+                        <a class="nav-link fw-semibold cursor-pointer rounded-pill px-4 text-light"
                             [class.active]="currentTab === 'unassigned'" (click)="changeTab('unassigned')">
                             <i class="fas fa-user-slash me-2"></i> Chưa phân công
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link fw-semibold cursor-pointer rounded-pill px-4"
+                        <a class="nav-link fw-semibold cursor-pointer rounded-pill px-4 text-light"
                             [class.active]="currentTab === 'mine'" (click)="changeTab('mine')">
                             <i class="fas fa-user-check me-2"></i> Của tôi
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link fw-semibold cursor-pointer rounded-pill px-4"
+                        <a class="nav-link fw-semibold cursor-pointer rounded-pill px-4 text-light"
                             [class.active]="currentTab === 'pending'" (click)="changeTab('pending')">
                             <i class="fas fa-hourglass-half me-2"></i> Đang chờ xử lý
                         </a>
                     </li>
                 </ul>
 
-                <div class="position-relative search-wrapper" style="width: 320px; z-index: 999;">
-                    <div class="input-group">
-                        <span class="input-group-text bg-transparent border-end-0 border-secondary border-opacity-25 text-pink">
-                            <i class="fas fa-search"></i>
+                <!-- Ô TÌM KIẾM -->
+                <div class="position-relative search-wrapper flex-grow-1" style="max-width: 450px; z-index: 999;">
+                    <div class="input-group align-items-center rounded-pill px-3 py-1 position-relative"
+                        style="background: rgba(15, 23, 42, 0.9); border: 2.5px solid #ffffff; box-shadow: 0 0 25px rgba(255, 255, 255, 0.5), inset 0 0 15px rgba(255, 255, 255, 0.2); backdrop-filter: blur(12px);">
+                        
+                        <span class="text-white opacity-90 bg-transparent border-0 pe-2 ps-2">
+                            <i class="fas fa-search fs-5"></i>
                         </span>
-                        <input type="text" class="form-control premium-input text-white border-start-0 ps-0 shadow-none"
+                        
+                        <input type="text" class="form-control bg-transparent border-0 shadow-none text-white p-2"
                             placeholder="Tìm mã hoặc tiêu đề..." [(ngModel)]="searchFilter" (input)="onSearchInput()"
-                            (keyup.enter)="performSearch()" (focus)="showSearchSuggestions = true">
+                            (keyup.enter)="performSearch()" (focus)="showSearchSuggestions = true"
+                            style="font-size: 0.95rem;">
 
                         <button *ngIf="searchFilter"
-                            class="btn btn-link text-muted position-absolute end-0 top-50 translate-middle-y p-0 me-3"
-                            type="button" (click)="clearSearch()" title="Xóa">
+                            class="btn btn-link text-white opacity-75 p-0 ms-2 text-decoration-none me-2" type="button"
+                            (click)="clearSearch()" title="Xóa">
                             <i class="fas fa-times"></i>
                         </button>
                     </div>
 
+                    <!-- Dropdown Lịch sử tìm kiếm -->
                     <ul *ngIf="showSearchSuggestions && recentSearches.length > 0"
                         class="dropdown-menu show w-100 shadow-lg border-0 mt-2 p-2 rounded-4 position-absolute text-start"
-                        style="background: rgba(22, 22, 35, 0.95); backdrop-filter: blur(12px); z-index: 1050; top: 100%; border: 1px solid rgba(255,255,255,0.1) !important;">
+                        style="background: rgba(22, 22, 35, 0.95); backdrop-filter: blur(12px); z-index: 1050; border: 1px solid rgba(255,255,255,0.1) !important;">
                         <li class="d-flex justify-content-between align-items-center px-3 py-1 mb-1">
                             <span class="text-pink small fw-bold">
                                 <i class="fas fa-history me-1"></i> Lịch sử tìm kiếm
@@ -75,61 +87,134 @@
                         </li>
                     </ul>
                 </div>
+
             </div>
         </div>
 
-        <div class="card premium-glass-card border-0 shadow-lg">
+        <!-- KHUNG BẢNG DỮ LIỆU ĐÃ FIX CĂN LỀ VÀ KÍCH THƯỚC Ô MÀU ĐỀU NHAU -->
+        <div class="card premium-glass-card border-0 shadow-lg rounded-4 overflow-hidden"
+            style="background: rgba(23, 28, 48, 0.85) !important; backdrop-filter: blur(20px);">
             <div class="card-body p-0">
+
+                <style>
+                    ::ng-deep .ngx-datatable.admin-datatable .datatable-header .datatable-header-cell {
+                        color: #ffffff !important;
+                        font-weight: 700 !important;
+                        padding: 16px 20px !important;
+                    }
+                    ::ng-deep .ngx-datatable.admin-datatable .datatable-body-cell {
+                        padding: 26px 20px !important; 
+                    }
+                    
+                    ::ng-deep .ngx-datatable.admin-datatable .align-center-col .datatable-header-cell-template-wrap {
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        width: 100%;
+                    }
+                    ::ng-deep .ngx-datatable.admin-datatable .align-center-col {
+                        display: flex !important;
+                        justify-content: center !important;
+                        align-items: center !important;
+                    }
+
+                    ::ng-deep .ngx-datatable.admin-datatable .align-left-col .datatable-header-cell-template-wrap {
+                        display: flex;
+                        justify-content: flex-start;
+                        align-items: center;
+                        width: 100%;
+                    }
+                    ::ng-deep .ngx-datatable.admin-datatable .align-left-col {
+                        display: flex !important;
+                        justify-content: flex-start !important;
+                        align-items: center !important;
+                        text-align: left !important;
+                        overflow: hidden; 
+                    }
+
+                    .equal-badge {
+                        min-width: 170px;
+                        height: 40px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-size: 0.95rem;
+                        padding: 0 16px;
+                    }
+                </style>
+
                 <div *ngIf="isLoading" class="p-4">
                     <div class="skeleton-row mb-3" *ngFor="let i of [1,2,3,4,5]"></div>
                 </div>
 
-                <div *ngIf="!isLoading">
-                    <ngx-datatable [rows]="items" [count]="totalCount" [list]="list" default [columnMode]="'force'" [scrollbarH]="true">
-                        <ngx-datatable-column name="Mã Ticket" prop="ticketNo" [width]="140">
+                <div class="table-responsive excel-table-wrapper" *ngIf="!isLoading">
+                    <ngx-datatable [rows]="items" [count]="totalCount" [list]="list" default [columnMode]="'force'"
+                        [scrollbarH]="true" [rowHeight]="'auto'" class="admin-datatable w-100">
+                        
+                        <!-- MÃ TICKET -->
+                        <ngx-datatable-column [name]="'::TicketNo' | abpLocalization" prop="ticketNo" [width]="220" [minWidth]="200" 
+                            headerClass="align-left-col" cellClass="align-left-col">
                             <ng-template let-row="row" ngx-datatable-cell-template>
-                                <span class="text-pink fw-bold">{{ row.ticketNo }}</span>
+                                <a [routerLink]="['/tickets/detail', row.id]" class="fw-bold text-decoration-none d-block w-100 text-truncate text-start" 
+                                   style="color: #f472b6; letter-spacing: 0.5px;">
+                                    {{ row.ticketNo }}
+                                </a>
                             </ng-template>
                         </ngx-datatable-column>
 
-                        <ngx-datatable-column name="Tiêu đề" prop="title" [width]="250">
+                        <!-- TIÊU ĐỀ -->
+                        <ngx-datatable-column [name]="'::TicketSubject' | abpLocalization" prop="title" [width]="320" [minWidth]="280" 
+                            headerClass="align-left-col" cellClass="align-left-col">
                             <ng-template let-row="row" ngx-datatable-cell-template>
-                                <span class="fw-medium" [ngClass]="row.isOverdue ? 'text-danger fw-bold' : 'text-light'">
-                                    {{ row.title }}
-                                    <i *ngIf="row.isOverdue" class="fas fa-fire ms-2 text-danger" title="Quá hạn xử lý!"></i>
-                                </span>
+                                <div class="d-flex align-items-center w-100" style="max-width: 100%;">
+                                    <span class="fw-medium text-truncate d-inline-block" title="{{ row.title }}" 
+                                        [ngClass]="row.isOverdue ? 'text-danger fw-bold' : 'text-light'" 
+                                        style="max-width: calc(100% - 24px);">
+                                        {{ row.title }}
+                                    </span>
+                                    <i *ngIf="row.isOverdue" class="fas fa-fire ms-2 text-danger flex-shrink-0" title="Quá hạn xử lý!"></i>
+                                </div>
                             </ng-template>
                         </ngx-datatable-column>
 
-                        <ngx-datatable-column name="Trạng thái" prop="status" [width]="140">
+                        <!-- TRẠNG THÁI -->
+                        <ngx-datatable-column [name]="'::Status' | abpLocalization" prop="status" [width]="260" [minWidth]="200"
+                            headerClass="align-center-col" cellClass="align-center-col">
                             <ng-template let-row="row" ngx-datatable-cell-template>
-                                <span class="badge bg-primary bg-opacity-75 rounded-pill px-3 py-2">
+                                <span class="badge bg-primary bg-opacity-75 rounded-pill text-white shadow-sm equal-badge">
                                     {{ '::Enum:TicketStatus.' + row.status | abpLocalization }}
                                 </span>
                             </ng-template>
                         </ngx-datatable-column>
 
-                        <ngx-datatable-column name="Hạn xử lý" prop="targetResolutionTime" [width]="180">
-                            <ng-template let-row="row" let-value="value" ngx-datatable-cell-template>
-                                <div *ngIf="value">
-                                    <span class="badge px-2 py-1 rounded-pill" [ngClass]="{
-                                            'bg-danger text-white': getSlaStatus(value) === 'overdue',
-                                            'bg-warning text-dark': getSlaStatus(value) === 'warning',
-                                            'bg-secondary bg-opacity-50 text-light': getSlaStatus(value) === 'normal'
+                        <!-- HẠN XỬ LÝ -->
+                        <ngx-datatable-column [name]="'Hạn xử lý'" prop="targetResolutionTime" [width]="260" [minWidth]="200"
+                            headerClass="align-center-col" cellClass="align-center-col">
+                            <ng-template let-row="row" ngx-datatable-cell-template>
+                                <div *ngIf="row.targetResolutionTime" class="position-relative d-flex justify-content-center align-items-center w-100">
+                                    <span class="badge rounded-pill equal-badge" [ngClass]="{
+                                            'bg-danger text-white': getSlaStatus(row.targetResolutionTime) === 'overdue',
+                                            'bg-warning text-dark': getSlaStatus(row.targetResolutionTime) === 'warning',
+                                            'bg-secondary bg-opacity-50 text-light': getSlaStatus(row.targetResolutionTime) === 'normal'
                                         }">
-                                        <i class="fas fa-hourglass-end me-1"></i>{{ value | date: 'dd/MM/yyyy HH:mm' }}
+                                        <i class="fas fa-hourglass-end me-2"></i>{{ row.targetResolutionTime | date: 'dd/MM/yyyy HH:mm' }}
                                     </span>
-                                    <small *ngIf="getSlaStatus(value) === 'overdue'" class="text-danger d-block mt-1 fw-bold">
+                                    
+                                    <small *ngIf="getSlaStatus(row.targetResolutionTime) === 'overdue'" 
+                                           class="text-danger fw-bold position-absolute" 
+                                           style="bottom: -22px; left: 50%; transform: translateX(-50%); white-space: nowrap;">
                                         <i class="fas fa-fire me-1"></i>Quá hạn
                                     </small>
                                 </div>
-                                <span *ngIf="!value" class="text-muted fst-italic">Chưa thiết lập</span>
+                                <span *ngIf="!row.targetResolutionTime" class="text-muted fst-italic">Chưa thiết lập</span>
                             </ng-template>
                         </ngx-datatable-column>
 
-                        <ngx-datatable-column name="Người xử lý" prop="assigneeId" [width]="160">
+                        <!-- NGƯỜI XỬ LÝ -->
+                        <ngx-datatable-column [name]="'Người xử lý'" prop="assigneeId" [width]="220" [minWidth]="180"
+                            headerClass="align-center-col" cellClass="align-center-col">
                             <ng-template let-row="row" ngx-datatable-cell-template>
-                                <span class="badge bg-warning bg-opacity-25 text-warning px-2 py-1 rounded" *ngIf="!row.assigneeId">
+                                <span class="badge bg-warning bg-opacity-25 text-warning py-2 px-3 rounded-pill d-inline-block text-center" *ngIf="!row.assigneeId">
                                     <i class="fas fa-exclamation-circle me-1"></i> Chưa gán
                                 </span>
                                 <span class="text-info fw-semibold" *ngIf="row.assigneeId">
@@ -138,29 +223,44 @@
                             </ng-template>
                         </ngx-datatable-column>
 
-                        <ngx-datatable-column name="Thao tác" [width]="240" [sortable]="false">
+                        <!-- PHÂN CÔNG -->
+                        <ngx-datatable-column name="Phân công" [sortable]="false" [width]="140" [minWidth]="130"
+                            headerClass="align-center-col" cellClass="align-center-col">
                             <ng-template let-row="row" ngx-datatable-cell-template>
-                                <div style="display: flex; flex-direction: row; gap: 8px; align-items: center; white-space: nowrap; min-width: 210px;">
-                                    <button class="btn btn-sm btn-outline-info rounded-pill px-3" style="white-space: nowrap;" (click)="openAssignModal(row)" title="Phân công">
-                                        <i class="fas fa-user-plus me-1"></i> Phân công
-                                    </button>
-                                    <a [routerLink]="['/tickets/detail', row.id]" class="btn btn-sm cute-outline-btn rounded-pill px-3 text-pink border-pink fw-semibold" style="white-space: nowrap;">
-                                        <i class="fas fa-eye me-1"></i> Chi tiết
-                                    </a>
-                                </div>
+                                <button class="btn btn-sm btn-outline-info rounded-pill px-3 py-1 text-nowrap fw-semibold d-inline-flex justify-content-center align-items-center gap-1 mx-auto"
+                                    (click)="openAssignModal(row)" title="Phân công">
+                                    <i class="fas fa-user-plus"></i> Phân công
+                                </button>
                             </ng-template>
                         </ngx-datatable-column>
+
+                        <!-- CHI TIẾT -->
+                        <ngx-datatable-column name="Chi tiết" [sortable]="false" [width]="130" [minWidth]="120"
+                            headerClass="align-center-col" cellClass="align-center-col">
+                            <ng-template let-row="row" ngx-datatable-cell-template>
+                                <a [routerLink]="['/tickets/detail', row.id]"
+                                    class="btn btn-sm cute-outline-btn rounded-pill px-3 py-1 text-nowrap fw-semibold d-inline-flex justify-content-center align-items-center gap-1 mx-auto"
+                                    style="border: 1px solid #f472b6; color: #f472b6; background: rgba(244, 114, 182, 0.05); transition: all 0.3s ease;">
+                                    <i class="fas fa-paw"></i> Chi tiết
+                                </a>
+                            </ng-template>
+                        </ngx-datatable-column>
+
                     </ngx-datatable>
                 </div>
+
             </div>
         </div>
     </div>
 </div>
 
-<div *ngIf="isAssignModalOpen" class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.65); backdrop-filter: blur(4px);">
+<!-- MODAL PHÂN CÔNG TICKET -->
+<div *ngIf="isAssignModalOpen" class="modal fade show d-block" tabindex="-1"
+    style="background: rgba(0,0,0,0.65); backdrop-filter: blur(4px);">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content premium-glass-card border-secondary border-opacity-25 text-white shadow-2xl">
-            <div class="modal-header border-bottom border-secondary border-opacity-25">
+        <div class="modal-content premium-glass-card border-secondary border-opacity-25 text-white shadow-2xl rounded-4"
+            style="background: rgba(23, 28, 48, 0.95) !important; backdrop-filter: blur(20px);">
+            <div class="modal-header border-bottom border-secondary border-opacity-25 px-4 py-3">
                 <h5 class="modal-title fw-bold text-pink">
                     <i class="fas fa-tasks me-2"></i>Phân công Ticket #{{ selectedTicket?.ticketNo }}
                 </h5>
@@ -168,23 +268,30 @@
             </div>
             <div class="modal-body p-4">
                 <div class="mb-3">
-                    <label class="form-label text-light">Nhóm tiếp nhận (Team)</label>
-                    <select class="form-select bg-dark text-white border-secondary" [(ngModel)]="assignForm.teamId">
+                    <label class="form-label text-light fw-bold">Nhóm tiếp nhận (Team)</label>
+                    <select
+                        class="form-select bg-dark text-white border-secondary rounded-pill shadow-none px-3 py-2 custom-select-box"
+                        [(ngModel)]="assignForm.teamId">
                         <option [ngValue]="undefined">-- Chọn Nhóm Kỹ Thuật --</option>
                         <option *ngFor="let team of teams" [value]="team.id">{{ team.name }}</option>
                     </select>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label text-light">Kỹ thuật viên chuyên trách</label>
-                    <select class="form-select bg-dark text-white border-secondary" [(ngModel)]="assignForm.assigneeId">
+                    <label class="form-label text-light fw-bold">Kỹ thuật viên chuyên trách</label>
+                    <select
+                        class="form-select bg-dark text-white border-secondary rounded-pill shadow-none px-3 py-2 custom-select-box"
+                        [(ngModel)]="assignForm.assigneeId">
                         <option [ngValue]="undefined">-- Để trống (Chỉ gán Team) --</option>
-                        <option *ngFor="let tech of technicians" [value]="tech.id">{{ tech.surname }} {{ tech.name }} ({{ tech.userName }})</option>
+                        <option *ngFor="let tech of technicians" [value]="tech.id">{{ tech.surname }} {{ tech.name }}
+                            ({{ tech.userName }})</option>
                     </select>
                 </div>
             </div>
-            <div class="modal-footer border-top border-secondary border-opacity-25">
-                <button type="button" class="btn btn-outline-light rounded-pill px-4" (click)="closeAssignModal()">Hủy</button>
-                <button type="button" class="btn btn-primary rounded-pill px-4" [disabled]="isSavingAssign" (click)="saveAssignment()">
+            <div class="modal-footer border-top border-secondary border-opacity-25 px-4 py-3">
+                <button type="button" class="btn btn-outline-light rounded-pill px-4"
+                    (click)="closeAssignModal()">Hủy</button>
+                <button type="button" class="btn btn-primary rounded-pill px-4" [disabled]="isSavingAssign"
+                    (click)="saveAssignment()">
                     <span *ngIf="isSavingAssign" class="spinner-border spinner-border-sm me-1"></span>
                     <i *ngIf="!isSavingAssign" class="fas fa-check me-1"></i> Lưu phân công
                 </button>
