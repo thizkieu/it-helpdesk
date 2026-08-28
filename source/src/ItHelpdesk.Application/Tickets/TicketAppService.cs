@@ -3,6 +3,7 @@ using ItHelpdesk.Priorities;
 using ItHelpdesk.Provider;
 using ItHelpdesk.Provider.Request;
 using ItHelpdesk.Provider.Response;
+using ItHelpdesk.Users;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -33,8 +34,8 @@ namespace ItHelpdesk.Tickets
         private readonly IRepository<TicketAttachment, long> _attachmentRepository;
         private readonly IRepository<Priority, long> _priorityRepository;
         private readonly IHttpContextAccessor _httpContextAccessor;
-
         private readonly ITicketProvider _ticketProvider;
+        private readonly IdentityUserManager _userManager;
 
         public TicketAppService(
             IRepository<Ticket, long> repository,
@@ -45,7 +46,8 @@ namespace ItHelpdesk.Tickets
             IRepository<TicketAttachment, long> attachmentRepository,
             IRepository<Priority, long> priorityRepository,
             IHttpContextAccessor httpContextAccessor,
-            ITicketProvider ticketProvider)
+            ITicketProvider ticketProvider,
+            IdentityUserManager userManager)
             : base(repository)
         {
             _ticketActivityRepository = ticketActivityRepository;
@@ -56,28 +58,22 @@ namespace ItHelpdesk.Tickets
             _priorityRepository = priorityRepository;
             _httpContextAccessor = httpContextAccessor;
             _ticketProvider = ticketProvider;
+            _userManager = userManager;
 
             UpdatePolicyName = ItHelpdeskPermissions.Tickets.Edit;
             DeletePolicyName = ItHelpdeskPermissions.Tickets.Delete;
         }
 
-        // ==============================================================================
-        // PHÂN QUYỀN XEM TICKET & ĐẾM TỔNG SỐ TRANG CHUẨN XÁC
-        // ==============================================================================
         public override async Task<PagedResultDto<TicketDto>> GetListAsync(GetTicketListDto input)
         {
             try
             {
-                // 1. Phân quyền và Logic "Yêu cầu của tôi"
                 bool isEndUser = CurrentUser.IsInRole("End_User")
                               || CurrentUser.IsInRole("End User")
                               || CurrentUser.IsInRole("user");
 
                 Guid? secureCreatorId = null;
 
-                // LOGIC MỚI: 
-                // - Nếu Frontend gửi IsMyTickets = true -> Luôn luôn chỉ lấy Ticket của tài khoản đang đăng nhập
-                // - Nếu IsMyTickets = false (Hàng đợi IT) mà lại là EndUser -> Ép buộc chỉ xem của mình để bảo mật
                 if (input.IsMyTickets.HasValue && input.IsMyTickets.Value)
                 {
                     secureCreatorId = CurrentUser.Id;
@@ -87,7 +83,6 @@ namespace ItHelpdesk.Tickets
                     secureCreatorId = CurrentUser.Id;
                 }
 
-                // 2. ĐẾM TỔNG SỐ LƯỢNG (TOTAL COUNT) CHÍNH XÁC ĐỂ PHÂN TRANG
                 var query = await Repository.GetQueryableAsync();
 
                 if (secureCreatorId.HasValue)
@@ -110,7 +105,6 @@ namespace ItHelpdesk.Tickets
 
                 var totalCount = await AsyncExecuter.CountAsync(query);
 
-                // 3. Đóng gói tham số gọi Stored Procedure để lấy data trang hiện tại
                 var request = new TicketListRequest
                 {
                     FilterText = input.Filter,
@@ -118,7 +112,7 @@ namespace ItHelpdesk.Tickets
                     AssigneeId = input.AssigneeId,
                     TeamId = input.TeamId,
                     Unassigned = input.Unassigned,
-                    CreatorId = secureCreatorId, // Đã được xử lý logic bảo mật ở trên
+                    CreatorId = secureCreatorId,
                     PageIndex = input.MaxResultCount > 0 ? input.SkipCount / input.MaxResultCount : 0,
                     PageSize = input.MaxResultCount > 0 ? input.MaxResultCount : 10
                 };
@@ -130,9 +124,7 @@ namespace ItHelpdesk.Tickets
                     return new PagedResultDto<TicketDto>(0, new List<TicketDto>());
                 }
 
-                // 4. Map dữ liệu trả về cho giao diện
                 var ticketDtos = ObjectMapper.Map<List<TicketListQueryResponse>, List<TicketDto>>(providerData);
-
                 return new PagedResultDto<TicketDto>(totalCount, ticketDtos);
             }
             catch (Exception ex)
@@ -141,17 +133,13 @@ namespace ItHelpdesk.Tickets
                 throw;
             }
         }
-        // ==============================================================================
 
         public override async Task<TicketDto> CreateAsync(CreateUpdateTicketDto input)
         {
             var ticket = MapToEntity(input);
-
             ticket.TicketNo = "TK-" + DateTime.Now.ToString("yyMMddHHmmss");
             ticket.Status = TicketStatus.New;
-
             await CalculateSlaAsync(ticket);
-
             await Repository.InsertAsync(ticket, autoSave: true);
 
             var activity = new TicketActivity(
@@ -189,7 +177,6 @@ namespace ItHelpdesk.Tickets
             {
                 var bytes = Convert.FromBase64String(input.Base64Content);
                 var blobName = $"{Guid.NewGuid()}_{input.FileName}";
-
                 await _blobContainer.SaveAsync(blobName, bytes);
 
                 var attachment = new TicketAttachment(
@@ -336,7 +323,6 @@ namespace ItHelpdesk.Tickets
                     item.CreatorName = "Hệ thống";
                 }
             }
-
             return timeline.OrderBy(x => x.CreationTime).ToList();
         }
 
@@ -360,10 +346,24 @@ namespace ItHelpdesk.Tickets
             return ObjectMapper.Map<Ticket, TicketDto>(entity);
         }
 
+        // ==============================================================================
+        // BỔ SUNG: LẤY DANH SÁCH KỸ THUẬT VIÊN
+        // ==============================================================================
+        public async Task<List<UserDto>> GetAssignableTechniciansAsync()
+        {
+            var query = await _userRepository.GetQueryableAsync();
+            var allActiveUsers = await AsyncExecuter.ToListAsync(query.Where(x => x.IsActive));
+
+            var endUsers = await _userManager.GetUsersInRoleAsync("End_User");
+            var endUserIds = endUsers.Select(x => x.Id).ToList();
+
+            var assignableUsers = allActiveUsers.Where(x => !endUserIds.Contains(x.Id)).ToList();
+            return ObjectMapper.Map<List<IdentityUser>, List<UserDto>>(assignableUsers);
+        }
+
         public async Task AssignTicketAsync(AssignTicketDto input)
         {
             var ticket = await Repository.GetAsync(input.TicketId);
-
             var oldAssignee = ticket.AssigneeId;
             var oldTeam = ticket.TeamId;
 
@@ -404,7 +404,6 @@ namespace ItHelpdesk.Tickets
         public async Task<DashboardStatsDto> GetDashboardStatsAsync()
         {
             var query = await Repository.GetQueryableAsync();
-
             var totalTickets = await query.CountAsync();
             var newTickets = await query.CountAsync(x => x.Status == TicketStatus.New);
             var unassignedTickets = await query.CountAsync(x => x.AssigneeId == null);

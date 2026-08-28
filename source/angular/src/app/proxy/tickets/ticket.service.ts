@@ -3,6 +3,7 @@ import type { TicketStatus } from './ticket-status.enum';
 import { RestService, Rest } from '@abp/ng.core';
 import type { PagedResultDto } from '@abp/ng.core';
 import { Injectable, inject } from '@angular/core';
+import type { UserDto } from '../users/models';
 
 @Injectable({
   providedIn: 'root',
@@ -60,6 +61,14 @@ export class TicketService {
     this.restService.request<any, TicketDto>({
       method: 'GET',
       url: `/api/app/ticket/${id}`,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  getAssignableTechnicians = (config?: Partial<Rest.Config>) =>
+    this.restService.request<any, UserDto[]>({
+      method: 'GET',
+      url: '/api/app/ticket/assignable-technicians',
     },
     { apiName: this.apiName,...config });
   

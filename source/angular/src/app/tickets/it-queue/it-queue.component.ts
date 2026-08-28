@@ -35,7 +35,6 @@ export class ItQueueComponent implements OnInit, OnDestroy {
   searchFilter: string = '';
   currentUserId: string = '';
 
-  // BIẾN QUẢN LÝ PHÂN TRANG
   skipCount: number = 0;
   maxResultCount: number = 10;
 
@@ -82,7 +81,6 @@ export class ItQueueComponent implements OnInit, OnDestroy {
       if (this.currentTab === 'mine') query.assigneeId = this.currentUserId;
       if (this.currentTab === 'pending') query.status = 1;
 
-      // GẮN THAM SỐ PHÂN TRANG VÀO QUERY API
       query.skipCount = this.skipCount;
       query.maxResultCount = this.maxResultCount;
 
@@ -110,7 +108,7 @@ export class ItQueueComponent implements OnInit, OnDestroy {
         this.saveSearchHistory(keyword.trim());
       }
       this.isLoading = true;
-      this.skipCount = 0; // Reset trang
+      this.skipCount = 0;
       this.list.get();
     });
   }
@@ -119,7 +117,6 @@ export class ItQueueComponent implements OnInit, OnDestroy {
     this.searchSubscription?.unsubscribe();
   }
 
-  // --- HÀM BẮT SỰ KIỆN CHUYỂN TRANG ĐÃ TỐI ƯU ---
   onPageChange(event: any): void {
     const newSkipCount = event.offset * this.maxResultCount;
     if (this.skipCount !== newSkipCount) {
@@ -133,11 +130,14 @@ export class ItQueueComponent implements OnInit, OnDestroy {
       this.teams = res.items || [];
     });
 
-    this.restService.request<void, any>({
-      method: 'GET',
-      url: '/api/identity/users?maxResultCount=100',
-    }).subscribe(res => {
-      this.technicians = res.items || [];
+    // BỔ SUNG: Dùng hàm mới lọc KTV thay vì lấy tất cả users
+    this.ticketService.getAssignableTechnicians().subscribe({
+      next: (res) => {
+        this.technicians = res || [];
+      },
+      error: (err) => {
+        console.error('Lỗi khi lấy danh sách kỹ thuật viên:', err);
+      }
     });
   }
 
@@ -209,7 +209,7 @@ export class ItQueueComponent implements OnInit, OnDestroy {
     this.showSearchSuggestions = false;
     this.saveSearchHistory(keyword);
     this.isLoading = true;
-    this.skipCount = 0; // Reset trang
+    this.skipCount = 0;
     this.list.get();
   }
 
@@ -220,7 +220,7 @@ export class ItQueueComponent implements OnInit, OnDestroy {
       this.saveSearchHistory(keyword);
     }
     this.isLoading = true;
-    this.skipCount = 0; // Reset trang
+    this.skipCount = 0;
     this.list.get();
   }
 
@@ -228,7 +228,7 @@ export class ItQueueComponent implements OnInit, OnDestroy {
     this.searchFilter = '';
     this.showSearchSuggestions = false;
     this.isLoading = true;
-    this.skipCount = 0; // Reset trang
+    this.skipCount = 0;
     this.list.get();
   }
 
@@ -246,7 +246,7 @@ export class ItQueueComponent implements OnInit, OnDestroy {
   changeTab(tab: 'all' | 'unassigned' | 'mine' | 'pending'): void {
     this.currentTab = tab;
     this.isLoading = true;
-    this.skipCount = 0; // Reset trang
+    this.skipCount = 0;
     this.list.get();
   }
 

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Volo.Abp.Application.Services;
+using ItHelpdesk.Users; // Bổ sung thư viện này để nhận diện UserDto
 
 namespace ItHelpdesk.Tickets
 {
@@ -21,8 +22,13 @@ namespace ItHelpdesk.Tickets
 
         // Upload File đính kèm 
         Task UploadAttachmentAsync(UploadAttachmentDto input);
+
         // Phân công hoặc chuyển tuyến xử lý ticket
         Task AssignTicketAsync(AssignTicketDto input);
+
         Task<DashboardStatsDto> GetDashboardStatsAsync();
+
+        //Lấy danh sách nhân sự kỹ thuật (Loại trừ End_User)
+        Task<List<UserDto>> GetAssignableTechniciansAsync();
     }
 }

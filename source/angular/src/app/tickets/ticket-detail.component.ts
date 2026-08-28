@@ -106,7 +106,6 @@ export class TicketDetailComponent implements OnInit {
       next: (res: TicketTimelineDto[]) => {
         this.timeline = res || [];
 
-        // GỌI ĐÚNG ĐƯỜNG DẪN TUYỆT ĐỐI KHỚP VỚI C#
         this.restService.request<any, any[]>({
           method: 'GET',
           url: `/api/app/ticket/${this.ticketId}/attachments`
@@ -140,12 +139,10 @@ export class TicketDetailComponent implements OnInit {
   }
 
   loadRealDataForAssignment(): void {
-    this.restService.request<any, any>({
-      method: 'GET',
-      url: '/api/identity/users?maxResultCount=100'
-    }).subscribe({
+    // BỔ SUNG: Dùng hàm mới lọc KTV thay vì lấy tất cả users
+    this.ticketService.getAssignableTechnicians().subscribe({
       next: (res) => {
-        const users = res.items || res || [];
+        const users = res || [];
         this.allTechnicians = users.map((u: any) => ({
           id: u.id,
           name: `${u.surname || ''} ${u.name || u.userName}`.trim(),

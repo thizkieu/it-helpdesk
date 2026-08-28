@@ -6205,6 +6205,17 @@
                   }
                 },
                 {
+                  "name": "GetAssignableTechniciansAsync",
+                  "parametersOnMethod": [],
+                  "returnValue": {
+                    "type": "System.Collections.Generic.List<ItHelpdesk.Users.UserDto>",
+                    "typeSimple": "[ItHelpdesk.Users.UserDto]",
+                    "summary": null,
+                    "contentTypes": null,
+                    "isRemoteStream": false
+                  }
+                },
+                {
                   "name": "GetAsync",
                   "parametersOnMethod": [
                     {
@@ -6915,6 +6926,33 @@
               "returnValue": {
                 "type": "System.Collections.Generic.List<ItHelpdesk.Tickets.TicketTimelineDto>",
                 "typeSimple": "[ItHelpdesk.Tickets.TicketTimelineDto]",
+                "summary": null,
+                "contentTypes": [
+                  "text/plain",
+                  "application/json",
+                  "text/json"
+                ],
+                "isRemoteStream": false
+              },
+              "allowAnonymous": null,
+              "authorizeDatas": [],
+              "implementFrom": "ItHelpdesk.Tickets.ITicketAppService",
+              "summary": null,
+              "remarks": null,
+              "description": null,
+              "displayName": null
+            },
+            "GetAssignableTechniciansAsync": {
+              "uniqueName": "GetAssignableTechniciansAsync",
+              "name": "GetAssignableTechniciansAsync",
+              "httpMethod": "GET",
+              "url": "api/app/ticket/assignable-technicians",
+              "supportedVersions": [],
+              "parametersOnMethod": [],
+              "parameters": [],
+              "returnValue": {
+                "type": "System.Collections.Generic.List<ItHelpdesk.Users.UserDto>",
+                "typeSimple": "[ItHelpdesk.Users.UserDto]",
                 "summary": null,
                 "contentTypes": [
                   "text/plain",
