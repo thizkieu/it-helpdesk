@@ -7,9 +7,13 @@ using Volo.Abp.Application.Dtos;
 using Volo.Abp.Domain.Repositories;
 using Volo.Abp.Identity;
 using System.Linq.Dynamic.Core;
+using Microsoft.AspNetCore.Authorization; // 1. IMPORT THƯ VIỆN AUTHORIZE
+using ItHelpdesk.Permissions;            // 2. IMPORT NAMESPACE CHỨA PERMISSIONS
 
 namespace ItHelpdesk.Users
 {
+    // 3. GẮN THẺ BẢO MẬT: CHỈ TÀI KHOẢN CÓ QUYỀN USERMANAGEMENT MỚI ĐƯỢC GỌI API NÀY
+    [Authorize(ItHelpdeskPermissions.UserManagement.Default)]
     public class UserAppService : ItHelpdeskAppService, IUserAppService
     {
         private readonly IRepository<IdentityUser, Guid> _userRepository;
@@ -27,7 +31,6 @@ namespace ItHelpdesk.Users
         {
             var query = await _userRepository.GetQueryableAsync();
 
-            // Thêm dấu ! vào sau input.Filter để xử lý cảnh báo vàng "Possible null reference"
             query = query.WhereIf(!string.IsNullOrWhiteSpace(input.Filter),
                 x => x.UserName.Contains(input.Filter!) || x.Email.Contains(input.Filter!));
 

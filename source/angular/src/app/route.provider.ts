@@ -53,11 +53,13 @@ function configureRoutes() {
       requiredPolicy: 'ItHelpdesk.KnowledgeBase',
     },
     {
-      path: '/user-management', // Đổi path mới hoàn toàn để không bị trùng lặp
+      path: '/user-management', 
       name: 'Quản lý người dùng',
       iconClass: 'fas fa-users-gear',
       layout: eLayoutType.application,
       order: 7,
+      // DÒNG NÀY SẼ ẨN MENU ĐỐI VỚI END_USER
+      requiredPolicy: 'ItHelpdesk.UserManagement', 
     },
     {
       path: '/language-texts',
@@ -121,7 +123,6 @@ function configureRoutes() {
       iconClass: 'fas fa-camera-retro',
       order: 106,
       layout: eLayoutType.application,
-      // Không cần requiredPolicy để bất kỳ tài khoản nào đăng nhập cũng thấy và dùng được!
     }
   ]);
 }

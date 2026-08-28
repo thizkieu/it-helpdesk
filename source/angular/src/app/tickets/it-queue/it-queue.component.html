@@ -4,7 +4,8 @@
         <!-- HEADER TRANG -->
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
-                <span class="badge cute-badge-pill mb-2 px-3 py-2"><i class="fas fa-desktop me-1"></i> IT Workspace</span>
+                <span class="badge cute-badge-pill mb-2 px-3 py-2"><i class="fas fa-desktop me-1"></i> IT
+                    Workspace</span>
                 <h2 class="fw-bold page-title mb-0 text-white">{{ greetingMessage }}</h2>
             </div>
         </div>
@@ -12,8 +13,9 @@
         <!-- THANH ĐIỀU HƯỚNG TAB & Ô TÌM KIẾM -->
         <div class="card premium-glass-card border-0 shadow-lg mb-4 rounded-4"
             style="background: rgba(23, 28, 48, 0.85) !important; backdrop-filter: blur(20px);">
-            <div class="card-body p-4 d-flex flex-column flex-xl-row justify-content-between align-items-xl-center gap-4">
-                
+            <div
+                class="card-body p-4 d-flex flex-column flex-xl-row justify-content-between align-items-xl-center gap-4">
+
                 <!-- TABS ĐIỀU HƯỚNG -->
                 <ul class="nav nav-pills custom-pills mb-0">
                     <li class="nav-item">
@@ -46,11 +48,11 @@
                 <div class="position-relative search-wrapper flex-grow-1" style="max-width: 450px; z-index: 999;">
                     <div class="input-group align-items-center rounded-pill px-3 py-1 position-relative"
                         style="background: rgba(15, 23, 42, 0.9); border: 2.5px solid #ffffff; box-shadow: 0 0 25px rgba(255, 255, 255, 0.5), inset 0 0 15px rgba(255, 255, 255, 0.2); backdrop-filter: blur(12px);">
-                        
+
                         <span class="text-white opacity-90 bg-transparent border-0 pe-2 ps-2">
                             <i class="fas fa-search fs-5"></i>
                         </span>
-                        
+
                         <input type="text" class="form-control bg-transparent border-0 shadow-none text-white p-2"
                             placeholder="Tìm mã hoặc tiêu đề..." [(ngModel)]="searchFilter" (input)="onSearchInput()"
                             (keyup.enter)="performSearch()" (focus)="showSearchSuggestions = true"
@@ -102,16 +104,18 @@
                         font-weight: 700 !important;
                         padding: 16px 20px !important;
                     }
+
                     ::ng-deep .ngx-datatable.admin-datatable .datatable-body-cell {
-                        padding: 26px 20px !important; 
+                        padding: 26px 20px !important;
                     }
-                    
+
                     ::ng-deep .ngx-datatable.admin-datatable .align-center-col .datatable-header-cell-template-wrap {
                         display: flex;
                         justify-content: center;
                         align-items: center;
                         width: 100%;
                     }
+
                     ::ng-deep .ngx-datatable.admin-datatable .align-center-col {
                         display: flex !important;
                         justify-content: center !important;
@@ -124,12 +128,13 @@
                         align-items: center;
                         width: 100%;
                     }
+
                     ::ng-deep .ngx-datatable.admin-datatable .align-left-col {
                         display: flex !important;
                         justify-content: flex-start !important;
                         align-items: center !important;
                         text-align: left !important;
-                        overflow: hidden; 
+                        overflow: hidden;
                     }
 
                     .equal-badge {
@@ -148,65 +153,74 @@
                 </div>
 
                 <div class="table-responsive excel-table-wrapper" *ngIf="!isLoading">
-                    <ngx-datatable [rows]="items" [count]="totalCount" [list]="list" default [columnMode]="'force'"
-                        [scrollbarH]="true" [rowHeight]="'auto'" class="admin-datatable w-100">
-                        
+                    <!-- ĐÃ THÊM CẤU HÌNH PHÂN TRANG -->
+                    <ngx-datatable [rows]="items" [count]="totalCount" [externalPaging]="true" [limit]="maxResultCount"
+                        [offset]="skipCount / maxResultCount" (page)="onPageChange($event)" default
+                        [columnMode]="'force'" [scrollbarH]="true" [rowHeight]="'auto'" [footerHeight]="75"
+                        class="admin-datatable w-100">
+
                         <!-- MÃ TICKET -->
-                        <ngx-datatable-column [name]="'::TicketNo' | abpLocalization" prop="ticketNo" [width]="220" [minWidth]="200" 
-                            headerClass="align-left-col" cellClass="align-left-col">
+                        <ngx-datatable-column [name]="'::TicketNo' | abpLocalization" prop="ticketNo" [width]="220"
+                            [minWidth]="200" headerClass="align-left-col" cellClass="align-left-col">
                             <ng-template let-row="row" ngx-datatable-cell-template>
-                                <a [routerLink]="['/tickets/detail', row.id]" class="fw-bold text-decoration-none d-block w-100 text-truncate text-start" 
-                                   style="color: #f472b6; letter-spacing: 0.5px;">
+                                <a [routerLink]="['/tickets/detail', row.id]"
+                                    class="fw-bold text-decoration-none d-block w-100 text-truncate text-start"
+                                    style="color: #f472b6; letter-spacing: 0.5px;">
                                     {{ row.ticketNo }}
                                 </a>
                             </ng-template>
                         </ngx-datatable-column>
 
                         <!-- TIÊU ĐỀ -->
-                        <ngx-datatable-column [name]="'::TicketSubject' | abpLocalization" prop="title" [width]="320" [minWidth]="280" 
-                            headerClass="align-left-col" cellClass="align-left-col">
+                        <ngx-datatable-column [name]="'::TicketSubject' | abpLocalization" prop="title" [width]="320"
+                            [minWidth]="280" headerClass="align-left-col" cellClass="align-left-col">
                             <ng-template let-row="row" ngx-datatable-cell-template>
                                 <div class="d-flex align-items-center w-100" style="max-width: 100%;">
-                                    <span class="fw-medium text-truncate d-inline-block" title="{{ row.title }}" 
-                                        [ngClass]="row.isOverdue ? 'text-danger fw-bold' : 'text-light'" 
+                                    <span class="fw-medium text-truncate d-inline-block" title="{{ row.title }}"
+                                        [ngClass]="row.isOverdue ? 'text-danger fw-bold' : 'text-light'"
                                         style="max-width: calc(100% - 24px);">
                                         {{ row.title }}
                                     </span>
-                                    <i *ngIf="row.isOverdue" class="fas fa-fire ms-2 text-danger flex-shrink-0" title="Quá hạn xử lý!"></i>
+                                    <i *ngIf="row.isOverdue" class="fas fa-fire ms-2 text-danger flex-shrink-0"
+                                        title="Quá hạn xử lý!"></i>
                                 </div>
                             </ng-template>
                         </ngx-datatable-column>
 
                         <!-- TRẠNG THÁI -->
-                        <ngx-datatable-column [name]="'::Status' | abpLocalization" prop="status" [width]="260" [minWidth]="200"
-                            headerClass="align-center-col" cellClass="align-center-col">
+                        <ngx-datatable-column [name]="'::Status' | abpLocalization" prop="status" [width]="260"
+                            [minWidth]="200" headerClass="align-center-col" cellClass="align-center-col">
                             <ng-template let-row="row" ngx-datatable-cell-template>
-                                <span class="badge bg-primary bg-opacity-75 rounded-pill text-white shadow-sm equal-badge">
+                                <span
+                                    class="badge bg-primary bg-opacity-75 rounded-pill text-white shadow-sm equal-badge">
                                     {{ '::Enum:TicketStatus.' + row.status | abpLocalization }}
                                 </span>
                             </ng-template>
                         </ngx-datatable-column>
 
                         <!-- HẠN XỬ LÝ -->
-                        <ngx-datatable-column [name]="'Hạn xử lý'" prop="targetResolutionTime" [width]="260" [minWidth]="200"
-                            headerClass="align-center-col" cellClass="align-center-col">
+                        <ngx-datatable-column [name]="'Hạn xử lý'" prop="targetResolutionTime" [width]="260"
+                            [minWidth]="200" headerClass="align-center-col" cellClass="align-center-col">
                             <ng-template let-row="row" ngx-datatable-cell-template>
-                                <div *ngIf="row.targetResolutionTime" class="position-relative d-flex justify-content-center align-items-center w-100">
+                                <div *ngIf="row.targetResolutionTime"
+                                    class="position-relative d-flex justify-content-center align-items-center w-100">
                                     <span class="badge rounded-pill equal-badge" [ngClass]="{
                                             'bg-danger text-white': getSlaStatus(row.targetResolutionTime) === 'overdue',
                                             'bg-warning text-dark': getSlaStatus(row.targetResolutionTime) === 'warning',
                                             'bg-secondary bg-opacity-50 text-light': getSlaStatus(row.targetResolutionTime) === 'normal'
                                         }">
-                                        <i class="fas fa-hourglass-end me-2"></i>{{ row.targetResolutionTime | date: 'dd/MM/yyyy HH:mm' }}
+                                        <i class="fas fa-hourglass-end me-2"></i>{{ row.targetResolutionTime | date:
+                                        'dd/MM/yyyy HH:mm' }}
                                     </span>
-                                    
-                                    <small *ngIf="getSlaStatus(row.targetResolutionTime) === 'overdue'" 
-                                           class="text-danger fw-bold position-absolute" 
-                                           style="bottom: -22px; left: 50%; transform: translateX(-50%); white-space: nowrap;">
+
+                                    <small *ngIf="getSlaStatus(row.targetResolutionTime) === 'overdue'"
+                                        class="text-danger fw-bold position-absolute"
+                                        style="bottom: -22px; left: 50%; transform: translateX(-50%); white-space: nowrap;">
                                         <i class="fas fa-fire me-1"></i>Quá hạn
                                     </small>
                                 </div>
-                                <span *ngIf="!row.targetResolutionTime" class="text-muted fst-italic">Chưa thiết lập</span>
+                                <span *ngIf="!row.targetResolutionTime" class="text-muted fst-italic">Chưa thiết
+                                    lập</span>
                             </ng-template>
                         </ngx-datatable-column>
 
@@ -214,7 +228,9 @@
                         <ngx-datatable-column [name]="'Người xử lý'" prop="assigneeId" [width]="220" [minWidth]="180"
                             headerClass="align-center-col" cellClass="align-center-col">
                             <ng-template let-row="row" ngx-datatable-cell-template>
-                                <span class="badge bg-warning bg-opacity-25 text-warning py-2 px-3 rounded-pill d-inline-block text-center" *ngIf="!row.assigneeId">
+                                <span
+                                    class="badge bg-warning bg-opacity-25 text-warning py-2 px-3 rounded-pill d-inline-block text-center"
+                                    *ngIf="!row.assigneeId">
                                     <i class="fas fa-exclamation-circle me-1"></i> Chưa gán
                                 </span>
                                 <span class="text-info fw-semibold" *ngIf="row.assigneeId">
@@ -227,7 +243,8 @@
                         <ngx-datatable-column name="Phân công" [sortable]="false" [width]="140" [minWidth]="130"
                             headerClass="align-center-col" cellClass="align-center-col">
                             <ng-template let-row="row" ngx-datatable-cell-template>
-                                <button class="btn btn-sm btn-outline-info rounded-pill px-3 py-1 text-nowrap fw-semibold d-inline-flex justify-content-center align-items-center gap-1 mx-auto"
+                                <button
+                                    class="btn btn-sm btn-outline-info rounded-pill px-3 py-1 text-nowrap fw-semibold d-inline-flex justify-content-center align-items-center gap-1 mx-auto"
                                     (click)="openAssignModal(row)" title="Phân công">
                                     <i class="fas fa-user-plus"></i> Phân công
                                 </button>

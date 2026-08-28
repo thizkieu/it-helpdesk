@@ -3,12 +3,10 @@
         <div class="card card-admin-main shadow-lg border-0 rounded-4"
             style="background: rgba(23, 28, 48, 0.85) !important; backdrop-filter: blur(20px);">
 
-            <!-- HEADER TRANG QUẢN TRỊ & THANH TÌM KIẾM / LỌC THEO VAI TRÒ -->
+            <!-- HEADER TRANG QUẢN TRỊ -->
             <div class="card-header border-bottom border-secondary border-opacity-25 py-4 px-4"
                 style="background: transparent;">
                 <div class="row align-items-center justify-content-between g-3">
-
-                    <!-- Tiêu đề trang -->
                     <div class="col-xl-4 col-lg-4">
                         <div class="d-flex align-items-center gap-3">
                             <span class="header-icon-box"
@@ -16,18 +14,13 @@
                                 <i class="fas fa-user-shield fs-5"></i>
                             </span>
                             <div>
-                                <h4 class="card-title fw-bold mb-1 text-white">
-                                    Quản lý Người dùng
-                                </h4>
+                                <h4 class="card-title fw-bold mb-1 text-white">Quản lý Người dùng</h4>
                                 <small class="text-muted fs-7">Phân quyền tài khoản và lọc theo vai trò</small>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Cụm chức năng Lọc theo Role & Ô Search -->
                     <div class="col-xl-8 col-lg-8 d-flex flex-wrap justify-content-lg-end align-items-center gap-3">
-
-                        <!-- Dropdown Lọc theo Vai trò (Role) -->
                         <div style="min-width: 220px;">
                             <select class="form-select admin-input text-white rounded-pill px-3 py-2"
                                 [(ngModel)]="filters.role" (change)="onFilterChange()"
@@ -39,21 +32,17 @@
                             </select>
                         </div>
 
-                        <!-- Ô Search dài rộng phát sáng trắng -->
                         <div class="position-relative flex-grow-1 flex-lg-grow-0"
                             style="min-width: 280px; max-width: 380px;">
                             <div class="input-group align-items-center rounded-pill px-3 py-1 position-relative"
                                 style="background: rgba(15, 23, 42, 0.75); border: 1.5px solid rgba(255, 255, 255, 0.6); box-shadow: 0 0 15px rgba(255, 255, 255, 0.25); backdrop-filter: blur(12px);">
-
                                 <span class="text-white opacity-75 bg-transparent border-0 pe-2">
                                     <i class="fas fa-search"></i>
                                 </span>
-
                                 <input type="text"
                                     class="form-control bg-transparent border-0 shadow-none text-white p-0"
                                     placeholder="Tìm kiếm tài khoản, email..." [(ngModel)]="filters.filter"
                                     (keyup.enter)="getUsers()" style="font-size: 0.9rem;" />
-
                                 <button *ngIf="filters.filter"
                                     class="btn btn-link text-muted p-0 ms-2 text-decoration-none" type="button"
                                     (click)="filters.filter = ''; getUsers()" title="Xóa tìm kiếm">
@@ -68,83 +57,52 @@
             <!-- NỘI DUNG BẢNG QUẢN TRỊ -->
             <div class="card-body p-0" style="background: transparent;">
 
-                <!-- CSS FIX CHIỀU CAO HEADER TRÁNH BỊ CHÊ VÀ CĂN CHỈNH BẢNG -->
-                <style>
-                    ::ng-deep .ngx-datatable.admin-datatable .datatable-header {
-                        background: rgba(15, 23, 42, 0.4) !important;
-                        border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
-                    }
-
-                    ::ng-deep .ngx-datatable.admin-datatable .datatable-header .datatable-header-cell {
-                        color: #ffffff !important;
-                        font-weight: 700 !important;
-                        padding: 16px 20px !important;
-                        display: flex !important;
-                        align-items: center !important;
-                    }
-
-                    ::ng-deep .ngx-datatable.admin-datatable .datatable-body-cell {
-                        padding: 18px 20px !important;
-                        color: #ffffff !important;
-                        display: flex !important;
-                        align-items: center !important;
-                    }
-
-                    ::ng-deep .ngx-datatable.admin-datatable .align-center-col {
-                        justify-content: center !important;
-                        text-align: center !important;
-                    }
-
-                    ::ng-deep .ngx-datatable.admin-datatable .align-left-col {
-                        justify-content: flex-start !important;
-                        text-align: left !important;
-                        overflow: hidden;
-                    }
-                </style>
-
-                <ngx-datatable [rows]="userList.items" [count]="userList.totalCount" default [columnMode]="'force'"
-                    [scrollbarH]="true" [rowHeight]="'auto'" class="admin-datatable w-100">
+                <ngx-datatable [rows]="userList.items" [count]="userList.totalCount" [externalPaging]="true"
+                    [limit]="filters.maxResultCount" [offset]="filters.skipCount / filters.maxResultCount"
+                    (page)="onPageChange($event)" default [columnMode]="'force'" [scrollbarH]="true"
+                    [rowHeight]="'auto'" [footerHeight]="80" class="admin-datatable w-100">
 
                     <!-- CỘT TÀI KHOẢN -->
-                    <ngx-datatable-column name="Tài khoản" prop="userName" [width]="220" [minWidth]="180"
+                    <ngx-datatable-column name="Tài khoản" prop="userName" [width]="250" [minWidth]="220"
                         headerClass="align-left-col" cellClass="align-left-col">
                         <ng-template let-row="row" ngx-datatable-cell-template>
-                            <div class="d-flex align-items-center gap-3 w-100">
+                            <div class="d-flex align-items-center gap-3 w-100 ps-3">
                                 <div class="service-avatar-square flex-shrink-0"
-                                    style="width: 38px; height: 38px; background: rgba(192, 132, 252, 0.2); color: #c084fc; display: flex; align-items: center; justify-content: center; border-radius: 10px; font-weight: bold;">
+                                    style="width: 38px; height: 38px; background: rgba(192, 132, 252, 0.2); color: #c084fc; display: flex; align-items: center; justify-content: center; border-radius: 12px; font-weight: bold; font-size: 1rem;">
                                     {{ row.userName ? (row.userName.charAt(0) | uppercase) : 'U' }}
                                 </div>
-                                <span class="fw-bold font-mono fs-6 text-white text-truncate">{{ row.userName }}</span>
+                                <span class="fw-bold fs-6 text-white text-truncate">{{ row.userName }}</span>
                             </div>
                         </ng-template>
                     </ngx-datatable-column>
 
                     <!-- CỘT EMAIL -->
-                    <ngx-datatable-column name="Email" prop="email" [width]="280" [minWidth]="220"
+                    <ngx-datatable-column name="Email" prop="email" [width]="320" [minWidth]="280"
                         headerClass="align-left-col" cellClass="align-left-col">
                         <ng-template let-row="row" ngx-datatable-cell-template>
-                            <span class="text-light text-truncate w-100" title="{{ row.email }}">{{ row.email }}</span>
+                            <span class="text-light fs-6 text-truncate w-100" title="{{ row.email }}">{{ row.email
+                                }}</span>
                         </ng-template>
                     </ngx-datatable-column>
 
                     <!-- CỘT HỌ TÊN -->
-                    <ngx-datatable-column name="Họ và tên" prop="name" [width]="250" [minWidth]="200"
+                    <ngx-datatable-column name="Họ và tên" prop="name" [width]="280" [minWidth]="240"
                         headerClass="align-left-col" cellClass="align-left-col">
                         <ng-template let-row="row" ngx-datatable-cell-template>
-                            <span class="fw-medium text-light text-truncate w-100">
+                            <span class="fw-medium text-light fs-6 text-truncate w-100">
                                 {{ row.name || '' }} {{ row.surname || '' }}
                             </span>
                         </ng-template>
                     </ngx-datatable-column>
 
                     <!-- CỘT TRẠNG THÁI -->
-                    <ngx-datatable-column name="Trạng thái" prop="isActive" [width]="180" [minWidth]="150"
+                    <ngx-datatable-column name="Trạng thái" prop="isActive" [width]="200" [minWidth]="180"
                         headerClass="align-center-col" cellClass="align-center-col">
                         <ng-template let-row="row" ngx-datatable-cell-template>
                             <span
-                                class="admin-status-badge d-inline-block text-center py-1 px-3 rounded-pill text-white shadow-sm"
+                                class="admin-status-badge d-inline-block text-center py-1 px-3 rounded-pill text-white shadow-sm fw-semibold my-1"
                                 [ngStyle]="{'background': row.isActive ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)', 'border': row.isActive ? '1px solid #10b981' : '1px solid #ef4444'}"
-                                style="min-width: 120px;">
+                                style="min-width: 110px;">
                                 {{ row.isActive ? 'Hoạt động' : 'Đã khóa' }}
                             </span>
                         </ng-template>

@@ -138,13 +138,14 @@
             align-items: center !important;
             text-align: left !important;
             overflow: hidden;
-            /* Cực kỳ quan trọng để text-truncate hoạt động */
           }
         </style>
 
-        <!-- Dùng lại 'force' để bảng tự giãn đều lấp đầy chỗ trống -->
-        <ngx-datatable [rows]="data.items" [count]="data.totalCount" [list]="list" default [columnMode]="'force'"
-          [scrollbarH]="true" [rowHeight]="'auto'" class="admin-datatable w-100">
+        <!-- BẢNG ĐÃ THÊM THUỘC TÍNH PHÂN TRANG VÀ FOOTER HEIGHT -->
+        <ngx-datatable [rows]="data.items" [count]="data.totalCount" [externalPaging]="true"
+          [limit]="filters.maxResultCount" [offset]="filters.skipCount / filters.maxResultCount"
+          (page)="onPageChange($event)" default [columnMode]="'force'" [scrollbarH]="true" [rowHeight]="'auto'"
+          [footerHeight]="75" class="admin-datatable w-100">
 
           <!-- CỘT MÃ YÊU CẦU -->
           <ngx-datatable-column [name]="'::TicketNo' | abpLocalization" prop="ticketNo" [minWidth]="260"

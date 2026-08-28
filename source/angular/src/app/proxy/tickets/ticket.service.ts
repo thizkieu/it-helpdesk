@@ -84,7 +84,7 @@ export class TicketService {
     this.restService.request<any, PagedResultDto<TicketDto>>({
       method: 'GET',
       url: '/api/app/ticket',
-      params: { filter: input.filter, status: input.status, assigneeId: input.assigneeId, teamId: input.teamId, unassigned: input.unassigned, sorting: input.sorting, skipCount: input.skipCount, maxResultCount: input.maxResultCount },
+      params: { filter: input.filter, status: input.status, assigneeId: input.assigneeId, teamId: input.teamId, unassigned: input.unassigned, isMyTickets: input.isMyTickets, sorting: input.sorting, skipCount: input.skipCount, maxResultCount: input.maxResultCount },
     },
     { apiName: this.apiName,...config });
   

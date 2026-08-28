@@ -32,41 +32,37 @@ namespace ItHelpdesk.Permissions
             sysMasterListsPermission.AddChild(ItHelpdeskPermissions.SysMasterLists.Edit, L("Permission:SysMasterLists.Edit"));
             sysMasterListsPermission.AddChild(ItHelpdeskPermissions.SysMasterLists.Delete, L("Permission:SysMasterLists.Delete"));
 
-            // Category Permissions
             var categoryPermission = myGroup.AddPermission(ItHelpdeskPermissions.Categories.Default, L("Permission:Categories"));
             categoryPermission.AddChild(ItHelpdeskPermissions.Categories.Create, L("Permission:Categories.Create"));
             categoryPermission.AddChild(ItHelpdeskPermissions.Categories.Edit, L("Permission:Categories.Edit"));
             categoryPermission.AddChild(ItHelpdeskPermissions.Categories.Delete, L("Permission:Categories.Delete"));
 
-            // Service Permissions
             var servicePermission = myGroup.AddPermission(ItHelpdeskPermissions.Services.Default, L("Permission:Services"));
             servicePermission.AddChild(ItHelpdeskPermissions.Services.Create, L("Permission:Services.Create"));
             servicePermission.AddChild(ItHelpdeskPermissions.Services.Edit, L("Permission:Services.Edit"));
             servicePermission.AddChild(ItHelpdeskPermissions.Services.Delete, L("Permission:Services.Delete"));
 
-            // Priority Permissions
             var priorityPermission = myGroup.AddPermission(ItHelpdeskPermissions.Priorities.Default, L("Permission:Priorities"));
             priorityPermission.AddChild(ItHelpdeskPermissions.Priorities.Create, L("Permission:Priorities.Create"));
             priorityPermission.AddChild(ItHelpdeskPermissions.Priorities.Edit, L("Permission:Priorities.Edit"));
             priorityPermission.AddChild(ItHelpdeskPermissions.Priorities.Delete, L("Permission:Priorities.Delete"));
 
-            // Team Permissions
             var teamPermission = myGroup.AddPermission(ItHelpdeskPermissions.Teams.Default, L("Permission:Teams"));
             teamPermission.AddChild(ItHelpdeskPermissions.Teams.Create, L("Permission:Teams.Create"));
             teamPermission.AddChild(ItHelpdeskPermissions.Teams.Edit, L("Permission:Teams.Edit"));
             teamPermission.AddChild(ItHelpdeskPermissions.Teams.Delete, L("Permission:Teams.Delete"));
 
-            // TICKET PERMISSIONS
             var ticketPermission = myGroup.AddPermission(ItHelpdeskPermissions.Tickets.Default, L("Permission:Tickets"));
             ticketPermission.AddChild(ItHelpdeskPermissions.Tickets.Create, L("Permission:Tickets.Create"));
             ticketPermission.AddChild(ItHelpdeskPermissions.Tickets.Edit, L("Permission:Tickets.Edit"));
             ticketPermission.AddChild(ItHelpdeskPermissions.Tickets.Delete, L("Permission:Tickets.Delete"));
 
-            // DASHBOARD PERMISSIONS
             myGroup.AddPermission(ItHelpdeskPermissions.Dashboard.Default, L("Permission:Dashboard"));
 
-            // KNOWLEDGE BASE PERMISSIONS
             myGroup.AddPermission(ItHelpdeskPermissions.KnowledgeBase.Default, L("Permission:KnowledgeBase"));
+
+            // ĐĂNG KÝ QUYỀN QUẢN LÝ NGƯỜI DÙNG
+            myGroup.AddPermission(ItHelpdeskPermissions.UserManagement.Default, L("Permission:UserManagement"));
         }
 
         private static LocalizableString L(string name)

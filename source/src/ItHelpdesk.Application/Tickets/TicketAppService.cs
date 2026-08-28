@@ -34,7 +34,6 @@ namespace ItHelpdesk.Tickets
         private readonly IRepository<Priority, long> _priorityRepository;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
-        // Khai báo biến Provider để gọi Store
         private readonly ITicketProvider _ticketProvider;
 
         public TicketAppService(
@@ -63,56 +62,75 @@ namespace ItHelpdesk.Tickets
         }
 
         // ==============================================================================
-        // GHI ĐÈ HÀM GETLIST: BẢO MẬT & PHÂN QUYỀN XEM TICKET THEO VAI TRÒ
+        // PHÂN QUYỀN XEM TICKET & ĐẾM TỔNG SỐ TRANG CHUẨN XÁC
         // ==============================================================================
         public override async Task<PagedResultDto<TicketDto>> GetListAsync(GetTicketListDto input)
         {
             try
             {
-                // 1. Chỉ định rõ: Chỉ Admin hoặc IT mới có quyền xem toàn bộ ticket hệ thống
-                // (Bạn có thể bổ sung thêm tên role khác vào đây nếu muốn, ví dụ: || CurrentUser.IsInRole("HR"))
-                bool isPrivilegedUser = CurrentUser.IsInRole("admin")
-                                     || CurrentUser.IsInRole("Admin")
-                                     || CurrentUser.IsInRole("IT");
+                // 1. Phân quyền và Logic "Yêu cầu của tôi"
+                bool isEndUser = CurrentUser.IsInRole("End_User")
+                              || CurrentUser.IsInRole("End User")
+                              || CurrentUser.IsInRole("user");
 
                 Guid? secureCreatorId = null;
 
-                // 2. Nếu KHÔNG phải Admin hoặc IT (tức là User bình thường) -> Ép buộc chỉ lấy ticket của chính họ tạo
-                if (!isPrivilegedUser)
+                // LOGIC MỚI: 
+                // - Nếu Frontend gửi IsMyTickets = true -> Luôn luôn chỉ lấy Ticket của tài khoản đang đăng nhập
+                // - Nếu IsMyTickets = false (Hàng đợi IT) mà lại là EndUser -> Ép buộc chỉ xem của mình để bảo mật
+                if (input.IsMyTickets.HasValue && input.IsMyTickets.Value)
+                {
+                    secureCreatorId = CurrentUser.Id;
+                }
+                else if (isEndUser)
                 {
                     secureCreatorId = CurrentUser.Id;
                 }
 
-                // 3. Đóng gói tham số vào TicketListRequest để truyền vào Stored Procedure
+                // 2. ĐẾM TỔNG SỐ LƯỢNG (TOTAL COUNT) CHÍNH XÁC ĐỂ PHÂN TRANG
+                var query = await Repository.GetQueryableAsync();
+
+                if (secureCreatorId.HasValue)
+                    query = query.Where(x => x.CreatorId == secureCreatorId.Value);
+
+                if (input.Status.HasValue)
+                    query = query.Where(x => (int)x.Status == (int)input.Status.Value);
+
+                if (!string.IsNullOrWhiteSpace(input.Filter))
+                    query = query.Where(x => x.Title.Contains(input.Filter) || x.TicketNo.Contains(input.Filter));
+
+                if (input.AssigneeId.HasValue)
+                    query = query.Where(x => x.AssigneeId == input.AssigneeId.Value);
+
+                if (input.TeamId.HasValue)
+                    query = query.Where(x => x.TeamId == input.TeamId.Value);
+
+                if (input.Unassigned.HasValue && input.Unassigned.Value)
+                    query = query.Where(x => x.AssigneeId == null);
+
+                var totalCount = await AsyncExecuter.CountAsync(query);
+
+                // 3. Đóng gói tham số gọi Stored Procedure để lấy data trang hiện tại
                 var request = new TicketListRequest
                 {
                     FilterText = input.Filter,
                     Status = input.Status.HasValue ? (int)input.Status.Value : null,
-
-                    // Các điều kiện lọc mở rộng
                     AssigneeId = input.AssigneeId,
                     TeamId = input.TeamId,
                     Unassigned = input.Unassigned,
-
-                    // Gắn ID người tạo đã được phân quyền chặt chẽ từ Backend
-                    CreatorId = secureCreatorId,
-
-                    // Thông số phân trang
+                    CreatorId = secureCreatorId, // Đã được xử lý logic bảo mật ở trên
                     PageIndex = input.MaxResultCount > 0 ? input.SkipCount / input.MaxResultCount : 0,
                     PageSize = input.MaxResultCount > 0 ? input.MaxResultCount : 10
                 };
 
-                // 4. Gọi Provider để thực thi Stored Procedure
                 var providerData = await _ticketProvider.GetListAsync(request);
 
-                var totalCount = providerData?.Count ?? 0;
-
-                if (providerData == null || totalCount == 0)
+                if (providerData == null || !providerData.Any())
                 {
                     return new PagedResultDto<TicketDto>(0, new List<TicketDto>());
                 }
 
-                // 5. Map dữ liệu trả về cho giao diện
+                // 4. Map dữ liệu trả về cho giao diện
                 var ticketDtos = ObjectMapper.Map<List<TicketListQueryResponse>, List<TicketDto>>(providerData);
 
                 return new PagedResultDto<TicketDto>(totalCount, ticketDtos);

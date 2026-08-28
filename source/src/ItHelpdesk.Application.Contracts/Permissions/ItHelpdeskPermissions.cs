@@ -36,7 +36,6 @@ namespace ItHelpdesk.Permissions
             public const string Delete = Default + ".Delete";
         }
 
-        // Phân quyền cho Category
         public static class Categories
         {
             public const string Default = GroupName + ".Categories";
@@ -45,7 +44,6 @@ namespace ItHelpdesk.Permissions
             public const string Delete = Default + ".Delete";
         }
 
-        // Phân quyền cho Service
         public static class Services
         {
             public const string Default = GroupName + ".Services";
@@ -54,7 +52,6 @@ namespace ItHelpdesk.Permissions
             public const string Delete = Default + ".Delete";
         }
 
-        // Phân quyền cho Priority
         public static class Priorities
         {
             public const string Default = GroupName + ".Priorities";
@@ -63,7 +60,6 @@ namespace ItHelpdesk.Permissions
             public const string Delete = Default + ".Delete";
         }
 
-        // Phân quyền cho Team
         public static class Teams
         {
             public const string Default = GroupName + ".Teams";
@@ -72,7 +68,6 @@ namespace ItHelpdesk.Permissions
             public const string Delete = Default + ".Delete";
         }
 
-        // Phân quyền cho Tickets
         public static class Tickets
         {
             public const string Default = GroupName + ".Tickets";
@@ -81,16 +76,20 @@ namespace ItHelpdesk.Permissions
             public const string Delete = Default + ".Delete";
         }
 
-        // Phân quyền cho Dashboard
         public static class Dashboard
         {
             public const string Default = GroupName + ".Dashboard";
         }
 
-        // Phân quyền cho Knowledge Base
         public static class KnowledgeBase
         {
             public const string Default = GroupName + ".KnowledgeBase";
+        }
+
+        // PHÂN QUYỀN TRUY CẬP QUẢN LÝ NGƯỜI DÙNG CUSTOM
+        public static class UserManagement
+        {
+            public const string Default = GroupName + ".UserManagement";
         }
     }
 }

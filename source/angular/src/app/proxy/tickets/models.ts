@@ -30,6 +30,7 @@ export interface GetTicketListDto extends PagedAndSortedResultRequestDto {
   assigneeId?: string;
   teamId?: number;
   unassigned?: boolean;
+  isMyTickets?: boolean;
 }
 
 export interface TicketCommentDto extends AuditedEntityDto<number> {

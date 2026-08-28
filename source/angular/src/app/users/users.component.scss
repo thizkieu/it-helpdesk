@@ -8,78 +8,186 @@
         border: 1px solid rgba(255, 255, 255, 0.1);
     }
 
-    .title-gradient {
-        background: linear-gradient(135deg, #fff 0%, #c084fc 100%);
-        -webkit-background-clip: text;
-        background-clip: text;
-        -webkit-text-fill-color: transparent;
-    }
-
-    .text-muted-custom {
-        color: #94a3b8;
-    }
-
-    /* Tùy chỉnh table ngx-datatable trực tiếp tại đây để tránh bị lỗi ViewEncapsulation */
     ::ng-deep {
         .ngx-datatable.admin-datatable {
             background: transparent !important;
 
-            /* Ép cứng chiều cao và hiển thị của Header */
+            /* HEADER: Giãn lề, chữ trắng sáng rõ nét */
             .datatable-header {
                 background: rgba(15, 23, 42, 0.6) !important;
-                height: 60px !important;
                 min-height: 60px !important;
+                height: auto !important;
                 border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
 
                 .datatable-header-cell {
-                    height: 60px !important;
                     min-height: 60px !important;
-                    padding: 0 20px !important;
+                    height: auto !important;
+                    padding: 14px 20px !important;
                     display: flex !important;
                     align-items: center !important;
                     color: #ffffff !important;
                     font-weight: 700 !important;
-                    font-size: 0.9rem !important;
-                    overflow: visible !important;
-                    /* Đảm bảo chữ không bị ẩn */
+                    font-size: 1rem !important;
+                    letter-spacing: 0.5px;
                 }
-            }
-
-            .datatable-body {
-                background: transparent !important;
             }
 
             .datatable-row-wrapper {
-                border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+                border-bottom: 1px solid rgba(255, 255, 255, 0.06);
                 transition: background 0.2s ease;
 
                 &:hover {
-                    background: rgba(255, 255, 255, 0.02);
+                    background: rgba(255, 255, 255, 0.04);
                 }
             }
 
+            /* THU NHỎ CHIỀU CAO VÀ TẠO KHOẢNG HỞ CHỐNG DÍNH CHÙM */
             .datatable-body-cell {
-                padding: 18px 20px !important;
+                padding: 12px 16px !important;
                 color: #ffffff !important;
                 display: flex !important;
                 align-items: center !important;
+                font-size: 0.95rem;
             }
 
+            .admin-status-badge {
+                margin: 2px 0;
+                font-size: 0.85rem !important;
+            }
+
+            /* CĂN CHỈNH LỀ TRÁI VÀ GIỮA CHUẨN XÁC */
             .align-center-col {
                 justify-content: center !important;
                 text-align: center !important;
+
+                .datatable-header-cell-template-wrap,
+                .datatable-body-cell-label {
+                    display: flex !important;
+                    justify-content: center !important;
+                    align-items: center !important;
+                    width: 100%;
+                }
             }
 
             .align-left-col {
                 justify-content: flex-start !important;
                 text-align: left !important;
-                overflow: hidden;
+
+                .datatable-header-cell-template-wrap,
+                .datatable-body-cell-label {
+                    display: flex !important;
+                    justify-content: flex-start !important;
+                    align-items: center !important;
+                    width: 100%;
+                }
             }
 
-            .datatable-footer {
+            /* SCROLLBAR MỎNG NHẸ */
+            .datatable-body {
                 background: transparent !important;
-                color: #94a3b8;
-                padding: 15px;
+
+                &::-webkit-scrollbar {
+                    height: 8px !important;
+                }
+
+                &::-webkit-scrollbar-track {
+                    background: rgba(15, 23, 42, 0.4) !important;
+                    border-radius: 4px;
+                }
+
+                &::-webkit-scrollbar-thumb {
+                    background: rgba(192, 132, 252, 0.5) !important;
+                    border-radius: 4px;
+                }
+
+                &::-webkit-scrollbar-thumb:hover {
+                    background: rgba(192, 132, 252, 0.9) !important;
+                }
+            }
+
+            /* =========================================================
+               FOOTER & THANH PHÂN TRANG (PAGINATION) SÁNG SỦA, KHÔNG CHÌM
+               ========================================================= */
+            .datatable-footer {
+                background: rgba(15, 23, 42, 0.85) !important;
+                border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+                padding: 0 28px !important;
+                height: 80px !important;
+                color: #cbd5e1 !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: space-between !important;
+
+                .page-count {
+                    font-size: 1rem !important;
+                    font-weight: 500 !important;
+                    color: #94a3b8 !important;
+                }
+
+                .datatable-pager {
+                    display: flex !important;
+                    align-items: center !important;
+
+                    .pager {
+                        display: flex !important;
+                        gap: 10px !important;
+                        margin: 0 !important;
+                        padding: 0 !important;
+                        list-style: none !important;
+
+                        li {
+                            a {
+                                display: flex !important;
+                                align-items: center !important;
+                                justify-content: center !important;
+                                min-width: 40px !important;
+                                height: 40px !important;
+                                border-radius: 12px !important;
+                                background: rgba(255, 255, 255, 0.12) !important;
+                                color: #ffffff !important;
+                                font-weight: 700 !important;
+                                font-size: 0.95rem !important;
+                                text-decoration: none !important;
+                                transition: all 0.3s ease !important;
+                                border: 1px solid rgba(255, 255, 255, 0.2) !important;
+
+                                i {
+                                    font-size: 0.9rem !important;
+                                    color: #ffffff !important;
+                                }
+
+                                &:hover {
+                                    background: rgba(192, 132, 252, 0.3) !important;
+                                    color: #c084fc !important;
+                                    border-color: rgba(192, 132, 252, 0.6) !important;
+                                    transform: translateY(-2px);
+                                }
+                            }
+
+                            /* TRANG ĐANG CHỌN (ACTIVE) RỰC RỠ BẰNG GRADIENT */
+                            &.active a {
+                                background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%) !important;
+                                color: #ffffff !important;
+                                box-shadow: 0 4px 15px rgba(236, 72, 153, 0.6) !important;
+                                border-color: transparent !important;
+                                transform: scale(1.08);
+                            }
+
+                            &.disabled a {
+                                opacity: 0.3 !important;
+                                cursor: not-allowed !important;
+                                background: transparent !important;
+                                border-color: rgba(255, 255, 255, 0.05) !important;
+                                color: #64748b !important;
+
+                                &:hover {
+                                    transform: none !important;
+                                    background: transparent !important;
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     }

@@ -12,14 +12,7 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 @Component({
   selector: 'app-my-tickets',
   standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    RouterModule,
-    CoreModule,
-    ThemeSharedModule,
-    NgxDatatableModule
-  ],
+  imports: [CommonModule, FormsModule, RouterModule, CoreModule, ThemeSharedModule, NgxDatatableModule],
   providers: [ListService],
   templateUrl: './my-tickets.component.html',
   styleUrls: ['./my-tickets.component.scss']
@@ -33,7 +26,10 @@ export class MyTicketsComponent implements OnInit, OnDestroy {
 
   filters = {
     filterText: '',
-    status: null as number | null
+    status: null as number | null,
+    skipCount: 0,
+    maxResultCount: 10,
+    isMyTickets: true // BẮT BUỘC ĐỂ BACKEND NHẬN DIỆN ĐÂY LÀ TRANG CÁ NHÂN
   };
 
   private readonly storageKey = 'my_tickets_search_history';
@@ -43,7 +39,6 @@ export class MyTicketsComponent implements OnInit, OnDestroy {
   private searchSubject = new Subject<string>();
   private searchSubscription?: Subscription;
 
-  // Lắng nghe click toàn màn hình để tự đóng dropdown khi click ra ngoài
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent): void {
     if (!this.elementRef.nativeElement.querySelector('.search-wrapper')?.contains(event.target)) {
@@ -60,7 +55,9 @@ export class MyTicketsComponent implements OnInit, OnDestroy {
         query.status = this.filters.status;
       }
 
-      // Backend tự động định danh người dùng qua Token, không cần gửi creatorId từ đây nữa
+      query.skipCount = this.filters.skipCount;
+      query.maxResultCount = this.filters.maxResultCount;
+      query.isMyTickets = this.filters.isMyTickets; // GỬI CỜ LÊN BACKEND API
 
       return this.ticketService.getList(query);
     };
@@ -69,7 +66,6 @@ export class MyTicketsComponent implements OnInit, OnDestroy {
       this.data = res;
     });
 
-    // TỰ ĐỘNG TÌM KIẾM TỪ KÝ TỰ ĐẦU TIÊN
     this.searchSubscription = this.searchSubject.pipe(
       debounceTime(350),
       distinctUntilChanged()
@@ -78,6 +74,7 @@ export class MyTicketsComponent implements OnInit, OnDestroy {
       if (cleanKeyword) {
         this.saveSearchHistory(cleanKeyword);
       }
+      this.filters.skipCount = 0; // Reset trang khi gõ tìm kiếm
       this.list.get();
     });
   }
@@ -86,7 +83,15 @@ export class MyTicketsComponent implements OnInit, OnDestroy {
     this.searchSubscription?.unsubscribe();
   }
 
-  // --- QUẢN LÝ LỊCH SỬ TÌM KIẾM ---
+  // --- HÀM BẮT SỰ KIỆN CHUYỂN TRANG ---
+  onPageChange(event: any): void {
+    const newSkipCount = event.offset * this.filters.maxResultCount;
+    if (this.filters.skipCount !== newSkipCount) {
+      this.filters.skipCount = newSkipCount;
+      this.list.get();
+    }
+  }
+
   private loadSearchHistory(): void {
     const saved = localStorage.getItem(this.storageKey);
     this.recentSearches = saved ? JSON.parse(saved) : [];
@@ -111,7 +116,6 @@ export class MyTicketsComponent implements OnInit, OnDestroy {
     localStorage.removeItem(this.storageKey);
   }
 
-  // --- CÁC HÀNH ĐỘNG TÌM KIẾM ---
   onSearchInput(): void {
     this.showSearchSuggestions = true;
     this.searchSubject.next(this.filters.filterText);
@@ -121,6 +125,7 @@ export class MyTicketsComponent implements OnInit, OnDestroy {
     this.filters.filterText = keyword;
     this.showSearchSuggestions = false;
     this.saveSearchHistory(keyword);
+    this.filters.skipCount = 0;
     this.list.get();
   }
 
@@ -130,16 +135,19 @@ export class MyTicketsComponent implements OnInit, OnDestroy {
     if (keyword) {
       this.saveSearchHistory(keyword);
     }
+    this.filters.skipCount = 0;
     this.list.get();
   }
 
   clearSearch(): void {
     this.filters.filterText = '';
     this.showSearchSuggestions = false;
+    this.filters.skipCount = 0;
     this.list.get();
   }
 
   onFilterChange(): void {
+    this.filters.skipCount = 0;
     this.list.get();
   }
 }

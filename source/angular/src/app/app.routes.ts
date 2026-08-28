@@ -101,6 +101,8 @@ export const APP_ROUTES: Routes = [
   {
     path: 'user-management',
     loadComponent: () => import('./users/users.component').then(c => c.UsersComponent),
-    canActivate: [authGuard],
+    // DÒNG NÀY ĐỂ KÍCH HOẠT CHẶN BẰNG URL DỰA VÀO POLICY
+    canActivate: [authGuard, permissionGuard], 
+    data: { requiredPolicy: 'ItHelpdesk.UserManagement' }
   }
 ];

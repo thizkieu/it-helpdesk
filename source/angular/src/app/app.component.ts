@@ -1,13 +1,11 @@
 import { Component, OnInit, inject } from '@angular/core';
-// 1. IMPORT THÊM ReplaceableComponentsService
 import { DynamicLayoutComponent, ReplaceableComponentsService } from '@abp/ng.core'; 
 import { LoaderBarComponent } from '@abp/ng.theme.shared';
 import { AvatarStateService } from './shared/services/avatar-state.service';
 import { Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
-// 2. IMPORT THÊM eIdentityComponents VÀ UsersComponent
 import { eIdentityComponents } from '@abp/ng.identity'; 
-import { UsersComponent } from './users/users.component'; // Đảm bảo đường dẫn này trỏ đúng tới component của bạn
+import { UsersComponent } from './users/users.component'; 
 
 @Component({
   selector: 'app-root',
@@ -22,34 +20,24 @@ export class AppComponent implements OnInit {
   private avatarState = inject(AvatarStateService);
   private router = inject(Router);
   
-  // 3. KHAI BÁO SERVICE GHI ĐÈ
   private replaceableComponents = inject(ReplaceableComponentsService); 
   
   private lastAvatarUrl: string = '';
 
   ngOnInit() {
-    // ==========================================================
-    // 4. LỆNH GHI ĐÈ TRANG QUẢN LÝ NGƯỜI DÙNG MẶC ĐỊNH CỦA ABP
-    // ==========================================================
     this.replaceableComponents.add({
       component: UsersComponent,
       key: eIdentityComponents.Users,
     });
-    // ==========================================================
 
-    // 1. Gắn CSS "tiêu diệt" icon mặc định của ABP Theme vĩnh viễn
     this.injectGlobalStyles();
-
-    // 2. Tải ảnh từ API ngay khi mở app
     this.avatarState.loadInitialAvatar();
 
-    // 3. Lắng nghe thay đổi state ảnh để chèn vào Navbar
     this.avatarState.currentAvatar$.subscribe(avatarUrl => {
       this.lastAvatarUrl = avatarUrl;
       this.injectAvatarToNavbar(avatarUrl);
     });
 
-    // 4. Lắng nghe sự kiện chuyển trang
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
     ).subscribe(() => {
@@ -59,7 +47,6 @@ export class AppComponent implements OnInit {
     });
   }
 
-  // Bơm CSS toàn cục để ẩn triệt để icon xám
   private injectGlobalStyles() {
     if (!document.getElementById('hide-default-avatar-style')) {
       const style = document.createElement('style');
@@ -117,7 +104,6 @@ export class AppComponent implements OnInit {
             imgObj.src = avatarUrl;
           }
 
-          // TỰ ĐỘNG CHÈN THÊM MỤC "ĐỔI ẢNH ĐẠI DIỆN" VÀO DROPDOWN MENU
           const dropdownMenu = userMenu.querySelector('.dropdown-menu, .lpx-user-dropdown-menu');
           if (dropdownMenu && !dropdownMenu.querySelector('#custom-avatar-menu-item')) {
             const customMenuLi = document.createElement('li');

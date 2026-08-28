@@ -117,13 +117,14 @@
 
     "Menu:MyTickets": "Danh sách yêu cầu của tôi",
     "TicketNo": "Mã yêu cầu",
-    "Enum:TicketStatus.1": "Mới",
-    "Enum:TicketStatus.2": "Đã phân công",
-    "Enum:TicketStatus.3": "Đang xử lý",
-    "Enum:TicketStatus.4": "Chờ phản hồi",
-    "Enum:TicketStatus.5": "Vượt cấp",
-    "Enum:TicketStatus.6": "Đã xử lý",
-    "Enum:TicketStatus.7": "Đóng",
+
+    "Enum:TicketStatus.0": "Mới",
+    "Enum:TicketStatus.1": "Đã phân công",
+    "Enum:TicketStatus.2": "Đang xử lý",
+    "Enum:TicketStatus.3": "Chờ phản hồi",
+    "Enum:TicketStatus.4": "Vượt cấp",
+    "Enum:TicketStatus.5": "Đã xử lý",
+    "Enum:TicketStatus.6": "Đóng",
 
     "Menu:TicketDetail": "Chi tiết yêu cầu",
     "Action:StartProcessing": "Bắt đầu xử lý",
@@ -177,6 +178,8 @@
     "KnowledgeBase:BackToLibrary": "Quay lại cẩm nang",
     "KnowledgeBase:LastUpdated": "Cập nhật gần đây",
     "KnowledgeBase:ITDepartment": "IT Helpdesk",
-    "KnowledgeBase:FetchError": "Lỗi tải dữ liệu cẩm nang từ máy chủ."
+    "KnowledgeBase:FetchError": "Lỗi tải dữ liệu cẩm nang từ máy chủ.",
+
+    "Permission:UserManagement": "Truy cập Quản lý người dùng (Admin/IT)"
   }
 }
