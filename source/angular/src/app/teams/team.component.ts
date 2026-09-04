@@ -36,19 +36,17 @@ export class TeamComponent extends AdminBaseComponent implements OnInit {
   private confirmation = inject(ConfirmationService);
   private toaster = inject(ToasterService);
 
-  // Khai báo storageKey riêng cho Team
   protected storageKey = 'team_search_history';
 
   team = { items: [], totalCount: 0 } as PagedResultDto<TeamDto>;
   selectedTeam = {} as TeamDto;
   form!: FormGroup;
   isModalOpen = false;
+  isSubmitting = false; // BỔ SUNG BIẾN CHỐNG DOUBLE-SUBMIT
 
   ngOnInit() {
-    // BẮT BUỘC: Gọi hàm của Base Component để kích hoạt luồng tìm kiếm tự động
     super.ngOnInit();
 
-    // Dùng this.searchFilter lấy từ BaseComponent thay vì this.search$.value
     const streamCreator = (query: any) => this.teamService.getList({ ...query, filter: this.searchFilter });
 
     this.list.hookToQuery(streamCreator).subscribe((response: any) => {
@@ -59,6 +57,7 @@ export class TeamComponent extends AdminBaseComponent implements OnInit {
   createTeam() {
     this.selectedTeam = {} as TeamDto;
     this.buildForm();
+    this.isSubmitting = false;
     this.isModalOpen = true;
   }
 
@@ -66,6 +65,7 @@ export class TeamComponent extends AdminBaseComponent implements OnInit {
     this.teamService.get(id).subscribe((data: any) => {
       this.selectedTeam = data;
       this.buildForm();
+      this.isSubmitting = false;
       this.isModalOpen = true;
     });
   }
@@ -83,25 +83,48 @@ export class TeamComponent extends AdminBaseComponent implements OnInit {
 
   buildForm() {
     this.form = this.fb.group({
-      code: [this.selectedTeam.code || '', Validators.required],
-      name: [this.selectedTeam.name || '', Validators.required],
+      code: [this.selectedTeam.code || '', [Validators.required, Validators.maxLength(50)]],
+      name: [this.selectedTeam.name || '', [Validators.required, Validators.maxLength(100)]],
       isActive: [this.selectedTeam.isActive ?? true],
     });
   }
 
   save() {
-    if (this.form.invalid) return;
+    // CHẶN KHOẢNG TRẮNG TÀNG HÌNH (WHITESPACE VALIDATION)
+    const codeVal = this.form.get('code')?.value?.trim() || '';
+    const nameVal = this.form.get('name')?.value?.trim() || '';
 
-    const requestData = this.form.value;
+    if (this.form.invalid || !codeVal || !nameVal || this.isSubmitting) {
+      this.form.markAllAsTouched();
+      this.toaster.error('Vui lòng điền đầy đủ thông tin (không được để trống hoặc toàn khoảng trắng)!');
+      return;
+    }
+
+    this.isSubmitting = true; // KHÓA NÚT NGAY LẬP TỨC
+
+    const requestData = {
+      ...this.form.value,
+      code: codeVal,
+      name: nameVal
+    };
+
     let request = this.selectedTeam.id
       ? this.teamService.update(this.selectedTeam.id, requestData)
       : this.teamService.create(requestData);
 
-    request.subscribe(() => {
-      this.isModalOpen = false;
-      this.form.reset();
-      this.list.get();
-      this.toaster.success('Lưu nhóm hỗ trợ thành công!');
+    request.subscribe({
+      next: () => {
+        this.isModalOpen = false;
+        this.form.reset();
+        this.isSubmitting = false; // MỞ KHÓA NÚT
+        this.list.get();
+        this.toaster.success('Lưu nhóm hỗ trợ thành công!');
+      },
+      error: (err: any) => {
+        console.error('Lỗi khi lưu nhóm:', err);
+        this.toaster.error('Không thể lưu lúc này. Vui lòng thử lại!');
+        this.isSubmitting = false; // MỞ KHÓA NÚT KHI GẶP LỖI
+      }
     });
   }
 }

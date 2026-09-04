@@ -81,20 +81,30 @@ export class CreateTicketComponent implements OnInit {
   }
 
   submitTicket(): void {
-    if (this.ticketForm.invalid) {
+    // Lấy giá trị và cắt sạch khoảng trắng thừa (Whitespace Validation)
+    const titleValue = this.ticketForm.get('title')?.value?.trim() || '';
+    const descValue = this.ticketForm.get('description')?.value?.trim() || '';
+
+    // Cập nhật lại giá trị đã trim vào form để đồng bộ
+    this.ticketForm.patchValue({
+      title: titleValue,
+      description: descValue
+    });
+
+    // Kiểm tra nếu form lỗi HOẶC title/description rỗng sau khi trim
+    if (this.ticketForm.invalid || !titleValue || !descValue) {
       this.ticketForm.markAllAsTouched();
-      this.customToast.show('Vui lòng điền đầy đủ các trường bắt buộc!', 'error');
+      this.customToast.show('Vui lòng điền đầy đủ các trường (không được để trống hoặc toàn khoảng trắng)!', 'error');
       return;
     }
 
-    this.isSubmitting = true;
+    this.isSubmitting = true; // KHÓA NÚT NGAY LẬP TỨC ĐỂ CHỐNG DOUBLE-SUBMIT
     const input: CreateUpdateTicketDto = this.ticketForm.value;
 
     this.ticketService.create(input).subscribe({
       next: (createdTicket: any) => {
         const ticketId = createdTicket?.id;
 
-        //Chuyển đổi File sang Base64 chuẩn với UploadAttachmentDto
         if (this.selectedFiles.length > 0 && ticketId) {
           let uploadCount = 0;
           this.selectedFiles.forEach(file => {
@@ -142,7 +152,7 @@ export class CreateTicketComponent implements OnInit {
       },
       error: () => {
         this.customToast.show('Không thể gửi yêu cầu lúc này. Vui lòng thử lại sau.', 'error');
-        this.isSubmitting = false;
+        this.isSubmitting = false; // MỞ KHÓA NÚT NẾU LỖI
       }
     });
   }

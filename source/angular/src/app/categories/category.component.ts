@@ -56,6 +56,7 @@ export class CategoryComponent extends AdminBaseComponent implements OnInit {
   selectedCategory = {} as CategoryDto;
   form!: FormGroup;
   isModalOpen = false;
+  isSubmitting = false; // BỔ SUNG BIẾN CHỐNG DOUBLE-SUBMIT
 
   parentCategories: CategoryDto[] = [];
   teams: { id: string; name: string }[] = [
@@ -65,10 +66,9 @@ export class CategoryComponent extends AdminBaseComponent implements OnInit {
   ];
 
   ngOnInit(): void {
-    super.ngOnInit(); // BẮT BUỘC PHẢI CÓ để kích hoạt luồng tìm kiếm từ Base Component
+    super.ngOnInit();
 
     const categoryStreamCreator = (query: any) =>
-      // Dùng this.searchFilter thay vì this.search$.value (vì Subject không có .value)
       this.categoryService.getList({ ...query, filter: this.searchFilter });
 
     this.list.hookToQuery(categoryStreamCreator).subscribe((response: PagedResultDto<CategoryDto>) => {
@@ -80,6 +80,7 @@ export class CategoryComponent extends AdminBaseComponent implements OnInit {
   createCategory(): void {
     this.selectedCategory = {} as CategoryDto;
     this.buildForm();
+    this.isSubmitting = false;
     this.isModalOpen = true;
   }
 
@@ -87,6 +88,7 @@ export class CategoryComponent extends AdminBaseComponent implements OnInit {
     this.categoryService.get(id).subscribe((category: CategoryDto) => {
       this.selectedCategory = category;
       this.buildForm();
+      this.isSubmitting = false;
       this.isModalOpen = true;
     });
   }
@@ -104,8 +106,8 @@ export class CategoryComponent extends AdminBaseComponent implements OnInit {
 
   buildForm(): void {
     this.form = this.fb.group({
-      code: [this.selectedCategory.code || '', Validators.required],
-      name: [this.selectedCategory.name || '', Validators.required],
+      code: [this.selectedCategory.code || '', [Validators.required, Validators.maxLength(50)]],
+      name: [this.selectedCategory.name || '', [Validators.required, Validators.maxLength(255)]],
       isActive: [this.selectedCategory.isActive ?? true],
       parentId: [this.selectedCategory.parentId || null],
       defaultTeamId: [this.selectedCategory.defaultTeamId || null],
@@ -113,18 +115,41 @@ export class CategoryComponent extends AdminBaseComponent implements OnInit {
   }
 
   save(): void {
-    if (this.form.invalid) return;
+    // CHẶN KHOẢNG TRẮNG TÀNG HÌNH & VALIDATE FORM
+    const codeVal = this.form.get('code')?.value?.trim() || '';
+    const nameVal = this.form.get('name')?.value?.trim() || '';
 
-    const requestData = this.form.value;
+    if (this.form.invalid || !codeVal || !nameVal || this.isSubmitting) {
+      this.form.markAllAsTouched();
+      this.toaster.error('Vui lòng điền đầy đủ thông tin (không được bỏ trống hoặc toàn khoảng trắng)!');
+      return;
+    }
+
+    this.isSubmitting = true; // KHÓA NÚT NGAY LẬP TỨC
+
+    const requestData = {
+      ...this.form.value,
+      code: codeVal,
+      name: nameVal
+    };
+
     const request = this.selectedCategory.id
       ? this.categoryService.update(this.selectedCategory.id, requestData)
       : this.categoryService.create(requestData);
 
-    request.subscribe(() => {
-      this.isModalOpen = false;
-      this.form.reset();
-      this.list.get();
-      this.toaster.success('Lưu danh mục thành công!');
+    request.subscribe({
+      next: () => {
+        this.isModalOpen = false;
+        this.form.reset();
+        this.isSubmitting = false; // MỞ KHÓA NÚT
+        this.list.get();
+        this.toaster.success('Lưu danh mục thành công!');
+      },
+      error: (err) => {
+        console.error('Lỗi lưu danh mục:', err);
+        this.toaster.error('Không thể lưu danh mục lúc này. Vui lòng thử lại!');
+        this.isSubmitting = false; // MỞ KHÓA NÚT KHI GẶP LỖI
+      }
     });
   }
 }

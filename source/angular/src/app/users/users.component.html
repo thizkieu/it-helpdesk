@@ -57,6 +57,18 @@
             <!-- NỘI DUNG BẢNG QUẢN TRỊ -->
             <div class="card-body p-0" style="background: transparent;">
 
+                <!-- FIX UI: Khắc phục thanh cuộn ngang thừa ở footer phân trang -->
+                <style>
+                    ::ng-deep .ngx-datatable.admin-datatable .datatable-footer {
+                        overflow: hidden !important;
+                        width: 100% !important;
+                    }
+
+                    ::ng-deep .ngx-datatable.admin-datatable .datatable-footer .datatable-pager {
+                        margin-right: 1.5rem !important;
+                    }
+                </style>
+
                 <ngx-datatable [rows]="userList.items" [count]="userList.totalCount" [externalPaging]="true"
                     [limit]="filters.maxResultCount" [offset]="filters.skipCount / filters.maxResultCount"
                     (page)="onPageChange($event)" default [columnMode]="'force'" [scrollbarH]="true"
@@ -85,12 +97,18 @@
                         </ng-template>
                     </ngx-datatable-column>
 
-                    <!-- CỘT HỌ TÊN -->
+                    <!-- CỘT HỌ TÊN (ĐÃ FIX EMPTY STATE CHO UX TỐT HƠN) -->
                     <ngx-datatable-column name="Họ và tên" prop="name" [width]="280" [minWidth]="240"
                         headerClass="align-left-col" cellClass="align-left-col">
                         <ng-template let-row="row" ngx-datatable-cell-template>
-                            <span class="fw-medium text-light fs-6 text-truncate w-100">
+                            <!-- Khi có tên hoặc họ -->
+                            <span *ngIf="row.name || row.surname" class="fw-medium text-light fs-6 text-truncate w-100">
                                 {{ row.name || '' }} {{ row.surname || '' }}
+                            </span>
+                            <!-- Khi trống hoàn toàn (VD: Tài khoản meme) -->
+                            <span *ngIf="!row.name && !row.surname"
+                                class="text-muted fst-italic fs-6 text-truncate w-100" style="opacity: 0.6;">
+                                Chưa cập nhật
                             </span>
                         </ng-template>
                     </ngx-datatable-column>

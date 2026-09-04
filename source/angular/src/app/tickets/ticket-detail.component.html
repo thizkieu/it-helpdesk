@@ -18,18 +18,18 @@
                     {{ ticket.title }}
                     <span
                         class="badge rounded-pill bg-primary bg-opacity-75 text-white fs-6 align-middle ms-2 shadow-sm">
-                        {{ '::Enum:TicketStatus.' + ticket.status | abpLocalization }}
+                        {{ getStatusText(ticket.status) }}
                     </span>
                 </h2>
             </div>
 
-
-            <div class="d-flex gap-2">
+            <!-- CHỈ HIỆN CỤM NÚT NÀY KHI VÉ CHƯA ĐÓNG (status !== 7) -->
+            <div class="d-flex gap-2" *ngIf="ticket.status !== 7">
                 <button class="btn cute-outline-btn rounded-pill px-4 fw-semibold shadow-sm" (click)="openEditModal()">
                     <i class="fas fa-edit me-1"></i> Sửa yêu cầu
                 </button>
                 <button class="btn premium-btn-submit rounded-pill px-4 text-white fw-semibold shadow-sm"
-                    *ngIf="ticket.status !== 3" (click)="closeTicket()">
+                    (click)="closeTicket()">
                     <i class="fas fa-check-circle me-1"></i> Đóng yêu cầu
                 </button>
             </div>
@@ -72,12 +72,10 @@
                                     <div class="d-flex align-items-center mb-2 px-2">
                                         <i class="fas"
                                             [ngClass]="file.type.includes('image') ? 'fa-image text-pink' : 'fa-file-alt text-info'"></i>
-                                        <!-- Thêm max-width và text-truncate -->
                                         <span class="ms-2 text-light fw-semibold text-truncate"
                                             style="font-size: 0.85rem; max-width: 200px; display: inline-block; vertical-align: middle;"
                                             [title]="file.name">{{ file.name }}</span>
                                     </div>
-                                    <!-- Render ảnh trực tiếp -->
                                     <img *ngIf="file.type.includes('image')" [src]="file.url"
                                         class="img-fluid rounded shadow-sm"
                                         style="max-height: 180px; object-fit: contain; width: 100%;">
@@ -95,8 +93,9 @@
                             <i class="fas fa-comments text-pink me-2"></i>Thảo luận & Lịch sử xử lý
                         </h5>
 
-                        <!-- Ô nhập bình luận & Upload file -->
-                        <div class="d-flex gap-3 mb-4 pb-4 border-bottom border-secondary border-opacity-25">
+                        <!-- KHU VỰC NHẬP BÌNH LUẬN (ẨN ĐI KHI VÉ ĐÃ ĐÓNG) -->
+                        <div class="d-flex gap-3 mb-4 pb-4 border-bottom border-secondary border-opacity-25"
+                            *ngIf="ticket.status !== 7">
                             <div class="avatar bg-primary text-white rounded-circle d-flex justify-content-center align-items-center flex-shrink-0 shadow-sm"
                                 style="width: 42px; height: 42px;">
                                 <i class="fas fa-user"></i>
@@ -115,6 +114,16 @@
                                 <textarea class="form-control premium-input shadow-none p-3 mb-2 rounded-4" rows="2"
                                     [(ngModel)]="newCommentContent"
                                     placeholder="Nhập nội dung phản hồi, thắc mắc hoặc ghi chú kỹ thuật..."></textarea>
+
+                                <div class="form-check form-switch mb-3 ms-2 mt-2"
+                                    *abpPermission="'ItHelpdesk.Tickets.Edit'">
+                                    <input class="form-check-input" type="checkbox" id="internalNoteCheck"
+                                        [(ngModel)]="isInternalNote" style="cursor: pointer;">
+                                    <label class="form-check-label text-warning fw-bold small mt-1 ms-1"
+                                        for="internalNoteCheck" style="cursor: pointer;">
+                                        <i class="fas fa-user-shield me-1"></i> Ghi chú nội bộ (Chỉ có IT mới nhìn thấy)
+                                    </label>
+                                </div>
 
                                 <!-- HIỂN THỊ TÊN FILE KHI ĐÃ CHỌN XONG -->
                                 <div *ngIf="selectedFileName"
@@ -159,6 +168,13 @@
                             </div>
                         </div>
 
+                        <!-- HIỆN THÔNG BÁO NẾU VÉ ĐÃ ĐÓNG (status === 7) -->
+                        <div class="alert bg-dark border border-warning border-opacity-50 text-warning text-center rounded-4 mb-4 shadow-sm"
+                            *ngIf="ticket.status === 7">
+                            <i class="fas fa-lock me-2"></i> Yêu cầu này đã được đóng và chuyển sang trạng thái Chỉ đọc
+                            (Read-only).
+                        </div>
+
                         <!-- Danh sách Timeline -->
                         <div class="comment-list" *ngIf="timeline.length > 0">
                             <div class="comment-item mb-4" *ngFor="let item of timeline">
@@ -194,13 +210,21 @@
 
                                 <!-- NẾU LÀ COMMENT -->
                                 <div class="d-flex gap-3" *ngIf="item.type === 'Comment'">
-                                    <div class="avatar bg-info bg-opacity-75 text-white rounded-circle d-flex justify-content-center align-items-center flex-shrink-0"
+                                    <div class="avatar text-white rounded-circle d-flex justify-content-center align-items-center flex-shrink-0"
+                                        [ngClass]="item.isInternal ? 'bg-warning bg-opacity-75' : 'bg-info bg-opacity-75'"
                                         style="width: 42px; height: 42px;">
                                         <i class="fas" [ngClass]="item.isInternal ? 'fa-user-shield' : 'fa-user'"></i>
                                     </div>
-                                    <div class="comment-bubble mystical-bubble p-3 rounded-4 flex-grow-1 shadow-sm">
+                                    <div class="comment-bubble p-3 rounded-4 flex-grow-1 shadow-sm"
+                                        [ngClass]="item.isInternal ? 'internal-bubble border border-warning border-opacity-25' : 'mystical-bubble'">
                                         <div class="d-flex justify-content-between align-items-center mb-2">
-                                            <span class="fw-bold text-purple-accent">{{ item.creatorName }}</span>
+                                            <span class="fw-bold"
+                                                [ngClass]="item.isInternal ? 'text-warning' : 'text-purple-accent'">
+                                                {{ item.creatorName }}
+                                                <span *ngIf="item.isInternal"
+                                                    class="badge bg-warning text-dark ms-2 small px-2">Ghi chú nội
+                                                    bộ</span>
+                                            </span>
                                             <small class="text-muted" style="font-size: 0.75rem;">{{ item.creationTime |
                                                 date:'dd/MM/yyyy HH:mm' }}</small>
                                         </div>
@@ -224,7 +248,7 @@
             <!-- CỘT PHẢI: Thông tin chung & SLA -->
             <div class="col-lg-4">
 
-                <!-- CARD THÔNG TIN SLA - Giao diện thẻ hiện đại -->
+                <!-- CARD THÔNG TIN SLA -->
                 <div class="card premium-glass-card border-0 shadow-lg mb-4 rounded-4"
                     style="background: rgba(23, 28, 48, 0.85) !important; backdrop-filter: blur(20px);">
                     <div class="card-body p-4">
@@ -293,7 +317,7 @@
                             style="background: rgba(15, 23, 42, 0.3);">
                             <span class="text-muted small text-uppercase">Trạng thái</span>
                             <span class="badge rounded-pill bg-primary bg-opacity-75 text-white px-3 py-2 shadow-sm">
-                                {{ '::Enum:TicketStatus.' + ticket.status | abpLocalization }}
+                                {{ getStatusText(ticket.status) }}
                             </span>
                         </div>
 
@@ -304,8 +328,9 @@
                                 ticket.assigneeId ? 'Đã phân công' : 'Chưa phân công' }}</span>
                         </div>
 
-                        <div class="d-grid mt-4" *abpPermission="'ItHelpdesk.Tickets.Edit'">
-                            <button
+                        <!-- CHỈ HIỆN NÚT PHÂN CÔNG KHI VÉ CHƯA ĐÓNG -->
+                        <div class="d-grid mt-4" *ngIf="ticket.status !== 7">
+                            <button *abpPermission="'ItHelpdesk.Tickets.Edit'"
                                 class="btn cute-outline-btn rounded-pill fw-semibold text-pink border-pink shadow-sm py-2"
                                 (click)="openAssignModal()">
                                 <i class="fas fa-users-cog me-2"></i> Phân công / Chuyển tuyến
@@ -339,7 +364,6 @@
                         </div>
 
                         <div class="modal-body p-4">
-
                             <!-- CHỌN KỸ THUẬT VIÊN -->
                             <div class="mb-4 position-relative">
                                 <label class="form-label text-muted small text-uppercase fw-semibold mb-2">
@@ -420,7 +444,6 @@
                                     </li>
                                 </ul>
                             </div>
-
                         </div>
 
                         <div class="modal-footer border-top border-secondary border-opacity-25 py-3 px-4">

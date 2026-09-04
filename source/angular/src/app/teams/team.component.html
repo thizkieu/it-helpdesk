@@ -82,7 +82,7 @@
 
         <!-- NỘI DUNG BẢNG QUẢN TRỊ -->
         <div class="card-body p-0">
-            
+
             <!-- CSS ÉP CĂN LỀ & GIÃN ĐỀU CỘT CHO BẢNG -->
             <style>
                 ::ng-deep .ngx-datatable.admin-datatable .datatable-header .datatable-header-cell {
@@ -90,11 +90,12 @@
                     font-weight: 700 !important;
                     padding: 16px 20px !important;
                 }
+
                 /* Khoảng cách các dòng cực rộng rãi */
                 ::ng-deep .ngx-datatable.admin-datatable .datatable-body-cell {
-                    padding: 26px 20px !important; 
+                    padding: 26px 20px !important;
                 }
-                
+
                 /* Ép căn giữa */
                 ::ng-deep .ngx-datatable.admin-datatable .align-center-col .datatable-header-cell-template-wrap {
                     display: flex;
@@ -102,6 +103,7 @@
                     align-items: center;
                     width: 100%;
                 }
+
                 ::ng-deep .ngx-datatable.admin-datatable .align-center-col {
                     display: flex !important;
                     justify-content: center !important;
@@ -115,18 +117,19 @@
                     align-items: center;
                     width: 100%;
                 }
+
                 ::ng-deep .ngx-datatable.admin-datatable .align-left-col {
                     display: flex !important;
                     justify-content: flex-start !important;
                     align-items: center !important;
                     text-align: left !important;
-                    overflow: hidden; 
+                    overflow: hidden;
                 }
             </style>
 
             <!-- BẢNG DỮ LIỆU: Bật columnMode = 'force' -->
-            <ngx-datatable [rows]="team.items" [count]="team.totalCount" [list]="list" default
-                [columnMode]="'force'" [scrollbarH]="true" [rowHeight]="'auto'" class="admin-datatable w-100">
+            <ngx-datatable [rows]="team.items" [count]="team.totalCount" [list]="list" default [columnMode]="'force'"
+                [scrollbarH]="true" [rowHeight]="'auto'" class="admin-datatable w-100">
 
                 <!-- CỘT THAO TÁC (Căn giữa) -->
                 <ngx-datatable-column [name]="'::Actions' | abpLocalization" [width]="150" [minWidth]="140"
@@ -167,15 +170,17 @@
                 <ngx-datatable-column [name]="'::TeamName' | abpLocalization" prop="name" [width]="400" [minWidth]="300"
                     headerClass="align-left-col" cellClass="align-left-col">
                     <ng-template let-row="row" ngx-datatable-cell-template>
-                        <span class="fw-medium text-light text-truncate w-100" title="{{ row.name }}">{{ row.name }}</span>
+                        <span class="fw-medium text-light text-truncate w-100" title="{{ row.name }}">{{ row.name
+                            }}</span>
                     </ng-template>
                 </ngx-datatable-column>
 
                 <!-- CỘT TRẠNG THÁI (Căn giữa) -->
-                <ngx-datatable-column [name]="'::Status' | abpLocalization" prop="isActive" [width]="200" [minWidth]="160"
-                    headerClass="align-center-col" cellClass="align-center-col">
+                <ngx-datatable-column [name]="'::Status' | abpLocalization" prop="isActive" [width]="200"
+                    [minWidth]="160" headerClass="align-center-col" cellClass="align-center-col">
                     <ng-template let-row="row" ngx-datatable-cell-template>
-                        <span class="admin-status-badge d-inline-block text-center" [ngClass]="row.isActive ? 'badge-active' : 'badge-inactive'" style="min-width: 120px;">
+                        <span class="admin-status-badge d-inline-block text-center"
+                            [ngClass]="row.isActive ? 'badge-active' : 'badge-inactive'" style="min-width: 120px;">
                             <span class="status-dot"></span>
                             {{ (row.isActive ? '::Active' : '::Inactive') | abpLocalization }}
                         </span>
@@ -234,12 +239,15 @@
     </ng-template>
 
     <ng-template #abpFooter>
-        <button type="button" class="btn btn-outline-secondary px-4 rounded-3 text-light border-secondary" abpClose>
+        <button type="button" class="btn btn-outline-secondary px-4 rounded-3 text-light border-secondary" abpClose
+            [disabled]="isSubmitting">
             Đóng
         </button>
-        <button form="team-form" class="btn btn-action-primary px-5 rounded-3" (click)="save()"
-            [disabled]="form.invalid">
-            <i class="fas fa-check-circle me-2"></i> Xác nhận lưu
+        <button form="team-form" class="btn btn-action-primary px-5 rounded-3 fw-semibold"
+            [disabled]="isSubmitting || form.invalid" (click)="save()">
+            <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm me-2" role="status"
+                aria-hidden="true"></span>
+            <i class="fas fa-check-circle me-2" *ngIf="!isSubmitting"></i> Xác nhận lưu
         </button>
     </ng-template>
 </abp-modal>

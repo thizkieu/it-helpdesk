@@ -93,7 +93,7 @@
             </div>
         </div>
 
-        <!-- KHUNG BẢNG DỮ LIỆU ĐÃ FIX CĂN LỀ VÀ KÍCH THƯỚC Ô MÀU ĐỀU NHAU -->
+        <!-- KHUNG BẢNG DỮ LIỆU -->
         <div class="card premium-glass-card border-0 shadow-lg rounded-4 overflow-hidden"
             style="background: rgba(23, 28, 48, 0.85) !important; backdrop-filter: blur(20px);">
             <div class="card-body p-0">
@@ -153,7 +153,6 @@
                 </div>
 
                 <div class="table-responsive excel-table-wrapper" *ngIf="!isLoading">
-                    <!-- ĐÃ THÊM CẤU HÌNH PHÂN TRANG -->
                     <ngx-datatable [rows]="items" [count]="totalCount" [externalPaging]="true" [limit]="maxResultCount"
                         [offset]="skipCount / maxResultCount" (page)="onPageChange($event)" default
                         [columnMode]="'force'" [scrollbarH]="true" [rowHeight]="'auto'" [footerHeight]="75"
@@ -239,15 +238,20 @@
                             </ng-template>
                         </ngx-datatable-column>
 
-                        <!-- PHÂN CÔNG -->
+                        <!-- PHÂN CÔNG (ĐÃ VÁ LỖ HỔNG ZOMBIE TICKET) -->
                         <ngx-datatable-column name="Phân công" [sortable]="false" [width]="140" [minWidth]="130"
                             headerClass="align-center-col" cellClass="align-center-col">
                             <ng-template let-row="row" ngx-datatable-cell-template>
-                                <button
+                                <!-- Nút Phân công chỉ hiện khi Status khác 7 (Closed) -->
+                                <button *ngIf="row.status !== 7"
                                     class="btn btn-sm btn-outline-info rounded-pill px-3 py-1 text-nowrap fw-semibold d-inline-flex justify-content-center align-items-center gap-1 mx-auto"
                                     (click)="openAssignModal(row)" title="Phân công">
                                     <i class="fas fa-user-plus"></i> Phân công
                                 </button>
+                                <!-- Hiện icon khóa nếu vé đã đóng -->
+                                <span *ngIf="row.status === 7" class="text-muted small fw-semibold" title="Vé đã đóng">
+                                    <i class="fas fa-lock me-1"></i> Đã khóa
+                                </span>
                             </ng-template>
                         </ngx-datatable-column>
 

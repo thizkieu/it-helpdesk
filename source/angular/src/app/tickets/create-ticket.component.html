@@ -131,7 +131,7 @@
                                     class="btn btn-outline-light rounded-pill px-4">Hủy</a>
                                 <button type="submit"
                                     class="btn premium-btn-submit btn-lg px-5 rounded-pill shadow fw-bold text-white"
-                                    [disabled]="ticketForm.invalid || isSubmitting">
+                                    [disabled]="ticketForm.invalid || isSubmitting || !ticketForm.get('title')?.value?.trim() || !ticketForm.get('description')?.value?.trim()">
                                     <span *ngIf="isSubmitting">
                                         <span class="spinner-border spinner-border-sm me-2" role="status"
                                             aria-hidden="true"></span>

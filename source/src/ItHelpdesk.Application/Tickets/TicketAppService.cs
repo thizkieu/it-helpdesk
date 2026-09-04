@@ -12,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Volo.Abp;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 using Volo.Abp.BlobStoring;
@@ -20,6 +21,14 @@ using Volo.Abp.Identity;
 
 namespace ItHelpdesk.Tickets
 {
+    // DTO nhận dữ liệu chuẩn từ Angular gửi lên qua phương thức POST
+    public class ChangeTicketStatusInput
+    {
+        public long TicketId { get; set; }
+        public TicketStatus NewStatus { get; set; }
+        public string? Comment { get; set; }
+    }
+
     public class TicketAppService : CrudAppService<
         Ticket,
         TicketDto,
@@ -225,15 +234,25 @@ namespace ItHelpdesk.Tickets
             return result;
         }
 
-        public async Task ChangeStatusAsync(long ticketId, TicketStatus newStatus, string? comment = null)
+        // Nhận dữ liệu thông qua DTO Object gắn [FromBody] để bắt chính xác ID và trạng thái
+        [HttpPost]
+        [Route("api/app/ticket/change-status")]
+        public async Task ChangeStatusAsync([FromBody] ChangeTicketStatusInput input)
         {
-            var ticket = await Repository.GetAsync(ticketId);
-            if (ticket.Status == newStatus) return;
+            var ticket = await Repository.GetAsync(input.TicketId);
+
+            // BẢO MẬT: Chặn không cho đổi trạng thái nếu vé đã bị đóng (Zombie Ticket)
+            if (ticket.Status == TicketStatus.Closed)
+            {
+                throw new UserFriendlyException("Yêu cầu này đã được đóng và không thể thay đổi trạng thái!");
+            }
+
+            if (ticket.Status == input.NewStatus) return;
 
             var oldStatus = ticket.Status;
-            ticket.Status = newStatus;
+            ticket.Status = input.NewStatus;
 
-            if ((newStatus == TicketStatus.Resolved || newStatus == TicketStatus.Closed) && !ticket.ResolvedAt.HasValue)
+            if ((input.NewStatus == TicketStatus.Resolved || input.NewStatus == TicketStatus.Closed) && !ticket.ResolvedAt.HasValue)
             {
                 ticket.ResolvedAt = DateTime.Now;
             }
@@ -241,27 +260,54 @@ namespace ItHelpdesk.Tickets
             await Repository.UpdateAsync(ticket);
 
             var activity = new TicketActivity(
-                ticketId,
+                input.TicketId,
                 activityType: "StatusChange",
-                description: $"Đã thay đổi trạng thái từ {oldStatus} sang {newStatus}",
+                description: $"Đã thay đổi trạng thái từ {oldStatus} sang {input.NewStatus}",
                 oldValue: oldStatus.ToString(),
-                newValue: newStatus.ToString()
+                newValue: input.NewStatus.ToString()
             );
             await _ticketActivityRepository.InsertAsync(activity);
 
-            if (!string.IsNullOrWhiteSpace(comment))
+            if (!string.IsNullOrWhiteSpace(input.Comment))
             {
                 var ticketComment = new TicketComment(
-                    ticketId,
-                    content: comment,
+                    input.TicketId,
+                    content: input.Comment,
                     isInternal: false
                 );
                 await _ticketCommentRepository.InsertAsync(ticketComment);
             }
         }
 
+        // Overload method để đáp ứng Interface cũ nếu hệ thống gọi ngầm
+        public async Task ChangeStatusAsync(long ticketId, TicketStatus newStatus, string? comment = null)
+        {
+            await ChangeStatusAsync(new ChangeTicketStatusInput
+            {
+                TicketId = ticketId,
+                NewStatus = newStatus,
+                Comment = comment
+            });
+        }
+
         public async Task AddCommentAsync(long ticketId, string content, bool isInternal = false)
         {
+            var ticket = await Repository.GetAsync(ticketId);
+
+            if (ticket.Status == TicketStatus.Closed)
+            {
+                throw new UserFriendlyException("Yêu cầu này đã được đóng, không thể bình luận thêm!");
+            }
+
+            bool isEndUser = CurrentUser.IsInRole("End_User")
+                          || CurrentUser.IsInRole("End User")
+                          || CurrentUser.IsInRole("user");
+
+            if (isEndUser)
+            {
+                isInternal = false;
+            }
+
             var ticketComment = new TicketComment(
                 ticketId,
                 content: content,
@@ -279,8 +325,16 @@ namespace ItHelpdesk.Tickets
 
         public async Task<List<TicketTimelineDto>> GetTimelineAsync(long ticketId)
         {
+            bool isEndUser = CurrentUser.IsInRole("End_User")
+                          || CurrentUser.IsInRole("End User")
+                          || CurrentUser.IsInRole("user");
+
             var activities = await _ticketActivityRepository.GetListAsync(x => x.TicketId == ticketId);
-            var comments = await _ticketCommentRepository.GetListAsync(x => x.TicketId == ticketId);
+
+            var commentsQuery = await _ticketCommentRepository.GetQueryableAsync();
+            var filteredComments = await AsyncExecuter.ToListAsync(
+                commentsQuery.Where(x => x.TicketId == ticketId && (!isEndUser || x.IsInternal == false))
+            );
 
             var timeline = new List<TicketTimelineDto>();
 
@@ -296,7 +350,7 @@ namespace ItHelpdesk.Tickets
                 });
             }
 
-            foreach (var cmt in comments)
+            foreach (var cmt in filteredComments)
             {
                 timeline.Add(new TicketTimelineDto
                 {
@@ -346,9 +400,6 @@ namespace ItHelpdesk.Tickets
             return ObjectMapper.Map<Ticket, TicketDto>(entity);
         }
 
-        // ==============================================================================
-        // BỔ SUNG: LẤY DANH SÁCH KỸ THUẬT VIÊN
-        // ==============================================================================
         public async Task<List<UserDto>> GetAssignableTechniciansAsync()
         {
             var query = await _userRepository.GetQueryableAsync();
@@ -364,6 +415,12 @@ namespace ItHelpdesk.Tickets
         public async Task AssignTicketAsync(AssignTicketDto input)
         {
             var ticket = await Repository.GetAsync(input.TicketId);
+
+            if (ticket.Status == TicketStatus.Closed)
+            {
+                throw new UserFriendlyException("Yêu cầu này đã được đóng, không thể phân công lại!");
+            }
+
             var oldAssignee = ticket.AssigneeId;
             var oldTeam = ticket.TeamId;
 

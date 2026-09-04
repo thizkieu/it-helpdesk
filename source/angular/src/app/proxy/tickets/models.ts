@@ -1,10 +1,16 @@
-import type { AuditedEntityDto, FullAuditedEntityDto, PagedAndSortedResultRequestDto } from '@abp/ng.core';
 import type { TicketStatus } from './ticket-status.enum';
+import type { AuditedEntityDto, FullAuditedEntityDto, PagedAndSortedResultRequestDto } from '@abp/ng.core';
 
 export interface AssignTicketDto {
   ticketId: number;
   assigneeId?: string;
   teamId?: number;
+}
+
+export interface ChangeTicketStatusInput {
+  ticketId: number;
+  newStatus?: TicketStatus;
+  comment?: string;
 }
 
 export interface CreateUpdateTicketDto {

@@ -26,6 +26,7 @@ export class TicketDetailComponent implements OnInit {
   timeline: any[] = [];
   newCommentContent: string = '';
 
+  isInternalNote: boolean = false;
   selectedFileName: string | null = null;
 
   isLoading = true;
@@ -34,7 +35,6 @@ export class TicketDetailComponent implements OnInit {
   isAssignModalOpen: boolean = false;
   assigneeInputId: string = '';
   teamInputId: string = '';
-
   assigneeSearchText: string = '';
   teamSearchText: string = '';
 
@@ -61,6 +61,19 @@ export class TicketDetailComponent implements OnInit {
     '✅ Đã xử lý xong, anh/chị kiểm tra lại giúp IT nhé.',
     '⏳ Hệ thống đang bảo trì, vui lòng quay lại sau.'
   ];
+
+  // Hàm chuyển đổi số status của Enum ra tên tiếng Việt hiển thị đẹp mắt
+  getStatusText(status: number | undefined): string {
+    if (status === undefined || status === null) return 'Không xác định';
+    switch (Number(status)) {
+      case 0: return 'Mới (New)';
+      case 1: return 'Đã phân công (Assigned)';
+      case 2: return 'Đang xử lý (In Progress)';
+      case 5: return 'Đã giải quyết (Resolved)';
+      case 7: return 'Đã đóng (Closed)';
+      default: return `Trạng thái (${status})`;
+    }
+  }
 
   applyQuickReply(reply: string): void {
     if (this.newCommentContent.trim()) {
@@ -130,7 +143,6 @@ export class TicketDetailComponent implements OnInit {
           },
           error: (e) => console.error('Lỗi tải hình ảnh:', e)
         });
-
       },
       error: (err: unknown) => {
         console.error('Lỗi khi tải lịch sử timeline:', err);
@@ -139,7 +151,6 @@ export class TicketDetailComponent implements OnInit {
   }
 
   loadRealDataForAssignment(): void {
-    // BỔ SUNG: Dùng hàm mới lọc KTV thay vì lấy tất cả users
     this.ticketService.getAssignableTechnicians().subscribe({
       next: (res) => {
         const users = res || [];
@@ -215,10 +226,11 @@ export class TicketDetailComponent implements OnInit {
 
     this.isSubmitting = true;
 
-    this.ticketService.addComment(this.ticketId, this.newCommentContent, false).subscribe({
+    this.ticketService.addComment(this.ticketId, this.newCommentContent, this.isInternalNote).subscribe({
       next: () => {
         this.customToast.show('Đã gửi phản hồi thành công!', 'success');
         this.newCommentContent = '';
+        this.isInternalNote = false;
         this.isSubmitting = false;
         this.loadTimeline();
       },
@@ -285,7 +297,7 @@ export class TicketDetailComponent implements OnInit {
 
     if (targetDate < now) {
       return 'overdue';
-    } else if (diffHours <= 2) {
+    } else if (diffHours <= 2 && diffHours > 0) {
       return 'warning';
     }
 
@@ -294,11 +306,21 @@ export class TicketDetailComponent implements OnInit {
 
   openAssignModal(): void {
     this.isAssignModalOpen = true;
+
+    this.assigneeInputId = this.ticket?.assigneeId ? this.ticket.assigneeId.toString() : '';
+    this.teamInputId = this.ticket?.teamId ? this.ticket.teamId.toString() : '';
+    this.assigneeSearchText = this.ticket?.assigneeId ? '(Đang giữ nguyên KTV hiện tại)' : '';
+    this.teamSearchText = this.ticket?.teamId ? '(Đang giữ nguyên Nhóm hiện tại)' : '';
+
     this.loadRealDataForAssignment();
   }
 
   closeAssignModal(): void {
     this.isAssignModalOpen = false;
+    this.assigneeInputId = '';
+    this.teamInputId = '';
+    this.assigneeSearchText = '';
+    this.teamSearchText = '';
   }
 
   submitAssign(): void {
@@ -315,11 +337,7 @@ export class TicketDetailComponent implements OnInit {
         this.loadTicketDetail();
         this.loadTimeline();
         this.isSubmitting = false;
-        this.assigneeInputId = '';
-        this.teamInputId = '';
-        this.assigneeSearchText = '';
-        this.teamSearchText = '';
-        this.isAssignModalOpen = false;
+        this.closeAssignModal();
       },
       error: (err: unknown) => {
         console.error('Lỗi phân công:', err);
@@ -336,12 +354,11 @@ export class TicketDetailComponent implements OnInit {
         if (status === Confirmation.Status.confirm) {
           this.isSubmitting = true;
 
-          const updatePayload = {
-            ...this.ticket,
-            status: 3
-          };
-
-          this.ticketService.update(this.ticketId, updatePayload as any).subscribe({
+          this.ticketService.changeStatus({
+            ticketId: this.ticketId,
+            newStatus: 7,
+            comment: 'Hệ thống: Người dùng đã xác nhận đóng yêu cầu hỗ trợ.'
+          }).subscribe({
             next: () => {
               this.customToast.show('Đã đóng yêu cầu thành công!', 'success');
               this.loadTicketDetail();
@@ -350,7 +367,8 @@ export class TicketDetailComponent implements OnInit {
             },
             error: (err: unknown) => {
               console.error('Lỗi đóng vé:', err);
-              this.customToast.show('Đóng yêu cầu thất bại. Vui lòng thử lại!', 'error');
+              const errorObj = err as any;
+              this.customToast.show(errorObj?.error?.message || 'Đóng yêu cầu thất bại. Vui lòng thử lại!', 'error');
               this.isSubmitting = false;
             }
           });

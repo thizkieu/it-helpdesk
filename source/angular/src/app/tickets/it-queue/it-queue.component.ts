@@ -130,7 +130,6 @@ export class ItQueueComponent implements OnInit, OnDestroy {
       this.teams = res.items || [];
     });
 
-    // BỔ SUNG: Dùng hàm mới lọc KTV thay vì lấy tất cả users
     this.ticketService.getAssignableTechnicians().subscribe({
       next: (res) => {
         this.technicians = res || [];
@@ -142,6 +141,12 @@ export class ItQueueComponent implements OnInit, OnDestroy {
   }
 
   openAssignModal(ticket: TicketDto): void {
+    // LỚP BẢO VỆ FRONTEND THỨ 2: Chặn mở modal nếu vé đã bị Đóng (Zombie Ticket)
+    if (ticket.status === 7) {
+      this.customToast.show('Yêu cầu này đã đóng và chuyển sang trạng thái Chỉ đọc. Không thể phân công!', 'error');
+      return;
+    }
+
     this.selectedTicket = ticket;
     this.assignForm = {
       ticketId: ticket.id!,

@@ -29,7 +29,7 @@ export class MyTicketsComponent implements OnInit, OnDestroy {
     status: null as number | null,
     skipCount: 0,
     maxResultCount: 10,
-    isMyTickets: true // BẮT BUỘC ĐỂ BACKEND NHẬN DIỆN ĐÂY LÀ TRANG CÁ NHÂN
+    isMyTickets: true 
   };
 
   private readonly storageKey = 'my_tickets_search_history';

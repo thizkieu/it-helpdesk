@@ -238,12 +238,15 @@
     </ng-template>
 
     <ng-template #abpFooter>
-        <button type="button" class="btn btn-outline-secondary px-4 rounded-3 text-light border-secondary" abpClose>
+        <button type="button" class="btn btn-outline-secondary px-4 rounded-3 text-light border-secondary" abpClose
+            [disabled]="isSubmitting">
             Đóng
         </button>
-        <button form="service-form" class="btn btn-action-primary px-5 rounded-3" (click)="save()"
-            [disabled]="form.invalid">
-            <i class="fas fa-check-circle me-2"></i> Xác nhận lưu
+        <button form="service-form" class="btn btn-action-primary px-5 rounded-3 fw-semibold"
+            [disabled]="isSubmitting || form.invalid" (click)="save()">
+            <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm me-2" role="status"
+                aria-hidden="true"></span>
+            <i class="fas fa-check-circle me-2" *ngIf="!isSubmitting"></i> Xác nhận lưu
         </button>
     </ng-template>
 </abp-modal>

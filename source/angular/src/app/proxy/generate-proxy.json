@@ -6681,6 +6681,57 @@
               "description": null,
               "displayName": null
             },
+            "ChangeStatusAsyncByInput": {
+              "uniqueName": "ChangeStatusAsyncByInput",
+              "name": "ChangeStatusAsync",
+              "httpMethod": "POST",
+              "url": "api/app/ticket/change-status",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "ItHelpdesk.Tickets.ChangeTicketStatusInput, ItHelpdesk.Application",
+                  "type": "ItHelpdesk.Tickets.ChangeTicketStatusInput",
+                  "typeSimple": "ItHelpdesk.Tickets.ChangeTicketStatusInput",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "summary": null,
+                  "description": null,
+                  "displayName": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "ItHelpdesk.Tickets.ChangeTicketStatusInput",
+                  "typeSimple": "ItHelpdesk.Tickets.ChangeTicketStatusInput",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": "",
+                  "summary": null,
+                  "description": null,
+                  "displayName": null
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void",
+                "summary": null,
+                "contentTypes": null,
+                "isRemoteStream": false
+              },
+              "allowAnonymous": null,
+              "authorizeDatas": [],
+              "implementFrom": "ItHelpdesk.Tickets.TicketAppService",
+              "summary": null,
+              "remarks": null,
+              "description": null,
+              "displayName": null
+            },
             "ChangeStatusAsyncByTicketIdAndNewStatusAndComment": {
               "uniqueName": "ChangeStatusAsyncByTicketIdAndNewStatusAndComment",
               "name": "ChangeStatusAsync",
@@ -14885,6 +14936,67 @@
           "jsonName": null,
           "type": "System.Int64?",
           "typeSimple": "number?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null,
+          "isNullable": true,
+          "summary": null,
+          "description": null,
+          "displayName": null
+        }
+      ],
+      "summary": null,
+      "remarks": null,
+      "description": null,
+      "displayName": null
+    },
+    "ItHelpdesk.Tickets.ChangeTicketStatusInput": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "TicketId",
+          "jsonName": null,
+          "type": "System.Int64",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null,
+          "isNullable": false,
+          "summary": null,
+          "description": null,
+          "displayName": null
+        },
+        {
+          "name": "NewStatus",
+          "jsonName": null,
+          "type": "ItHelpdesk.Tickets.TicketStatus",
+          "typeSimple": "enum",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null,
+          "isNullable": false,
+          "summary": null,
+          "description": null,
+          "displayName": null
+        },
+        {
+          "name": "Comment",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
           "isRequired": false,
           "minLength": null,
           "maxLength": null,

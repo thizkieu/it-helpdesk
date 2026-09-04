@@ -42,12 +42,11 @@ export class PriorityComponent extends AdminBaseComponent implements OnInit {
   selectedPriority = {} as PriorityDto;
   form!: FormGroup;
   isModalOpen = false;
+  isSubmitting = false; // BỔ SUNG BIẾN CHỐNG DOUBLE-SUBMIT
 
   ngOnInit() {
-    // BẮT BUỘC: Gọi hàm của Base Component để kích hoạt luồng tìm kiếm tự động
     super.ngOnInit();
 
-    // Dùng this.searchFilter thay vì this.search$.value
     const streamCreator = (query: any) => this.priorityService.getList({ ...query, filter: this.searchFilter });
 
     this.list.hookToQuery(streamCreator).subscribe((response: any) => {
@@ -58,6 +57,7 @@ export class PriorityComponent extends AdminBaseComponent implements OnInit {
   createPriority() {
     this.selectedPriority = {} as PriorityDto;
     this.buildForm();
+    this.isSubmitting = false;
     this.isModalOpen = true;
   }
 
@@ -65,6 +65,7 @@ export class PriorityComponent extends AdminBaseComponent implements OnInit {
     this.priorityService.get(id).subscribe((data: any) => {
       this.selectedPriority = data;
       this.buildForm();
+      this.isSubmitting = false;
       this.isModalOpen = true;
     });
   }
@@ -82,24 +83,48 @@ export class PriorityComponent extends AdminBaseComponent implements OnInit {
 
   buildForm() {
     this.form = this.fb.group({
-      code: [this.selectedPriority.code || '', Validators.required],
-      name: [this.selectedPriority.name || '', Validators.required],
+      code: [this.selectedPriority.code || '', [Validators.required, Validators.maxLength(50)]],
+      name: [this.selectedPriority.name || '', [Validators.required, Validators.maxLength(100)]],
       isActive: [this.selectedPriority.isActive ?? true],
     });
   }
 
   save() {
-    if (this.form.invalid) return;
-    const requestData = this.form.value;
+    // CHẶN KHOẢNG TRẮNG TÀNG HÌNH (WHITESPACE VALIDATION)
+    const codeVal = this.form.get('code')?.value?.trim() || '';
+    const nameVal = this.form.get('name')?.value?.trim() || '';
+
+    if (this.form.invalid || !codeVal || !nameVal || this.isSubmitting) {
+      this.form.markAllAsTouched();
+      this.toaster.error('Vui lòng điền đầy đủ thông tin (không được để trống hoặc toàn khoảng trắng)!');
+      return;
+    }
+
+    this.isSubmitting = true; // KHÓA NÚT NGAY LẬP TỨC
+
+    const requestData = {
+      ...this.form.value,
+      code: codeVal,
+      name: nameVal
+    };
+
     let request = this.selectedPriority.id
       ? this.priorityService.update(this.selectedPriority.id, requestData)
       : this.priorityService.create(requestData);
 
-    request.subscribe(() => {
-      this.isModalOpen = false;
-      this.form.reset();
-      this.list.get();
-      this.toaster.success('Lưu độ ưu tiên thành công!');
+    request.subscribe({
+      next: () => {
+        this.isModalOpen = false;
+        this.form.reset();
+        this.isSubmitting = false; // MỞ KHÓA NÚT
+        this.list.get();
+        this.toaster.success('Lưu độ ưu tiên thành công!');
+      },
+      error: (err: any) => {
+        console.error('Lỗi khi lưu độ ưu tiên:', err);
+        this.toaster.error('Không thể lưu lúc này. Vui lòng thử lại!');
+        this.isSubmitting = false; // MỞ KHÓA NÚT KHI GẶP LỖI
+      }
     });
   }
 }
