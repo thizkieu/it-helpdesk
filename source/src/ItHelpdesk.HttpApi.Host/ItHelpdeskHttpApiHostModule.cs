@@ -93,7 +93,7 @@ public class ItHelpdeskHttpApiHostModule : AbpModule
         var configuration = context.Services.GetConfiguration();
         var hostingEnvironment = context.Services.GetHostingEnvironment();
 
-
+        context.Services.AddSignalR();
 
         if (!configuration.GetValue<bool>("App:DisablePII"))
         {
@@ -107,7 +107,7 @@ public class ItHelpdeskHttpApiHostModule : AbpModule
             {
                 options.DisableTransportSecurityRequirement = true;
             });
-            
+
             Configure<ForwardedHeadersOptions>(options =>
             {
                 options.ForwardedHeaders = ForwardedHeaders.XForwardedProto;
@@ -118,7 +118,10 @@ public class ItHelpdeskHttpApiHostModule : AbpModule
         ConfigureUrls(configuration);
         ConfigureBundles();
         ConfigureConventionalControllers();
+
+        // MỞ LẠI DÒNG NÀY ĐỂ FIX LỖI CRASH KHI KHỞI ĐỘNG
         ConfigureHealthChecks(context);
+
         ConfigureSwagger(context, configuration);
         ConfigureVirtualFileSystem(context);
         ConfigureCors(context, configuration);
@@ -130,7 +133,7 @@ public class ItHelpdeskHttpApiHostModule : AbpModule
             var contributor = context.Services.GetRequiredService<DatabaseLocalizationContributor>();
 
             options.Resources
-                .Get<ItHelpdeskResource>()   // tên resource của bạn
+                .Get<ItHelpdeskResource>()
                 .Contributors
                 .Add(contributor);
         });
@@ -289,8 +292,13 @@ public class ItHelpdeskHttpApiHostModule : AbpModule
             var configuration = context.ServiceProvider.GetRequiredService<IConfiguration>();
             options.OAuthClientId(configuration["AuthServer:SwaggerClientId"]);
         });
+
         app.UseAuditing();
         app.UseAbpSerilogEnrichers();
-        app.UseConfiguredEndpoints();
+
+        app.UseConfiguredEndpoints(endpoints =>
+        {
+            endpoints.MapHub<ItHelpdesk.Hubs.TicketHub>("/signalr-hubs/ticket");
+        });
     }
 }

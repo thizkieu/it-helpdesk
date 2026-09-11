@@ -1,4 +1,7 @@
-﻿using System;
+﻿using ItHelpdesk.Categories;
+using ItHelpdesk.Priorities;
+using ItHelpdesk.Services;
+using System;
 using Volo.Abp.Domain.Entities.Auditing;
 
 namespace ItHelpdesk.Tickets
@@ -39,5 +42,9 @@ namespace ItHelpdesk.Tickets
             ServiceId = serviceId;
             Status = TicketStatus.New;
         }
+
+        public virtual Category Category { get; set; }
+        public virtual Service Service { get; set; }
+        public virtual Priority Priority { get; set; }
     }
 }

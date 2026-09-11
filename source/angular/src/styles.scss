@@ -740,3 +740,74 @@ abp-current-user,
     margin-left: -5px !important; /* Kéo chữ xích lại gần ảnh, bạn có thể chỉnh từ -8px đến -15px tùy ý */
   }
 }
+
+/* =========================================================
+   12. ANIMATION CHO CHUÔNG THÔNG BÁO (PULSE RED)
+   ========================================================= */
+
+/* 1. Hiệu ứng rung chuông (Lắc qua lại) */
+@keyframes bellRing {
+  0% { transform: rotate(0); }
+  10% { transform: rotate(20deg); }
+  20% { transform: rotate(-15deg); }
+  30% { transform: rotate(15deg); }
+  40% { transform: rotate(-10deg); }
+  50% { transform: rotate(0); }
+  100% { transform: rotate(0); }
+}
+
+.bell-ringing {
+  animation: bellRing 2s ease-in-out infinite;
+  transform-origin: top center;
+  display: inline-block;
+}
+
+/* 2. Hiệu ứng nhịp đập cho chấm đỏ (Pulse) */
+@keyframes redPulse {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.6); }
+  70% { transform: scale(1); box-shadow: 0 0 0 5px rgba(239, 68, 68, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
+.pulse-animation {
+  animation: redPulse 2s infinite;
+}
+
+/* 3. HIỆU ỨNG PHÁT SÁNG KHI RÊ CHUỘT (HOVER GLOW - Tông Tím/Hồng hiện đại) */
+.bell-hover-glow {
+  transition: all 0.25s ease-in-out;
+}
+
+.bell-hover-glow:hover {
+  color: #c084fc !important; /* Màu tím sáng/hồng nhạt ăn rơ với background glow */
+  filter: drop-shadow(0 0 10px rgba(192, 132, 252, 0.8)); /* Hiệu ứng tỏa sáng rực rỡ */
+  transform: scale(1.1); /* Phóng to nhẹ khi rê vào */
+}
+
+/* Hiệu ứng chuông reo thông báo cấp độ cao */
+@keyframes bellRingAnimation {
+  0% { transform: rotate(0); }
+  15% { transform: rotate(15deg); }
+  30% { transform: rotate(-15deg); }
+  45% { transform: rotate(10deg); }
+  60% { transform: rotate(-10deg); }
+  75% { transform: rotate(5deg); }
+  100% { transform: rotate(0); }
+}
+
+.bell-ringing {
+  animation: bellRingAnimation 0.8s ease infinite;
+  color: #f472b6 !important;
+  filter: drop-shadow(0 0 8px rgba(244, 114, 182, 0.8));
+}
+
+/* Hiệu ứng chấm đỏ nhấp nháy (Pulse) */
+@keyframes pulseBadge {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+  70% { transform: scale(1.1); box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
+.pulse-animation {
+  animation: pulseBadge 1.5s infinite;
+}

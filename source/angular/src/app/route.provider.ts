@@ -52,13 +52,20 @@ function configureRoutes() {
       layout: eLayoutType.application,
       requiredPolicy: 'ItHelpdesk.KnowledgeBase',
     },
+    // THÊM MỤC THÔNG BÁO VÀO THANH MENU CHÍNH
+    {
+      path: '/notifications',
+      name: 'Thông báo hệ thống',
+      iconClass: 'fas fa-bell',
+      order: 7,
+      layout: eLayoutType.application,
+    },
     {
       path: '/user-management', 
       name: 'Quản lý người dùng',
       iconClass: 'fas fa-users-gear',
       layout: eLayoutType.application,
-      order: 7,
-      // DÒNG NÀY SẼ ẨN MENU ĐỐI VỚI END_USER
+      order: 8,
       requiredPolicy: 'ItHelpdesk.UserManagement', 
     },
     {

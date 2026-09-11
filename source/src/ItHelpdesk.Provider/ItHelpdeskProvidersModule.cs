@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Volo.Abp.Modularity;
 using ItHelpdesk.Provider;
+using ItHelpdesk.Provider.Implementation;
 
 [DependsOn(
     typeof(ItHelpdeskEntityFrameworkCoreModule)

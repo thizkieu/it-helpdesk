@@ -1,72 +1,79 @@
-<div class="ticket-page-wrapper py-4 text-white">
-    <div class="container-fluid" style="max-width: 1400px;">
+<div class="ticket-page-wrapper py-4 text-white" [ngClass]="{'focus-mode-active': isFocusMode}">
+    <div class="container-fluid" style="max-width: 1200px;">
 
-        <!-- Nút quay lại -->
-        <div class="mb-4">
-            <button (click)="goBack()" class="btn cute-outline-btn rounded-pill px-4">
-                <i class="fas fa-arrow-left me-2"></i> Quay lại cẩm nang
+        <!-- Thanh công cụ điều hướng & Tiện ích ngoài lề -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <button (click)="goBack()" class="btn btn-outline-light rounded-pill px-4 shadow-sm" style="border-color: rgba(255,255,255,0.2);">
+                <i class="fas fa-arrow-left me-2"></i> {{ 'ItHelpdesk::KBDetail:BackToKnowledge' | abpLocalization }}
             </button>
+            
+            <!-- TIỆN ÍCH NGOÀI LỀ CAO CẤP -->
+            <div class="d-flex align-items-center gap-3">
+                <span class="text-muted small"><i class="fas fa-eye me-1 text-info"></i> {{ viewCount }} {{ 'ItHelpdesk::KBDetail:ViewsCount' | abpLocalization }}</span>
+                <button class="btn btn-sm btn-outline-info rounded-pill px-3 shadow-sm" (click)="toggleFocusMode()" [title]="isFocusMode ? ('ItHelpdesk::KBDetail:TooltipExitFocus' | abpLocalization) : ('ItHelpdesk::KBDetail:TooltipEnterFocus' | abpLocalization)">
+                    <i class="fas" [ngClass]="isFocusMode ? 'fa-compress' : 'fa-expand'"></i> {{ isFocusMode ? ('ItHelpdesk::KBDetail:ExitFocus' | abpLocalization) : ('ItHelpdesk::KBDetail:FocusMode' | abpLocalization) }}
+                </button>
+                <button class="btn btn-sm btn-outline-light rounded-pill px-3 shadow-sm" (click)="copyArticleLink()" [title]="'ItHelpdesk::KBDetail:TooltipShare' | abpLocalization">
+                    <i class="fas fa-share-alt me-1"></i> {{ 'ItHelpdesk::KBDetail:Share' | abpLocalization }}
+                </button>
+            </div>
         </div>
 
         <!-- Khung nội dung chính -->
-        <div class="card premium-glass-card p-5" *ngIf="!isLoading && article"
-            style="background: rgba(23, 28, 48, 0.85) !important; backdrop-filter: blur(20px);">
+        <div class="card border-0 shadow-lg p-5 rounded-4" *ngIf="!isLoading && article"
+            style="background: rgba(23, 28, 48, 0.95) !important; backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.08);">
 
             <!-- Header bài viết -->
             <div class="border-bottom border-secondary border-opacity-25 pb-4 mb-4">
                 <div class="d-flex justify-content-between align-items-center">
-                    <span class="badge cute-badge-pill mb-3 px-3 py-2">
-                        <i class="fas {{ article.icon || article.Icon || 'fa-tag' }} me-1"></i> {{ article.category ||
-                        article.Category }}
+                    <span class="badge bg-info bg-opacity-15 text-info mb-3 px-3 py-2 rounded-pill">
+                        <i class="fas {{ article.icon || 'fa-tag' }} me-1"></i> {{ article.category }}
                     </span>
-                    <!-- Hiển thị nhãn số trang hiện tại trên Header -->
-                    <span class="badge bg-secondary bg-opacity-25 text-info mb-3 px-3 py-2 rounded-pill"
-                        *ngIf="pages.length > 1">
-                        <i class="fas fa-file-alt me-1"></i> Trang {{ currentPage + 1 }} / {{ pages.length }}
+                    <span class="badge bg-secondary bg-opacity-25 text-info mb-3 px-3 py-2 rounded-pill" *ngIf="pages.length > 1">
+                        <i class="fas fa-file-alt me-1"></i> {{ 'ItHelpdesk::KBDetail:PageWord' | abpLocalization }} {{ currentPage + 1 }} / {{ pages.length }}
                     </span>
                 </div>
-                <h1 class="fw-bold mb-3" style="font-size: 2.2rem;">{{ article.question || article.Question }}</h1>
+                <h1 class="fw-bold mb-3 text-white" style="font-size: 2.2rem;">{{ article.question }}</h1>
                 <div class="text-muted small d-flex align-items-center opacity-75">
-                    <i class="far fa-clock me-2"></i> Cập nhật gần đây
+                    <i class="far fa-clock me-2"></i> {{ 'ItHelpdesk::KBDetail:LastUpdated' | abpLocalization }}
                     <span class="mx-3">|</span>
-                    <i class="fas fa-user-shield me-2"></i> IT Helpdesk
+                    <i class="fas fa-user-shield me-2"></i> IT Enterprise Knowledge Base
                 </div>
             </div>
 
-            <!-- Thân bài viết render HTML theo từng trang -->
-            <div class="article-content min-vh-50" style="line-height: 1.9; font-size: 1.05rem;"
+            <!-- Thân bài viết render HTML theo phân trang -->
+            <div class="article-content text-light opacity-90" style="line-height: 1.9; font-size: 1.05rem;"
                 [innerHTML]="pages[currentPage]">
             </div>
 
-            <!-- THANH ĐIỀU HƯỚNG PHÂN TRANG (PAGINATION CONTROLS) -->
+            <!-- THANH ĐIỀU HƯỚNG PHÂN TRANG -->
             <div class="d-flex justify-content-between align-items-center border-top border-secondary border-opacity-25 pt-4 mt-5"
                 *ngIf="pages.length > 1">
                 <button (click)="prevPage()" [disabled]="currentPage === 0"
-                    class="btn cute-outline-btn rounded-pill px-4" [ngClass]="{'opacity-50': currentPage === 0}">
-                    <i class="fas fa-chevron-left me-2"></i> Trang trước
+                    class="btn btn-outline-light rounded-pill px-4" [ngClass]="{'opacity-50': currentPage === 0}">
+                    <i class="fas fa-chevron-left me-2"></i> {{ 'ItHelpdesk::KBDetail:PrevPage' | abpLocalization }}
                 </button>
 
                 <span class="text-light fw-bold">
-                    Trang <span class="text-pink">{{ currentPage + 1 }}</span> / {{ pages.length }}
+                    {{ 'ItHelpdesk::KBDetail:PageWord' | abpLocalization }} <span class="text-info">{{ currentPage + 1 }}</span> / {{ pages.length }}
                 </span>
 
                 <button (click)="nextPage()" [disabled]="currentPage === pages.length - 1"
-                    class="btn cute-outline-btn rounded-pill px-4"
-                    [ngClass]="{'opacity-50': currentPage === pages.length - 1}">
-                    Trang sau <i class="fas fa-chevron-right ms-2"></i>
+                    class="btn btn-outline-light rounded-pill px-4" [ngClass]="{'opacity-50': currentPage === pages.length - 1}">
+                    {{ 'ItHelpdesk::KBDetail:NextPage' | abpLocalization }} <i class="fas fa-chevron-right ms-2"></i>
                 </button>
             </div>
 
-            <!-- Footer đánh giá hữu ích (Chỉ hiện ở trang cuối cùng) -->
-            <div class="border-top border-secondary border-opacity-25 pt-4 mt-5 d-flex justify-content-between align-items-center"
-                *ngIf="currentPage === pages.length - 1 || pages.length <= 1">
-                <span class="text-muted small opacity-75">Tài liệu này có hữu ích với bạn không?</span>
+            <!-- Footer đánh giá hữu ích (ĐÃ FIX LỖI PARSER) -->
+            <div class="border-top border-secondary border-opacity-25 pt-4 mt-5 d-flex justify-content-between align-items-center">
+                <span class="text-muted small opacity-75">{{ 'ItHelpdesk::KBDetail:HelpfulPrompt' | abpLocalization }}</span>
                 <div>
-                    <button class="btn btn-outline-success rounded-pill px-4 me-2 btn-sm bg-transparent">
-                        <i class="fas fa-thumbs-up me-1"></i> Có
+                    <!-- Sửa lỗi: Gọi hàm showFeedbackToast thay vì truyền trực tiếp Pipe vào (click) -->
+                    <button class="btn btn-outline-success rounded-pill px-4 me-2 btn-sm bg-transparent" (click)="showFeedbackToast(true)">
+                        <i class="fas fa-thumbs-up me-1"></i> {{ 'ItHelpdesk::KBDetail:Yes' | abpLocalization }}
                     </button>
-                    <button class="btn btn-outline-danger rounded-pill px-4 btn-sm bg-transparent">
-                        <i class="fas fa-thumbs-down me-1"></i> Không
+                    <button class="btn btn-outline-danger rounded-pill px-4 btn-sm bg-transparent" (click)="showFeedbackToast(false)">
+                        <i class="fas fa-thumbs-down me-1"></i> {{ 'ItHelpdesk::KBDetail:No' | abpLocalization }}
                     </button>
                 </div>
             </div>
@@ -74,7 +81,7 @@
 
         <!-- Loading -->
         <div class="text-center py-5" *ngIf="isLoading">
-            <div class="spinner-border text-pink" role="status" style="color: #f472b6;">
+            <div class="spinner-border text-info" role="status">
                 <span class="visually-hidden">Loading...</span>
             </div>
         </div>

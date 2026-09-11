@@ -1,0 +1,128 @@
+<div class="notification-page-wrapper py-4 text-white">
+    <div class="container-fluid" style="max-width: 1200px;">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+
+                <!-- Card Container Chính với hiệu ứng Glassmorphism -->
+                <div class="card premium-glass-card border-0 shadow-lg rounded-4 overflow-hidden"
+                    style="background: rgba(23, 28, 48, 0.85) !important; backdrop-filter: blur(20px);">
+
+                    <!-- Header với Gradient ấn tượng -->
+                    <div class="card-header border-bottom border-secondary border-opacity-25 p-4 d-flex flex-wrap justify-content-between align-items-center gap-3"
+                        style="background: linear-gradient(135deg, rgba(30, 27, 75, 0.9) 0%, rgba(15, 23, 42, 0.9) 100%);">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="notification-icon-wrapper rounded-circle p-3 d-flex align-items-center justify-content-center shadow-sm"
+                                style="width: 52px; height: 52px; background: rgba(244, 114, 182, 0.15); color: #f472b6; font-size: 1.2rem;">
+                                <i class="fas fa-bell"></i>
+                            </div>
+                            <div>
+                                <h4 class="mb-1 fw-bold text-white">{{ 'ItHelpdesk::Notification:CenterTitle' | abpLocalization }}</h4>
+                                <p class="mb-0 text-muted small">{{ 'ItHelpdesk::Notification:CenterSubtitle' | abpLocalization }}</p>
+                            </div>
+                        </div>
+
+                        <!-- Các nút hành động hàng loạt -->
+                        <div class="d-flex align-items-center gap-2">
+                            <button class="btn btn-outline-light rounded-pill px-4 fw-semibold shadow-sm py-2" style="border-color: rgba(255,255,255,0.2);"
+                                (click)="markAllAsRead()">
+                                <i class="fas fa-check-double me-1 text-pink"></i> {{ 'ItHelpdesk::Notification:MarkAllRead' | abpLocalization }}
+                            </button>
+                            <button class="btn btn-outline-danger rounded-pill px-4 fw-semibold py-2 shadow-sm"
+                                (click)="clearAll()">
+                                <i class="fas fa-trash-alt me-1"></i> {{ 'ItHelpdesk::Notification:ClearAll' | abpLocalization }}
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Thanh công cụ lọc nhanh (Tất cả / Chưa đọc) -->
+                    <div class="card-body border-bottom border-secondary border-opacity-25 py-3 px-4 d-flex flex-wrap justify-content-between align-items-center gap-3"
+                        style="background: rgba(15, 23, 42, 0.4);">
+                        <div class="btn-group shadow-sm rounded-pill overflow-hidden border border-secondary border-opacity-25"
+                            role="group">
+                            <button type="button" class="btn btn-sm px-4 py-2 fw-semibold"
+                                [ngClass]="filter === 'all' ? 'btn-primary text-white border-0' : 'btn-dark bg-transparent text-light border-0'"
+                                (click)="filter = 'all'">
+                                {{ 'ItHelpdesk::Notification:FilterAll' | abpLocalization }}
+                                <span class="badge rounded-pill bg-secondary ms-1">{{ notifications.length }}</span>
+                            </button>
+                            <button type="button" class="btn btn-sm px-4 py-2 fw-semibold"
+                                [ngClass]="filter === 'unread' ? 'btn-primary text-white border-0' : 'btn-dark bg-transparent text-light border-0'"
+                                (click)="filter = 'unread'">
+                                {{ 'ItHelpdesk::Notification:FilterUnread' | abpLocalization }}
+                                <span class="badge rounded-pill bg-danger ms-1">{{ unreadCount }}</span>
+                            </button>
+                        </div>
+
+                        <div class="text-muted small">
+                            <i class="fas fa-sync-alt fa-spin me-1 text-pink" *ngIf="isLoading"></i>
+                            {{ 'ItHelpdesk::Notification:RealtimeStatus' | abpLocalization }}
+                        </div>
+                    </div>
+
+                    <!-- Danh sách thông báo -->
+                    <div class="card-body p-0" style="background: rgba(15, 23, 42, 0.6);">
+                        <div *ngIf="isLoading" class="text-center py-5">
+                            <div class="spinner-border text-pink" role="status"></div>
+                            <p class="text-muted mt-2 mb-0">{{ 'ItHelpdesk::Notification:Loading' | abpLocalization }}</p>
+                        </div>
+
+                        <ul *ngIf="!isLoading" class="list-group list-group-flush bg-transparent">
+                            <li *ngFor="let item of filteredNotifications"
+                                class="list-group-item p-4 border-bottom border-secondary border-opacity-25 d-flex align-items-start gap-3 cursor-pointer"
+                                [ngClass]="item.isRead ? 'bg-transparent' : 'bg-dark bg-opacity-50'"
+                                (click)="markAsRead(item)" style="transition: all 0.2s ease;">
+
+                                <!-- Icon trạng thái -->
+                                <div class="flex-shrink-0 fs-3 mt-1">
+                                    <i class="fas" [ngClass]="getIconClass(item.type)"></i>
+                                </div>
+
+                                <!-- Nội dung thông báo -->
+                                <div class="flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <h6 class="mb-0 fw-bold text-white">{{ item.title || ('ItHelpdesk::Notification:SystemTitle' | abpLocalization) }}</h6>
+                                        <small class="text-muted text-nowrap" style="font-size: 0.75rem;">
+                                            <i class="far fa-clock me-1"></i>{{ item.creationTime | date:'dd/MM/yyyy HH:mm' }}
+                                        </small>
+                                    </div>
+                                    <p class="mb-2 text-light opacity-85 text-break" style="font-size: 0.95rem;">{{ item.message || item }}</p>
+
+                                    <!-- Nhãn tag phụ trợ -->
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span *ngIf="!item.isRead"
+                                            class="badge bg-danger bg-opacity-20 text-danger border border-danger border-opacity-25 px-2 py-1 rounded-pill small fw-bold">
+                                            {{ 'ItHelpdesk::Notification:BadgeNew' | abpLocalization }}
+                                        </span>
+                                        <a *ngIf="item.linkUrl" [href]="item.linkUrl"
+                                            class="small text-info text-decoration-none fw-semibold">
+                                            {{ 'ItHelpdesk::Notification:ViewDetail' | abpLocalization }} <i class="fas fa-arrow-right ms-1"></i>
+                                        </a>
+                                    </div>
+                                </div>
+
+                                <!-- Nút chấm tròn trạng thái chưa đọc -->
+                                <div class="flex-shrink-0 align-self-center" *ngIf="!item.isRead">
+                                    <span class="unread-dot rounded-circle d-block shadow-sm"
+                                        style="width: 10px; height: 10px; background-color: #ec4899;"></span>
+                                </div>
+                            </li>
+
+                            <!-- Trạng thái không có thông báo -->
+                            <li *ngIf="filteredNotifications.length === 0" class="list-group-item text-center py-5 bg-transparent border-0">
+                                <div class="empty-state py-4">
+                                    <div class="text-pink mb-3 opacity-50">
+                                        <i class="fas fa-bell-slash fa-3x"></i>
+                                    </div>
+                                    <h5 class="fw-bold text-white">{{ 'ItHelpdesk::Notification:EmptyTitle' | abpLocalization }}</h5>
+                                    <p class="text-muted small mb-0">{{ 'ItHelpdesk::Notification:EmptyDesc' | abpLocalization }}</p>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>

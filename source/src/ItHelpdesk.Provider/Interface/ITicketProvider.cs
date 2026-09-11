@@ -13,11 +13,11 @@ namespace ItHelpdesk.Provider
         // 2. Lấy thông tin chi tiết một Ticket theo ID
         Task<TicketListQueryResponse> GetInfoAsync(TicketInfoRequest input);
 
-        // 3. Thêm mới Ticket
-        Task<int> InsertAsync(TicketInsertOrUpdateRequest input);
+        // 3. Thêm mới Ticket (Đổi từ int sang long)
+        Task<long> InsertAsync(TicketInsertOrUpdateRequest input);
 
-        // 4. Cập nhật thông tin Ticket
-        Task<int> UpdateAsync(TicketInsertOrUpdateRequest input);
+        // 4. Cập nhật thông tin Ticket (Đổi từ int sang long)
+        Task<long> UpdateAsync(TicketInsertOrUpdateRequest input);
 
         // 5. Xóa Ticket
         Task<int> DeleteAsync(TicketDeleteRequest input);

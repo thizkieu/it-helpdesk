@@ -1,504 +1,641 @@
 <div class="ticket-page-wrapper" *ngIf="!isLoading && ticket">
-    <div class="container-fluid">
+    <div class="container-fluid" style="max-width: 1550px;">
 
-        <!-- HEADER SECTION -->
+        <!-- HEADER DÙNG CHUNG -->
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
             <div>
-                <span class="badge cute-badge-pill mb-2">
-                    <i class="fas fa-paw me-1 bounce-icon"></i> Chi Tiết Yêu Cầu • IT Helpdesk
-                </span>
-                <div class="text-light opacity-75 small mb-1 d-flex align-items-center">
-                    <a routerLink="/tickets/my-tickets" class="text-decoration-none text-purple-accent fw-medium">
-                        <i class="fas fa-angle-double-left me-1"></i> Quay lại danh sách
-                    </a>
-                    <span class="mx-2 opacity-25">|</span>
-                    <span class="fw-bold text-pink">{{ ticket.ticketNo }}</span>
-                </div>
-                <h2 class="fw-bold page-title mb-0">
-                    {{ ticket.title }}
-                    <span
-                        class="badge rounded-pill bg-primary bg-opacity-75 text-white fs-6 align-middle ms-2 shadow-sm">
+                <a (click)="goBack()" style="cursor: pointer;"
+                    class="text-decoration-none text-purple-accent mb-2 d-inline-block fw-medium hover-pink transition-all">
+                    <i class="fas fa-angle-double-left me-1"></i> {{ 'ItHelpdesk::Detail:BackBtn' | abpLocalization }}
+                </a>
+                <h2 class="fw-bold page-title mb-0 text-white">
+                    <span class="text-pink me-2">{{ ticket.ticketNo }}</span> {{ ticket.title }}
+                </h2>
+                <div class="mt-2">
+                    <span class="badge rounded-pill px-3 py-2 fs-6 shadow-sm" [ngClass]="{
+                            'bg-primary': ticket.status === 0,
+                            'bg-info': ticket.status === 1 || ticket.status === 2,
+                            'bg-warning text-dark': ticket.status === 3 || ticket.status === 4 || ticket.status === 5,
+                            'bg-success': ticket.status === 6,
+                            'bg-secondary': ticket.status === 7
+                        }">
                         {{ getStatusText(ticket.status) }}
                     </span>
-                </h2>
+                    <span class="text-muted ms-3 small"><i class="fas fa-clock me-1"></i> {{
+                        'ItHelpdesk::Detail:CreatedTimeLabel' | abpLocalization }} {{
+                        ticket.creationTime | date:'dd/MM/yyyy HH:mm' }}</span>
+                </div>
             </div>
 
-            <!-- CHỈ HIỆN CỤM NÚT NÀY KHI VÉ CHƯA ĐÓNG (status !== 7) -->
-            <div class="d-flex gap-2" *ngIf="ticket.status !== 7">
-                <button class="btn cute-outline-btn rounded-pill px-4 fw-semibold shadow-sm" (click)="openEditModal()">
-                    <i class="fas fa-edit me-1"></i> Sửa yêu cầu
+            <!-- CỤM NÚT HÀNH ĐỘNG GÓC PHẢI DỰA TRÊN ROLE -->
+            <div class="d-flex gap-3 flex-wrap mt-2 mt-md-0">
+
+                <!-- Nút dành cho NGƯỜI DÙNG: Chỉ cho phép Hủy yêu cầu khi chưa giải quyết -->
+                <button *ngIf="!isITStaff && ticket.status !== 6 && ticket.status !== 7"
+                    class="btn btn-outline-danger rounded-pill px-4 fw-semibold shadow-sm transition-all hover-elevate"
+                    (click)="cancelTicketByUser()">
+                    <i class="fas fa-times me-2"></i> {{ 'ItHelpdesk::Detail:CancelTicketBtn' | abpLocalization }}
                 </button>
-                <button class="btn premium-btn-submit rounded-pill px-4 text-white fw-semibold shadow-sm"
-                    (click)="closeTicket()">
-                    <i class="fas fa-check-circle me-1"></i> Đóng yêu cầu
-                </button>
+
+                <!-- Nút dành cho ADMIN / KỸ THUẬT VIÊN -->
+                <ng-container *ngIf="isITStaff">
+                    <button *ngIf="ticket.status !== 6 && ticket.status !== 7"
+                        class="btn btn-outline-info rounded-pill px-4 fw-semibold shadow-sm transition-all hover-elevate"
+                        (click)="openEditModal()">
+                        <i class="fas fa-edit me-2"></i> {{ 'ItHelpdesk::Edit' | abpLocalization }}
+                    </button>
+
+                    <button
+                        class="btn btn-warning rounded-pill px-4 text-dark fw-bold shadow-sm transition-all hover-elevate"
+                        (click)="openStatusModal()">
+                        <i class="fas fa-exchange-alt me-2"></i> {{ 'ItHelpdesk::Detail:ChangeStatusBtn' | abpLocalization }}
+                    </button>
+
+                    <button *ngIf="ticket.status !== 6 && ticket.status !== 7"
+                        class="btn rounded-pill px-4 text-white fw-semibold shadow-sm transition-all hover-elevate"
+                        style="background: linear-gradient(135deg, #10b981, #059669); border:none;"
+                        (click)="completeTicket()">
+                        <i class="fas fa-check-circle me-2"></i> {{ 'ItHelpdesk::Action:CompleteTicket' | abpLocalization }}
+                    </button>
+                </ng-container>
+
             </div>
         </div>
 
-        <!-- MAIN CONTENT -->
-        <div class="row g-4">
-            <!-- CỘT TRÁI: Nội dung chi tiết & Timeline / Bình luận -->
-            <div class="col-lg-8">
-                <!-- Card Nội dung -->
-                <div class="card premium-glass-card border-0 shadow-lg mb-4">
-                    <div class="card-body p-4 p-md-5">
-                        <div class="d-flex align-items-center mb-4">
-                            <div class="avatar bg-purple-soft text-pink rounded-circle d-flex justify-content-center align-items-center me-3 shadow-sm"
-                                style="width: 48px; height: 48px; font-size: 1.4rem;">
-                                <i class="fas fa-cat bounce-icon"></i>
-                            </div>
+        <!-- WORKFLOW STEPPER -->
+        <div class="premium-glass-card mb-4 p-3 rounded-4">
+            <div class="d-flex justify-content-between align-items-center workflow-stepper">
+                <div class="step" [ngClass]="{'active': ticket.status >= 0}">
+                    <div class="step-icon"><i class="fas fa-file-signature"></i></div>
+                    <div class="step-text">{{ 'ItHelpdesk::Workflow:New' | abpLocalization }}</div>
+                </div>
+                <div class="step-line" [ngClass]="{'active': ticket.status >= 1}"></div>
+                <div class="step" [ngClass]="{'active': ticket.status >= 1}">
+                    <div class="step-icon"><i class="fas fa-user-shield"></i></div>
+                    <div class="step-text">{{ 'ItHelpdesk::Workflow:Assigned' | abpLocalization }}</div>
+                </div>
+                <div class="step-line" [ngClass]="{'active': ticket.status >= 2}"></div>
+                <div class="step" [ngClass]="{'active': ticket.status >= 2 && ticket.status !== 7}">
+                    <div class="step-icon"><i class="fas fa-tools"></i></div>
+                    <div class="step-text">{{ 'ItHelpdesk::Workflow:InProgress' | abpLocalization }}</div>
+                </div>
+                <div class="step-line" [ngClass]="{'active': ticket.status >= 6}"></div>
+                <div class="step" [ngClass]="{'active': ticket.status === 6, 'rejected': ticket.status === 7}">
+                    <div class="step-icon"><i class="fas"
+                            [ngClass]="ticket.status === 7 ? 'fa-ban' : 'fa-flag-checkered'"></i></div>
+                    <div class="step-text">{{ ticket.status === 7 ? ('ItHelpdesk::Workflow:Closed' | abpLocalization) :
+                        ('ItHelpdesk::Workflow:Completed' | abpLocalization) }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SMART WORKSPACES -->
+        <ng-container [ngSwitch]="workspaceType">
+
+            <!-- 1. INTAKE (Mới tạo - Chưa phân công) -->
+            <div *ngSwitchCase="'intake'" class="row g-4 animate-fade-in">
+                <div class="col-lg-8">
+                    <ng-container *ngTemplateOutlet="infoContentBlock"></ng-container>
+                </div>
+
+                <div class="col-lg-4">
+                    <!-- GIAO DIỆN DÀNH CHO ADMIN / KỸ THUẬT VIÊN -->
+                    <div *ngIf="isITStaff"
+                        class="card premium-glass-card border-0 p-4 p-md-5 rounded-4 bg-primary bg-opacity-10 border border-primary border-opacity-25 h-100 d-flex flex-column justify-content-center">
+                        <div class="text-center mb-4">
+                            <i class="fas fa-user-astronaut fa-4x text-primary mb-3 bounce-icon"></i>
+                            <h4 class="text-white fw-bold">{{ 'ItHelpdesk::Detail:IntakeTitle' | abpLocalization }}</h4>
+                            <p class="text-muted small px-3">{{ 'ItHelpdesk::Detail:IntakeDesc' | abpLocalization }}</p>
+                        </div>
+                        <button class="btn btn-primary w-100 rounded-pill fw-bold py-3 mb-3 shadow-lg hover-elevate"
+                            (click)="openAssignModal()">
+                            <i class="fas fa-user-plus me-2"></i> {{ 'ItHelpdesk::Detail:AssignNowBtn' | abpLocalization }}
+                        </button>
+                        <button class="btn btn-outline-danger w-100 rounded-pill fw-bold py-2" (click)="closeTicket()">
+                            <i class="fas fa-ban me-2"></i> {{ 'ItHelpdesk::Detail:RejectCloseBtn' | abpLocalization }}
+                        </button>
+                    </div>
+
+                    <!-- GIAO DIỆN DÀNH CHO NGƯỜI DÙNG BÌNH THƯỜNG -->
+                    <div *ngIf="!isITStaff"
+                        class="card premium-glass-card border-0 p-4 p-md-5 rounded-4 bg-info bg-opacity-10 border border-info border-opacity-25 h-100 d-flex flex-column justify-content-center align-items-center">
+                        <div class="text-center mb-4">
+                            <i class="fas fa-hourglass-half fa-4x text-info mb-3 bounce-icon"></i>
+                            <h4 class="text-white fw-bold">{{ 'ItHelpdesk::Detail:IntakeTitleUser' | abpLocalization }}</h4>
+                            <p class="text-muted small px-3 mt-2">{{ 'ItHelpdesk::Detail:IntakeDescUser' | abpLocalization }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. ACTIVE & PENDING -->
+            <div *ngSwitchCase="workspaceType === 'active' || workspaceType === 'pending' ? workspaceType : ''"
+                class="animate-fade-in">
+
+                <div *ngIf="workspaceType === 'pending'"
+                    class="alert bg-warning bg-opacity-10 border border-warning text-warning p-4 rounded-4 d-flex align-items-center mb-4 shadow-sm">
+                    <i class="fas fa-hourglass-half fa-3x me-4"></i>
+                    <div>
+                        <h4 class="fw-bold mb-1">{{ 'ItHelpdesk::Detail:PendingWarningTitle' | abpLocalization }}</h4>
+                        <p class="mb-0 text-light opacity-75">{{ 'ItHelpdesk::Detail:PendingWarningDesc' | abpLocalization }}</p>
+                    </div>
+                </div>
+
+                <div class="row g-4">
+                    <div class="col-lg-8">
+                        <ul class="nav nav-pills premium-tabs mb-4 gap-2">
+                            <li class="nav-item">
+                                <a class="nav-link rounded-pill px-4" [class.active]="currentTab === 'discuss'"
+                                    (click)="switchTab('discuss')" style="cursor: pointer;">
+                                    <i class="fas fa-comments me-2"></i>{{ 'ItHelpdesk::Detail:TabDiscuss' | abpLocalization }}
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link rounded-pill px-4" [class.active]="currentTab === 'info'"
+                                    (click)="switchTab('info')" style="cursor: pointer;">
+                                    <i class="fas fa-info-circle me-2"></i>{{ 'ItHelpdesk::Detail:TabInfo' | abpLocalization }}
+                                </a>
+                            </li>
+                            <!-- TAB PHÂN CÔNG: Ẩn đi đối với End-User -->
+                            <li class="nav-item" *ngIf="isITStaff">
+                                <a class="nav-link rounded-pill px-4" [class.active]="currentTab === 'assign'"
+                                    (click)="switchTab('assign')" style="cursor: pointer;">
+                                    <i class="fas fa-users-cog me-2"></i>{{ 'ItHelpdesk::Detail:TabAssign' | abpLocalization }}
+                                </a>
+                            </li>
+                        </ul>
+
+                        <div class="card premium-glass-card border-0 shadow-lg p-4 p-md-5 rounded-4">
+                            <ng-container
+                                *ngTemplateOutlet="currentTab === 'discuss' ? tabDiscuss : (currentTab === 'info' ? tabInfo : tabAssign)"></ng-container>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-4">
+                        <ng-container *ngTemplateOutlet="colRightSLA"></ng-container>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. ARCHIVE -->
+            <div *ngSwitchCase="'archive'" class="animate-fade-in">
+                <div class="card premium-glass-card border-0 p-4 rounded-4 mb-4"
+                    [ngClass]="{'bg-success bg-opacity-10 border-success': ticket.status === 6, 'bg-secondary bg-opacity-10 border-secondary': ticket.status === 7}"
+                    style="border: 1px solid rgba(255,255,255,0.2) !important;">
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-3x me-3"
+                                [ngClass]="ticket.status === 6 ? 'fa-check-circle text-success' : 'fa-lock text-secondary'"></i>
                             <div>
-                                <h6 class="mb-1 fw-bold text-white fs-5">Nội dung yêu cầu hỗ trợ</h6>
-                                <small class="text-muted"><i class="fas fa-clock me-1"></i> Thời gian tạo: {{
-                                    ticket.creationTime | date:'dd/MM/yyyy HH:mm' }}</small>
+                                <h4 class="fw-bold text-white mb-1">{{ ticket.status === 6 ?
+                                    ('ItHelpdesk::Detail:ResolvedNotice' | abpLocalization) :
+                                    ('ItHelpdesk::Detail:ClosedNoticeArchive' | abpLocalization) }}</h4>
+                                <p class="mb-0 text-light opacity-75" *ngIf="ticket.resolvedAt">{{
+                                    'ItHelpdesk::Detail:CompletionTime' | abpLocalization }}: {{
+                                    ticket.resolvedAt | date: 'dd/MM/yyyy HH:mm' }}</p>
                             </div>
                         </div>
-                        <h6 class="fw-bold text-pink border-bottom border-secondary border-opacity-25 pb-3 mb-3">
-                            Mô tả chi tiết sự cố
-                        </h6>
-                        <p class="text-light opacity-85" style="line-height: 1.7; font-size: 1.05rem;">
-                            {{ ticket.description || 'Chưa có mô tả chi tiết cho yêu cầu này.' }}
-                        </p>
-
-                        <!-- HIỂN THỊ ẢNH Ở MỤC NỘI DUNG YÊU CẦU -->
-                        <div class="mt-4 pt-3 border-top border-secondary border-opacity-25"
-                            *ngIf="attachments.length > 0">
-                            <h6 class="text-info fw-bold mb-3"><i class="fas fa-paperclip me-2"></i>Tệp đính kèm đi kèm
-                                yêu cầu:</h6>
-                            <div class="d-flex flex-wrap gap-3">
-                                <div *ngFor="let file of attachments"
-                                    class="bg-dark bg-opacity-50 p-2 rounded-3 border border-secondary border-opacity-25"
-                                    style="max-width: 300px;">
-                                    <div class="d-flex align-items-center mb-2 px-2">
-                                        <i class="fas"
-                                            [ngClass]="file.type.includes('image') ? 'fa-image text-pink' : 'fa-file-alt text-info'"></i>
-                                        <span class="ms-2 text-light fw-semibold text-truncate"
-                                            style="font-size: 0.85rem; max-width: 200px; display: inline-block; vertical-align: middle;"
-                                            [title]="file.name">{{ file.name }}</span>
-                                    </div>
-                                    <img *ngIf="file.type.includes('image')" [src]="file.url"
-                                        class="img-fluid rounded shadow-sm"
-                                        style="max-height: 180px; object-fit: contain; width: 100%;">
-                                </div>
-                            </div>
+                        <div class="text-end" *ngIf="ticket.status === 6">
+                            <span
+                                class="badge bg-success bg-opacity-25 text-success fs-6 px-3 py-2 border border-success border-opacity-25">
+                                <i class="fas fa-trophy me-1"></i> {{ 'ItHelpdesk::Detail:SlaMetBadge' | abpLocalization
+                                }}
+                            </span>
                         </div>
-
                     </div>
                 </div>
 
-                <!-- Card Thảo luận & Timeline -->
-                <div class="card premium-glass-card border-0 shadow-lg">
-                    <div class="card-body p-4 p-md-5">
-                        <h5 class="fw-bold text-white mb-4">
-                            <i class="fas fa-comments text-pink me-2"></i>Thảo luận & Lịch sử xử lý
-                        </h5>
+                <div class="row g-4">
+                    <div class="col-lg-8">
+                        <ul class="nav nav-pills premium-tabs mb-4 gap-2 opacity-75">
+                            <li class="nav-item">
+                                <a class="nav-link rounded-pill px-4" [class.active]="currentTab === 'discuss'"
+                                    (click)="switchTab('discuss')" style="cursor: pointer;">
+                                    <i class="fas fa-history me-2"></i>{{ 'ItHelpdesk::Detail:TabHistory' |
+                                    abpLocalization }}
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link rounded-pill px-4" [class.active]="currentTab === 'info'"
+                                    (click)="switchTab('info')" style="cursor: pointer;">
+                                    <i class="fas fa-info-circle me-2"></i>{{ 'ItHelpdesk::Detail:TabOriginalInfo' |
+                                    abpLocalization }}
+                                </a>
+                            </li>
+                        </ul>
+                        <div class="card premium-glass-card border-0 shadow-lg p-4 p-md-5 rounded-4 opacity-85">
+                            <ng-container
+                                *ngTemplateOutlet="currentTab === 'discuss' ? tabDiscussReadOnly : tabInfo"></ng-container>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <ng-container *ngTemplateOutlet="colRightSLA"></ng-container>
+                    </div>
+                </div>
+            </div>
 
-                        <!-- KHU VỰC NHẬP BÌNH LUẬN (ẨN ĐI KHI VÉ ĐÃ ĐÓNG) -->
-                        <div class="d-flex gap-3 mb-4 pb-4 border-bottom border-secondary border-opacity-25"
-                            *ngIf="ticket.status !== 7">
-                            <div class="avatar bg-primary text-white rounded-circle d-flex justify-content-center align-items-center flex-shrink-0 shadow-sm"
-                                style="width: 42px; height: 42px;">
-                                <i class="fas fa-user"></i>
-                            </div>
-                            <div class="flex-grow-1">
+        </ng-container>
+    </div>
+</div>
 
-                                <!-- GỢI Ý TRẢ LỜI NHANH  -->
-                                <div class="d-flex flex-wrap gap-2 mb-3">
-                                    <span *ngFor="let reply of quickReplies"
-                                        class="badge rounded-pill bg-dark bg-opacity-25 text-info border border-info border-opacity-25 py-2 px-3 hover-shadow"
-                                        style="cursor: pointer; transition: all 0.2s;" (click)="applyQuickReply(reply)">
-                                        {{ reply }}
+<!-- ======================================================= -->
+<!-- CÁC KHỐI GIAO DIỆN TÁI SỬ DỤNG (NG-TEMPLATE)            -->
+<!-- ======================================================= -->
+
+<ng-template #infoContentBlock>
+    <div class="card premium-glass-card border-0 p-4 rounded-4 h-100">
+        <h5 class="text-pink fw-bold mb-4"><i class="fas fa-file-alt me-2"></i>{{ 'ItHelpdesk::Detail:IncidentContent' |
+            abpLocalization }}</h5>
+
+        <div class="d-flex flex-wrap gap-3 mb-4 p-3 rounded-3" style="background: rgba(15, 23, 42, 0.5);">
+            <div class="flex-fill">
+                <span class="text-muted d-block small text-uppercase">{{ 'ItHelpdesk::Ticket:Category' | abpLocalization
+                    }}</span>
+                <span class="fw-bold text-white">{{ ticket?.categoryName || '---' }}</span>
+            </div>
+            <div class="flex-fill">
+                <span class="text-muted d-block small text-uppercase">{{ 'ItHelpdesk::Ticket:Service' | abpLocalization
+                    }}</span>
+                <span class="fw-bold text-info">{{ ticket?.serviceName || '---' }}</span>
+            </div>
+            <div class="flex-fill">
+                <span class="text-muted d-block small text-uppercase">{{ 'ItHelpdesk::Ticket:Priority' | abpLocalization
+                    }}</span>
+                <span class="badge bg-danger bg-opacity-75 text-white">{{ ticket?.priorityName || '---' }}</span>
+            </div>
+        </div>
+
+        <div class="text-light opacity-85 p-3 rounded-3"
+            style="background: rgba(0,0,0,0.2); line-height: 1.7; font-size: 1.05rem; white-space: pre-wrap; min-height: 150px;">
+            {{ ticket?.description }}</div>
+
+        <div *ngIf="attachments.length > 0" class="mt-4 pt-3 border-top border-secondary border-opacity-25">
+            <h6 class="text-info fw-bold mb-3"><i class="fas fa-paperclip me-2"></i>{{
+                'ItHelpdesk::Detail:AttachmentsLabel' | abpLocalization }}:</h6>
+            <div class="d-flex flex-wrap gap-3">
+                <div *ngFor="let file of attachments"
+                    class="bg-dark bg-opacity-50 p-2 rounded-3 border border-secondary border-opacity-25 hover-elevate transition-all"
+                    style="max-width: 300px; cursor: pointer;">
+                    <div class="d-flex align-items-center mb-2 px-2">
+                        <i class="fas"
+                            [ngClass]="file.type.includes('image') ? 'fa-image text-pink' : 'fa-file-alt text-info'"></i>
+                        <span class="ms-2 text-light fw-semibold text-truncate"
+                            style="font-size: 0.85rem; max-width: 200px;">{{ file.name }}</span>
+                    </div>
+                    <img *ngIf="file.type.includes('image')" [src]="file.url" class="img-fluid rounded shadow-sm"
+                        style="max-height: 180px; object-fit: contain; width: 100%;">
+                </div>
+            </div>
+        </div>
+    </div>
+</ng-template>
+
+<ng-template #tabInfo>
+    <div class="d-flex align-items-center mb-4 pb-3 border-bottom border-secondary border-opacity-25">
+        <div class="avatar bg-purple-soft text-pink rounded-circle d-flex justify-content-center align-items-center me-3 shadow-sm"
+            style="width: 48px; height: 48px; font-size: 1.4rem;">
+            <i class="fas fa-align-left"></i>
+        </div>
+        <div>
+            <h6 class="mb-1 fw-bold text-white fs-5">{{ 'ItHelpdesk::Detail:OriginalDescTitle' | abpLocalization }}</h6>
+            <small class="text-muted"><i class="fas fa-user me-1"></i> {{ 'ItHelpdesk::Detail:CreatorLabel' |
+                abpLocalization }}: <strong>{{ ticket!.creatorId ? ('ItHelpdesk::Detail:SystemUser' | abpLocalization) :
+                    ('ItHelpdesk::Detail:Guest' | abpLocalization) }}</strong></small>
+        </div>
+    </div>
+    <p class="text-light opacity-85 p-3 rounded-3"
+        style="background: rgba(0,0,0,0.2); line-height: 1.7; font-size: 1.05rem; white-space: pre-wrap;">{{
+        ticket!.description || ('ItHelpdesk::Ticket:NoDescription' | abpLocalization) }}</p>
+</ng-template>
+
+<ng-template #tabDiscuss>
+    <h5 class="fw-bold text-white mb-4"><i class="fas fa-comments text-pink me-2"></i>{{
+        'ItHelpdesk::Detail:DiscussionAreaTitle' | abpLocalization }}</h5>
+    <div class="d-flex gap-3 mb-4 pb-4 border-bottom border-secondary border-opacity-25">
+        <div class="avatar flex-shrink-0 shadow-sm rounded-circle overflow-hidden" style="width: 42px; height: 42px;">
+            <img src="/assets/images/chibi/avatar (1).png" alt="My Avatar" class="w-100 h-100 object-fit-cover">
+        </div>
+        <div class="flex-grow-1">
+            <div class="d-flex flex-wrap gap-2 mb-3">
+                <span *ngFor="let reply of quickReplies"
+                    class="badge rounded-pill bg-dark bg-opacity-25 text-info border border-info border-opacity-25 py-2 px-3 hover-shadow cursor-pointer transition-all"
+                    (click)="applyQuickReply(reply)">{{ reply }}</span>
+            </div>
+
+            <div *ngIf="replyingToComment"
+                class="d-flex align-items-center justify-content-between mb-2 p-2 rounded-3 shadow-sm"
+                style="background: rgba(13, 202, 240, 0.15); border: 1px dashed rgba(13, 202, 240, 0.4);">
+                <div class="text-info small fw-semibold"><i class="fas fa-reply me-2"></i> {{
+                    'ItHelpdesk::Ticket:ReplyingTo' | abpLocalization }}: <span class="text-white fw-bold">{{
+                        replyingToComment.creatorName }}</span></div>
+                <button class="btn-close btn-close-white" style="font-size: 0.6rem;" (click)="cancelReply()"></button>
+            </div>
+
+            <textarea class="form-control premium-input shadow-none p-3 mb-2 rounded-4" rows="3"
+                [(ngModel)]="newCommentContent"
+                [placeholder]="'ItHelpdesk::Detail:CommentPlaceholder' | abpLocalization"></textarea>
+
+            <div class="d-flex justify-content-between align-items-center mt-2 flex-wrap gap-2">
+                <!-- CÔNG TẮC GHI CHÚ NỘI BỘ: Chỉ hiển thị cho Admin/IT -->
+                <div class="form-check form-switch" *ngIf="isITStaff">
+                    <input class="form-check-input" type="checkbox" id="internalNoteCheck" [(ngModel)]="isInternalNote"
+                        style="cursor: pointer;">
+                    <label class="form-check-label text-warning fw-bold small mt-1 ms-1" for="internalNoteCheck"
+                        style="cursor: pointer;">
+                        <i class="fas fa-lock me-1"></i> {{ 'ItHelpdesk::Comment:InternalNote' | abpLocalization }}
+                    </label>
+                </div>
+            </div>
+
+            <div *ngIf="selectedFileName"
+                class="mt-2 mb-2 d-flex align-items-center text-info small bg-dark bg-opacity-25 px-3 py-1 rounded-pill"
+                style="width: fit-content;">
+                <i class="fas fa-file-alt me-2 text-pink bounce-icon flex-shrink-0"></i>
+                <span class="text-truncate" style="max-width: 220px;" [title]="selectedFileName">{{ selectedFileName
+                    }}</span>
+            </div>
+
+            <div class="d-flex flex-column flex-sm-row justify-content-between align-items-center gap-3 mt-3">
+                <div class="d-flex gap-2 w-100">
+                    <label class="cute-upload-btn mb-0 text-nowrap">
+                        <i class="fas fa-paperclip me-1 text-pink"></i> {{ 'ItHelpdesk::Detail:AttachBtn' |
+                        abpLocalization }}
+                        <input type="file" (change)="onFileSelected($event)" hidden>
+                    </label>
+                    <button class="btn rounded-pill fw-semibold text-nowrap d-flex align-items-center"
+                        [ngClass]="isRecording ? 'btn-danger mic-pulse-animation text-white border-0' : 'cute-outline-btn text-white'"
+                        (click)="toggleRecording()" style="border: 1px solid rgba(255,255,255,0.2);">
+                        <i class="fas me-1" [ngClass]="isRecording ? 'fa-microphone-slash' : 'fa-microphone'"></i>
+                        <span class="d-none d-sm-inline">{{ isRecording ? ('ItHelpdesk::Ticket:Listening' |
+                            abpLocalization) : ('ItHelpdesk::Ticket:Voice' | abpLocalization) }}</span>
+                    </button>
+                </div>
+                <button
+                    class="btn premium-btn-submit rounded-pill px-4 text-white fw-semibold ms-auto text-nowrap transition-all hover-elevate"
+                    (click)="sendComment()"
+                    [disabled]="(!newCommentContent.trim() && !selectedFileName) || isSubmitting">
+                    <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm me-2"></span>
+                    <i *ngIf="!isSubmitting" class="fas fa-paperplane me-1"></i> {{ 'ItHelpdesk::Detail:SendBtn' |
+                    abpLocalization }}
+                </button>
+            </div>
+        </div>
+    </div>
+    <ng-container *ngTemplateOutlet="timelineList"></ng-container>
+</ng-template>
+
+<ng-template #tabDiscussReadOnly>
+    <ng-container *ngTemplateOutlet="timelineList"></ng-container>
+</ng-template>
+
+<ng-template #timelineList>
+    <div class="comment-list" *ngIf="timeline.length > 0">
+        <ng-container *ngFor="let item of timeline.slice(0, visibleTimelineCount)">
+            <!-- BỘ LỌC HIỂN THỊ DÒNG THỜI GIAN THEO ROLE -->
+            <div class="comment-item mb-4" *ngIf="isITStaff || (item.type === 'Comment' && !item.isInternal)">
+
+                <!-- Log Hệ thống (Chỉ IT thấy) -->
+                <div class="d-flex gap-3 align-items-center opacity-75 mb-3"
+                    *ngIf="item.type === 'Activity' && isITStaff">
+                    <div class="avatar bg-secondary bg-opacity-50 text-white rounded-circle d-flex justify-content-center align-items-center flex-shrink-0"
+                        style="width: 32px; height: 32px; font-size: 0.8rem;">
+                        <i class="fas"
+                            [ngClass]="item.content && item.content.includes(':') ? 'fa-paperclip text-info' : 'fa-history text-warning'"></i>
+                    </div>
+                    <div class="flex-grow-1 border-bottom border-secondary border-opacity-25 pb-2">
+                        <span class="text-info fw-semibold">{{ item.content }}</span>
+                        <small class="text-muted ms-2"><i class="far fa-clock me-1"></i>{{ item.creationTime |
+                            date:'dd/MM/yyyy HH:mm' }}</small>
+                    </div>
+                </div>
+
+                <!-- Bình luận -->
+                <div class="d-flex flex-column gap-2" *ngIf="item.type === 'Comment'">
+                    <div class="d-flex gap-3">
+                        <div class="avatar flex-shrink-0 shadow-sm rounded-circle overflow-hidden"
+                            [ngClass]="{'border border-2 border-warning': item.isInternal}"
+                            style="width: 45px; height: 45px;">
+                            <img [src]="item.creatorAvatar || '/assets/images/chibi/avatar (1).png'" alt="Avatar"
+                                class="w-100 h-100 object-fit-cover">
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="comment-bubble p-3 rounded-4 shadow-sm"
+                                [ngClass]="item.isInternal ? 'internal-bubble border border-warning border-opacity-25' : 'mystical-bubble'">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="fw-bold"
+                                        [ngClass]="item.isInternal ? 'text-warning' : 'text-purple-accent'">
+                                        {{ item.creatorName }} <span *ngIf="item.isInternal"
+                                            class="badge bg-warning text-dark ms-2 small px-2">{{
+                                            'ItHelpdesk::Timeline:InternalBadge' | abpLocalization }}</span>
                                     </span>
+                                    <small class="text-muted" style="font-size: 0.75rem;">{{ item.creationTime |
+                                        date:'dd/MM/yyyy HH:mm' }}</small>
                                 </div>
-
-                                <textarea class="form-control premium-input shadow-none p-3 mb-2 rounded-4" rows="2"
-                                    [(ngModel)]="newCommentContent"
-                                    placeholder="Nhập nội dung phản hồi, thắc mắc hoặc ghi chú kỹ thuật..."></textarea>
-
-                                <div class="form-check form-switch mb-3 ms-2 mt-2"
-                                    *abpPermission="'ItHelpdesk.Tickets.Edit'">
-                                    <input class="form-check-input" type="checkbox" id="internalNoteCheck"
-                                        [(ngModel)]="isInternalNote" style="cursor: pointer;">
-                                    <label class="form-check-label text-warning fw-bold small mt-1 ms-1"
-                                        for="internalNoteCheck" style="cursor: pointer;">
-                                        <i class="fas fa-user-shield me-1"></i> Ghi chú nội bộ (Chỉ có IT mới nhìn thấy)
-                                    </label>
-                                </div>
-
-                                <!-- HIỂN THỊ TÊN FILE KHI ĐÃ CHỌN XONG -->
-                                <div *ngIf="selectedFileName"
-                                    class="mb-2 d-flex align-items-center text-info small bg-dark bg-opacity-25 px-3 py-1 rounded-pill"
-                                    style="width: fit-content; max-width: 100%;">
-                                    <i class="fas fa-file-alt me-2 text-pink bounce-icon flex-shrink-0"></i>
-                                    <span class="text-truncate" style="max-width: 220px;" [title]="selectedFileName">{{
-                                        selectedFileName }}</span>
-                                    <span class="ms-2 badge bg-success bg-opacity-75 text-white flex-shrink-0"
-                                        style="font-size: 0.65rem;">Đã chọn tệp</span>
-                                </div>
-
-                                <!-- CỤM NÚT CHỨC NĂNG BÊN DƯỚI (FILE + MICRO + GỬI) -->
-                                <div
-                                    class="d-flex flex-column flex-sm-row justify-content-between align-items-center gap-3 mt-3">
-                                    <div class="d-flex gap-2 w-100">
-                                        <label class="cute-upload-btn mb-0 text-nowrap">
-                                            <i class="fas fa-paperclip me-1 text-pink"></i> Đính kèm
-                                            <input type="file" (change)="onFileSelected($event)" hidden>
-                                        </label>
-
-                                        <!-- NÚT MICRO -->
-                                        <button
-                                            class="btn rounded-pill fw-semibold text-nowrap d-flex align-items-center"
-                                            [ngClass]="isRecording ? 'btn-danger mic-pulse-animation text-white border-0' : 'cute-outline-btn text-white'"
-                                            (click)="toggleRecording()"
-                                            style="border: 1px solid rgba(255,255,255,0.2);">
-                                            <i class="fas me-1"
-                                                [ngClass]="isRecording ? 'fa-microphone-slash' : 'fa-microphone'"></i>
-                                            <span class="d-none d-sm-inline">{{ isRecording ? 'Đang nghe...' : 'Giọng
-                                                nói' }}</span>
-                                        </button>
-                                    </div>
-
-                                    <button
-                                        class="btn premium-btn-submit rounded-pill px-4 text-white fw-semibold ms-auto text-nowrap"
-                                        (click)="sendComment()"
-                                        [disabled]="(!newCommentContent && !selectedFileName) || isSubmitting">
-                                        <i class="fas fa-paper-plane me-1"></i> Gửi phản hồi
-                                    </button>
-                                </div>
+                                <p class="mb-0 text-light opacity-75" style="line-height: 1.5; white-space: pre-wrap;">
+                                    {{ item.content }}</p>
                             </div>
-                        </div>
-
-                        <!-- HIỆN THÔNG BÁO NẾU VÉ ĐÃ ĐÓNG (status === 7) -->
-                        <div class="alert bg-dark border border-warning border-opacity-50 text-warning text-center rounded-4 mb-4 shadow-sm"
-                            *ngIf="ticket.status === 7">
-                            <i class="fas fa-lock me-2"></i> Yêu cầu này đã được đóng và chuyển sang trạng thái Chỉ đọc
-                            (Read-only).
-                        </div>
-
-                        <!-- Danh sách Timeline -->
-                        <div class="comment-list" *ngIf="timeline.length > 0">
-                            <div class="comment-item mb-4" *ngFor="let item of timeline">
-                                <!-- NẾU LÀ ACTIVITY -->
-                                <div class="d-flex gap-3 align-items-center opacity-75 mb-3"
-                                    *ngIf="item.type === 'Activity'">
-                                    <div class="avatar bg-secondary bg-opacity-50 text-white rounded-circle d-flex justify-content-center align-items-center flex-shrink-0"
-                                        style="width: 32px; height: 32px; font-size: 0.8rem;">
-                                        <i class="fas"
-                                            [ngClass]="item.content && item.content.includes('Đã đính kèm tệp') ? 'fa-paperclip text-info' : 'fa-history text-warning'"></i>
-                                    </div>
-                                    <div class="flex-grow-1 border-bottom border-secondary border-opacity-25 pb-2">
-                                        <span class="text-info fw-semibold">{{ item.content }}</span>
-                                        <small class="text-muted ms-2"><i class="far fa-clock me-1"></i>{{
-                                            item.creationTime | date:'dd/MM/yyyy HH:mm' }}</small>
-
-                                        <!-- HIỂN THỊ ẢNH NGAY TRONG TIMELINE NẾU CÓ -->
-                                        <div class="mt-2" *ngIf="item.attachmentUrl">
-                                            <img *ngIf="item.attachmentType?.includes('image')"
-                                                [src]="item.attachmentUrl"
-                                                class="img-fluid rounded mt-2 border border-secondary border-opacity-25 shadow-sm"
-                                                style="max-height: 250px; object-fit: contain;">
-                                            <div *ngIf="!item.attachmentType?.includes('image')"
-                                                class="d-flex align-items-center bg-dark bg-opacity-50 p-2 rounded-3 mt-2 border border-secondary border-opacity-25"
-                                                style="width: fit-content;">
-                                                <i class="fas fa-file-archive text-info me-2 fs-4"></i>
-                                                <span class="text-light small">{{ item.content ?
-                                                    item.content.replace('Đã đính kèm tệp:', '').trim() : '' }}</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- NẾU LÀ COMMENT -->
-                                <div class="d-flex gap-3" *ngIf="item.type === 'Comment'">
-                                    <div class="avatar text-white rounded-circle d-flex justify-content-center align-items-center flex-shrink-0"
-                                        [ngClass]="item.isInternal ? 'bg-warning bg-opacity-75' : 'bg-info bg-opacity-75'"
-                                        style="width: 42px; height: 42px;">
-                                        <i class="fas" [ngClass]="item.isInternal ? 'fa-user-shield' : 'fa-user'"></i>
-                                    </div>
-                                    <div class="comment-bubble p-3 rounded-4 flex-grow-1 shadow-sm"
-                                        [ngClass]="item.isInternal ? 'internal-bubble border border-warning border-opacity-25' : 'mystical-bubble'">
-                                        <div class="d-flex justify-content-between align-items-center mb-2">
-                                            <span class="fw-bold"
-                                                [ngClass]="item.isInternal ? 'text-warning' : 'text-purple-accent'">
-                                                {{ item.creatorName }}
-                                                <span *ngIf="item.isInternal"
-                                                    class="badge bg-warning text-dark ms-2 small px-2">Ghi chú nội
-                                                    bộ</span>
-                                            </span>
-                                            <small class="text-muted" style="font-size: 0.75rem;">{{ item.creationTime |
-                                                date:'dd/MM/yyyy HH:mm' }}</small>
-                                        </div>
-                                        <p class="mb-0 text-light opacity-75" style="line-height: 1.5;">{{ item.content
-                                            }}</p>
-                                    </div>
-                                </div>
+                            <div class="d-flex align-items-center gap-3 mt-2 ms-2"
+                                *ngIf="ticket.status !== 6 && ticket.status !== 7">
+                                <button
+                                    class="btn btn-sm btn-link text-decoration-none p-0 fw-medium small transition-all"
+                                    [ngClass]="item.isLiked ? 'text-pink' : 'text-muted'" style="font-size: 0.8rem;"
+                                    (click)="toggleLike(item)">
+                                    <i class="fas fa-heart me-1"></i> {{ 'ItHelpdesk::Detail:LikeBtn' | abpLocalization
+                                    }} <span *ngIf="item.likeCount > 0" class="ms-1">({{ item.likeCount }})</span>
+                                </button>
+                                <button
+                                    class="btn btn-sm btn-link text-info text-decoration-none p-0 fw-medium small transition-all"
+                                    style="font-size: 0.8rem;" (click)="startReply(item)">
+                                    <i class="fas fa-reply me-1"></i> {{ 'ItHelpdesk::Action:Reply' | abpLocalization }}
+                                </button>
                             </div>
-                        </div>
-
-                        <!-- Trạng thái trống -->
-                        <div class="text-center text-muted py-5" *ngIf="timeline.length === 0">
-                            <i class="fas fa-cat fa-3x mb-3 text-pink opacity-50 bounce-icon"></i>
-                            <p class="mb-0 text-light opacity-50">Chưa có hoạt động hoặc thảo luận nào trong yêu cầu
-                                này.</p>
                         </div>
                     </div>
                 </div>
             </div>
+        </ng-container>
+    </div>
 
-            <!-- CỘT PHẢI: Thông tin chung & SLA -->
-            <div class="col-lg-4">
+    <div class="text-center mt-4 pt-3 border-top border-secondary border-opacity-25"
+        *ngIf="timeline.length > visibleTimelineCount">
+        <button class="btn btn-outline-secondary rounded-pill px-4 py-2 text-light small fw-medium transition-all"
+            (click)="loadMoreTimeline()">
+            <i class="fas fa-chevron-down me-2"></i> {{ 'ItHelpdesk::Detail:LoadMoreHistory' | abpLocalization }}
+        </button>
+    </div>
+</ng-template>
 
-                <!-- CARD THÔNG TIN SLA -->
-                <div class="card premium-glass-card border-0 shadow-lg mb-4 rounded-4"
-                    style="background: rgba(23, 28, 48, 0.85) !important; backdrop-filter: blur(20px);">
-                    <div class="card-body p-4">
-                        <h6
-                            class="fw-bold text-pink border-bottom border-secondary border-opacity-25 pb-3 mb-4 d-flex align-items-center">
-                            <i class="fas fa-stopwatch me-2 fs-5"></i> Cam kết chất lượng (SLA)
-                        </h6>
+<ng-template #tabAssign>
+    <div class="text-center py-4">
+        <i class="fas fa-users-cog fa-3x mb-3 text-info opacity-75"></i>
+        <h5 class="fw-bold text-white mb-2">{{ 'ItHelpdesk::Detail:AssignManagementTitle' | abpLocalization }}</h5>
+        <p class="text-muted mb-4">{{ 'ItHelpdesk::Detail:AssignManagementDesc' | abpLocalization }}</p>
+        <button class="btn cute-gradient-btn rounded-pill px-5 text-white fw-semibold py-2 shadow-lg hover-elevate"
+            (click)="openAssignModal()">
+            <i class="fas fa-hand-pointer me-2"></i> {{ 'ItHelpdesk::Detail:ChangeAssigneeBtn' | abpLocalization }}
+        </button>
+    </div>
+</ng-template>
 
-                        <div class="p-3 rounded-3 mb-3"
-                            style="background: rgba(15, 23, 42, 0.5); border: 1px solid rgba(255, 255, 255, 0.08);">
-                            <span class="text-muted small text-uppercase fw-semibold d-block mb-1">Hạn tiếp nhận
-                                (Response SLA)</span>
-                            <div class="d-flex align-items-center fw-bold fs-6"
-                                [class.text-danger]="getSlaStatus(ticket.targetResponseTime) === 'overdue'"
-                                [class.text-warning]="getSlaStatus(ticket.targetResponseTime) === 'warning'"
-                                [class.text-light]="getSlaStatus(ticket.targetResponseTime) === 'normal'">
-                                <i class="fas me-2 fs-5"
-                                    [ngClass]="{'fa-exclamation-circle': getSlaStatus(ticket.targetResponseTime) === 'overdue', 'fa-exclamation-triangle': getSlaStatus(ticket.targetResponseTime) === 'warning', 'fa-clock': getSlaStatus(ticket.targetResponseTime) === 'normal'}"></i>
-                                <span>{{ ticket.targetResponseTime ? (ticket.targetResponseTime | date: 'dd/MM/yyyy
-                                    HH:mm') : 'Chưa xác định' }}</span>
-                            </div>
-                        </div>
+<ng-template #colRightSLA>
+    <div class="card premium-glass-card border-0 shadow-lg mb-4 rounded-4"
+        style="background: rgba(23, 28, 48, 0.85) !important;">
+        <div class="card-body p-4">
+            <h6 class="fw-bold text-pink border-bottom border-secondary border-opacity-25 pb-3 mb-4"><i
+                    class="fas fa-info-circle me-2 fs-5"></i> {{ 'ItHelpdesk::Ticket:ClassificationInfo' |
+                abpLocalization }}</h6>
+            <div class="d-flex justify-content-between align-items-center mb-3 p-2 rounded-2"
+                style="background: rgba(15, 23, 42, 0.3);">
+                <span class="text-muted small text-uppercase">{{ 'ItHelpdesk::Ticket:Category' | abpLocalization
+                    }}</span>
+                <span class="fw-bold text-light text-end">{{ ticket!.categoryName || '---' }}</span>
+            </div>
+            <div class="d-flex justify-content-between align-items-center mb-3 p-2 rounded-2"
+                style="background: rgba(15, 23, 42, 0.3);">
+                <span class="text-muted small text-uppercase">{{ 'ItHelpdesk::Ticket:Service' | abpLocalization
+                    }}</span>
+                <span class="fw-bold text-info text-end">{{ ticket!.serviceName || '---' }}</span>
+            </div>
+        </div>
+    </div>
 
-                        <div class="p-3 rounded-3 mb-3"
-                            style="background: rgba(15, 23, 42, 0.5); border: 1px solid rgba(255, 255, 255, 0.08);">
-                            <span class="text-muted small text-uppercase fw-semibold d-block mb-1">Hạn xử lý (Resolution
-                                SLA)</span>
-                            <div class="d-flex align-items-center fw-bold fs-6"
-                                [class.text-danger]="getSlaStatus(ticket.targetResolutionTime) === 'overdue'"
-                                [class.text-warning]="getSlaStatus(ticket.targetResolutionTime) === 'warning'"
-                                [class.text-light]="getSlaStatus(ticket.targetResolutionTime) === 'normal'">
-                                <i class="fas me-2 fs-5"
-                                    [ngClass]="{'fa-exclamation-circle': getSlaStatus(ticket.targetResolutionTime) === 'overdue', 'fa-exclamation-triangle': getSlaStatus(ticket.targetResolutionTime) === 'warning', 'fa-hourglass-half': getSlaStatus(ticket.targetResolutionTime) === 'normal'}"></i>
-                                <span>{{ ticket.targetResolutionTime ? (ticket.targetResolutionTime | date: 'dd/MM/yyyy
-                                    HH:mm') : 'Chưa xác định' }}</span>
-                            </div>
-                        </div>
-
-                        <div class="mt-3 pt-3 border-top border-secondary border-opacity-25" *ngIf="ticket.resolvedAt">
-                            <span class="text-success small fw-semibold d-flex align-items-center">
-                                <i class="fas fa-check-circle me-2"></i> Thời gian hoàn tất:
-                                <strong class="ms-1 text-white">{{ ticket.resolvedAt | date: 'dd/MM/yyyy HH:mm'
-                                    }}</strong>
-                            </span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Card Thông tin chung -->
-                <div class="card premium-glass-card border-0 shadow-lg mb-4 rounded-4"
-                    style="background: rgba(23, 28, 48, 0.85) !important; backdrop-filter: blur(20px);">
-                    <div class="card-body p-4">
-                        <h6
-                            class="fw-bold text-pink border-bottom border-secondary border-opacity-25 pb-3 mb-4 d-flex align-items-center">
-                            <i class="fas fa-info-circle me-2 fs-5"></i> Thông tin chung
-                        </h6>
-
-                        <div class="d-flex justify-content-between align-items-center mb-3 p-2 rounded-2"
-                            style="background: rgba(15, 23, 42, 0.3);">
-                            <span class="text-muted small text-uppercase">Mã Yêu Cầu</span>
-                            <span class="fw-bold text-white font-mono px-2 py-1 rounded"
-                                style="background: rgba(255,255,255,0.08);">{{ ticket.ticketNo }}</span>
-                        </div>
-
-                        <div class="d-flex justify-content-between align-items-center mb-3 p-2 rounded-2"
-                            style="background: rgba(15, 23, 42, 0.3);">
-                            <span class="text-muted small text-uppercase">Trạng thái</span>
-                            <span class="badge rounded-pill bg-primary bg-opacity-75 text-white px-3 py-2 shadow-sm">
-                                {{ getStatusText(ticket.status) }}
-                            </span>
-                        </div>
-
-                        <div class="d-flex justify-content-between align-items-center mb-3 p-2 rounded-2"
-                            style="background: rgba(15, 23, 42, 0.3);">
-                            <span class="text-muted small text-uppercase">Kỹ thuật viên</span>
-                            <span class="text-info fw-semibold"><i class="fas fa-user-shield me-1"></i> {{
-                                ticket.assigneeId ? 'Đã phân công' : 'Chưa phân công' }}</span>
-                        </div>
-
-                        <!-- CHỈ HIỆN NÚT PHÂN CÔNG KHI VÉ CHƯA ĐÓNG -->
-                        <div class="d-grid mt-4" *ngIf="ticket.status !== 7">
-                            <button *abpPermission="'ItHelpdesk.Tickets.Edit'"
-                                class="btn cute-outline-btn rounded-pill fw-semibold text-pink border-pink shadow-sm py-2"
-                                (click)="openAssignModal()">
-                                <i class="fas fa-users-cog me-2"></i> Phân công / Chuyển tuyến
-                            </button>
-                        </div>
-                    </div>
+    <div class="card premium-glass-card border-0 shadow-lg mb-4 rounded-4"
+        style="background: rgba(23, 28, 48, 0.85) !important;">
+        <div class="card-body p-4">
+            <h6 class="fw-bold text-pink border-bottom border-secondary border-opacity-25 pb-3 mb-4"><i
+                    class="fas fa-stopwatch me-2 fs-5"></i> {{ 'ItHelpdesk::Ticket:SLA' | abpLocalization }}</h6>
+            <div class="p-3 rounded-3 mb-3"
+                style="background: rgba(15, 23, 42, 0.5); border: 1px solid rgba(255, 255, 255, 0.08);">
+                <span class="text-muted small text-uppercase fw-semibold d-block mb-1">{{
+                    'ItHelpdesk::Ticket:ResolutionSLA' | abpLocalization }}</span>
+                <div class="d-flex align-items-center fw-bold fs-6"
+                    [class.text-danger]="getSlaStatus(ticket!.targetResolutionTime) === 'overdue'"
+                    [class.text-warning]="getSlaStatus(ticket!.targetResolutionTime) === 'warning'"
+                    [class.text-light]="getSlaStatus(ticket!.targetResolutionTime) === 'normal'">
+                    <i class="fas me-2 fs-5"
+                        [ngClass]="{'fa-exclamation-circle': getSlaStatus(ticket!.targetResolutionTime) !== 'normal', 'fa-hourglass-half': getSlaStatus(ticket!.targetResolutionTime) === 'normal'}"></i>
+                    <span>{{ ticket!.targetResolutionTime ? (ticket!.targetResolutionTime | date: 'dd/MM/yyyy HH:mm') :
+                        ('ItHelpdesk::Ticket:NotSet' | abpLocalization) }}</span>
                 </div>
             </div>
+        </div>
+    </div>
+</ng-template>
 
-            <!-- MODAL PHÂN CÔNG / CHUYỂN TUYẾN -->
-            <div class="modal fade" [ngClass]="{'show d-block': isAssignModalOpen}" tabindex="-1" aria-hidden="true"
-                [style.background-color]="isAssignModalOpen ? 'rgba(0,0,0,0.7)' : 'transparent'"
-                style="backdrop-filter: blur(6px);">
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content border-0 shadow-2xl text-light rounded-4 overflow-hidden"
-                        style="background: rgba(20, 24, 41, 0.95) !important; backdrop-filter: blur(25px); border: 1px solid rgba(255, 255, 255, 0.1) !important;">
+<!-- ======================================================= -->
+<!-- CÁC MODAL QUẢN TRỊ ADMIN -->
+<!-- ======================================================= -->
 
-                        <div class="modal-header border-bottom border-secondary border-opacity-25 py-4 px-4">
-                            <div class="d-flex align-items-center gap-3">
-                                <div class="rounded-3 d-flex align-items-center justify-content-center"
-                                    style="width: 42px; height: 42px; background: rgba(244, 114, 182, 0.15); color: #f472b6; font-size: 1.2rem;">
-                                    <i class="fas fa-users-cog"></i>
-                                </div>
-                                <div>
-                                    <h5 class="modal-title fw-bold text-white mb-0">Phân công hoặc Chuyển tuyến</h5>
-                                    <small class="text-muted">Điều phối nhân sự và nhóm xử lý yêu cầu kỹ thuật</small>
-                                </div>
-                            </div>
-                            <button type="button" class="btn-close btn-close-white" aria-label="Close"
-                                (click)="closeAssignModal()"></button>
-                        </div>
-
-                        <div class="modal-body p-4">
-                            <!-- CHỌN KỸ THUẬT VIÊN -->
-                            <div class="mb-4 position-relative">
-                                <label class="form-label text-muted small text-uppercase fw-semibold mb-2">
-                                    <i class="fas fa-user-gear text-pink me-1"></i> Chọn Kỹ thuật viên (Assignee)
-                                </label>
-                                <div class="input-group align-items-center rounded-pill px-3 py-1"
-                                    style="background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(255, 255, 255, 0.15);">
-                                    <span class="text-pink bg-transparent border-0 pe-2"><i
-                                            class="fas fa-search"></i></span>
-                                    <input type="text"
-                                        class="form-control bg-transparent border-0 shadow-none text-white p-2"
-                                        [ngModel]="assigneeSearchText" (ngModelChange)="onSearchTechnician($event)"
-                                        (focus)="showTechDropdown = true"
-                                        placeholder="Gõ tên kỹ thuật viên để tìm kiếm...">
-                                </div>
-
-                                <ul *ngIf="showTechDropdown"
-                                    class="dropdown-menu show w-100 shadow-lg border-0 mt-2 p-2 rounded-4"
-                                    style="background: rgba(22, 22, 35, 0.98); backdrop-filter: blur(16px); max-height: 250px; overflow-y: auto; z-index: 1050; border: 1px solid rgba(255,255,255,0.1) !important;">
-
-                                    <li *ngIf="recentTechnicians.length > 0 && !assigneeSearchText"
-                                        class="dropdown-header text-pink small fw-bold px-3 py-1">
-                                        <i class="fas fa-history me-1"></i> Tìm kiếm gần đây
-                                    </li>
-                                    <li *ngFor="let item of recentTechnicians" (click)="selectTechnician(item)"
-                                        class="dropdown-item text-light rounded-3 cursor-pointer px-3 py-2 my-1 custom-dropdown-item">
-                                        <div class="d-flex align-items-center">
-                                            <i class="fas fa-user-check text-pink me-2 opacity-75"></i>
-                                            <div>
-                                                <div class="fw-semibold text-white">{{ item.name }}</div>
-                                                <small class="text-muted" style="font-size: 0.75rem;">{{ item.email
-                                                    }}</small>
-                                            </div>
-                                        </div>
-                                    </li>
-
-                                    <li>
-                                        <hr class="dropdown-divider border-secondary opacity-25 my-2"
-                                            *ngIf="recentTechnicians.length > 0 && !assigneeSearchText">
-                                    </li>
-
-                                    <li class="dropdown-header text-info small fw-bold px-3 py-1">Danh sách nhân sự</li>
-                                    <li *ngFor="let tech of (assigneeSearchText ? filteredTechnicians : allTechnicians)"
-                                        (click)="selectTechnician(tech)"
-                                        class="dropdown-item text-light rounded-3 cursor-pointer px-3 py-2 my-1 custom-dropdown-item">
-                                        <div class="fw-semibold text-white">{{ tech.name }}</div>
-                                        <small class="text-muted" style="font-size: 0.75rem;">{{ tech.email }}</small>
-                                    </li>
-                                </ul>
-                            </div>
-
-                            <!-- CHỌN NHÓM (TEAM) -->
-                            <div class="mb-3 position-relative">
-                                <label class="form-label text-muted small text-uppercase fw-semibold mb-2">
-                                    <i class="fas fa-shield-halved text-pink me-1"></i> Chọn Nhóm phụ trách (Team)
-                                </label>
-                                <div class="input-group align-items-center rounded-pill px-3 py-1"
-                                    style="background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(255, 255, 255, 0.15);">
-                                    <span class="text-pink bg-transparent border-0 pe-2"><i
-                                            class="fas fa-search"></i></span>
-                                    <input type="text"
-                                        class="form-control bg-transparent border-0 shadow-none text-white p-2"
-                                        [ngModel]="teamSearchText" (ngModelChange)="onSearchTeam($event)"
-                                        (focus)="showTeamDropdown = true" placeholder="Gõ tên nhóm / phòng ban...">
-                                </div>
-
-                                <ul *ngIf="showTeamDropdown"
-                                    class="dropdown-menu show w-100 shadow-lg border-0 mt-2 p-2 rounded-4"
-                                    style="background: rgba(22, 22, 35, 0.98); backdrop-filter: blur(16px); max-height: 250px; overflow-y: auto; z-index: 1050; border: 1px solid rgba(255,255,255,0.1) !important;">
-
-                                    <li class="dropdown-header text-info small fw-bold px-3 py-1">Danh sách nhóm</li>
-                                    <li *ngFor="let team of (teamSearchText ? filteredTeams : allTeams)"
-                                        (click)="selectTeam(team)"
-                                        class="dropdown-item text-light rounded-3 cursor-pointer px-3 py-2 my-1 custom-dropdown-item">
-                                        <div class="fw-semibold text-white">{{ team.name }}</div>
-                                        <small class="text-muted" style="font-size: 0.75rem;">Mã: {{ team.code
-                                            }}</small>
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-
-                        <div class="modal-footer border-top border-secondary border-opacity-25 py-3 px-4">
-                            <button type="button" class="btn btn-outline-light rounded-pill px-4"
-                                (click)="closeAssignModal()">Hủy</button>
-                            <button type="button" class="btn cute-gradient-btn rounded-pill px-5 text-white fw-semibold"
-                                (click)="submitAssign()">
-                                <i class="fas fa-check me-1"></i> Xác nhận
-                            </button>
-                        </div>
-                    </div>
+<div class="modal fade" [ngClass]="{'show d-block': isStatusModalOpen}" tabindex="-1" aria-hidden="true"
+    [style.background-color]="isStatusModalOpen ? 'rgba(0,0,0,0.7)' : 'transparent'"
+    style="backdrop-filter: blur(6px);">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-2xl text-light rounded-4 overflow-hidden"
+            style="background: rgba(20, 24, 41, 0.95) !important; backdrop-filter: blur(25px); border: 1px solid rgba(255, 255, 255, 0.1) !important;">
+            <div class="modal-header border-bottom border-secondary border-opacity-25 py-4 px-4">
+                <h5 class="modal-title fw-bold text-white mb-0">{{ 'ItHelpdesk::Detail:ModalStatusTitle' |
+                    abpLocalization }}</h5>
+                <button type="button" class="btn-close btn-close-white" (click)="closeStatusModal()"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="mb-4">
+                    <label class="form-label text-muted small text-uppercase fw-semibold mb-2">{{
+                        'ItHelpdesk::Detail:ModalNewLabel' | abpLocalization }}</label>
+                    <select class="form-select bg-dark text-white border-secondary rounded-pill shadow-none px-4 py-2"
+                        [(ngModel)]="statusData.newStatus">
+                        <option *ngFor="let s of ticketStatuses" [value]="s.value">{{ s.label | abpLocalization }}
+                        </option>
+                    </select>
+                </div>
+                <div class="mb-2">
+                    <label class="form-label text-muted small text-uppercase fw-semibold mb-2">{{
+                        'ItHelpdesk::Detail:ModalReasonLabel' | abpLocalization }}</label>
+                    <textarea
+                        class="form-control premium-input shadow-none p-3 text-white rounded-4 bg-dark bg-opacity-50"
+                        rows="3" [(ngModel)]="statusData.comment"
+                        [placeholder]="'ItHelpdesk::Detail:ModalReasonPlaceholder' | abpLocalization"></textarea>
                 </div>
             </div>
+            <div class="modal-footer border-top border-secondary border-opacity-25 py-3 px-4">
+                <button type="button" class="btn btn-outline-light rounded-pill px-4" (click)="closeStatusModal()">{{
+                    'ItHelpdesk::Cancel' | abpLocalization }}</button>
+                <button type="button" class="btn btn-warning rounded-pill px-5 text-dark fw-bold"
+                    (click)="submitStatusChange()" [disabled]="isSubmitting">{{ 'ItHelpdesk::Save' | abpLocalization }}</button>
+            </div>
+        </div>
+    </div>
+</div>
 
-            <!-- MODAL CHỈNH SỬA TICKET -->
-            <div class="modal fade" [ngClass]="{'show d-block': isEditModalOpen}" tabindex="-1" aria-hidden="true"
-                [style.background-color]="isEditModalOpen ? 'rgba(0,0,0,0.5)' : 'transparent'">
-                <div class="modal-dialog modal-dialog-centered modal-lg">
-                    <div class="modal-content premium-glass-card border-0 shadow-lg text-light">
-                        <div class="modal-header border-bottom border-secondary border-opacity-25">
-                            <h5 class="modal-title fw-bold text-pink">
-                                <i class="fas fa-edit me-2"></i>Cập nhật yêu cầu
-                            </h5>
-                            <button type="button" class="btn-close btn-close-white" aria-label="Close"
-                                (click)="closeEditModal()"></button>
-                        </div>
-                        <div class="modal-body p-4">
-                            <div class="mb-3">
-                                <label class="form-label text-muted small text-uppercase fw-semibold">Tiêu đề yêu cầu
-                                    <span class="text-danger">*</span></label>
-                                <input type="text"
-                                    class="form-control premium-input shadow-none p-3 text-white rounded-pill"
-                                    [(ngModel)]="editData.title" placeholder="Nhập tiêu đề...">
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label text-muted small text-uppercase fw-semibold">Mô tả chi
-                                    tiết</label>
-                                <textarea class="form-control premium-input shadow-none p-3 text-white rounded-4"
-                                    rows="5" [(ngModel)]="editData.description"
-                                    placeholder="Cập nhật chi tiết nội dung sự cố..."></textarea>
-                            </div>
-                        </div>
-                        <div class="modal-footer border-top border-secondary border-opacity-25">
-                            <button type="button" class="btn btn-outline-light rounded-pill px-4"
-                                (click)="closeEditModal()">Hủy</button>
-                            <button type="button"
-                                class="btn premium-btn-submit rounded-pill px-4 text-white fw-semibold"
-                                (click)="submitEdit()" [disabled]="isSubmitting || !editData.title.trim()">
-                                <i class="fas fa-save me-1"></i> Lưu thay đổi
-                            </button>
-                        </div>
-                    </div>
+<div class="modal fade" [ngClass]="{'show d-block': isAssignModalOpen}" tabindex="-1" aria-hidden="true"
+    [style.background-color]="isAssignModalOpen ? 'rgba(0,0,0,0.7)' : 'transparent'"
+    style="backdrop-filter: blur(6px);">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-2xl text-light rounded-4 overflow-hidden"
+            style="background: rgba(20, 24, 41, 0.95) !important; backdrop-filter: blur(25px); border: 1px solid rgba(255, 255, 255, 0.1) !important;">
+            <div class="modal-header border-bottom border-secondary border-opacity-25 py-4 px-4">
+                <h5 class="modal-title fw-bold text-white mb-0">{{ 'ItHelpdesk::Ticket:AssignModalTitle' |
+                    abpLocalization }}</h5>
+                <button type="button" class="btn-close btn-close-white" (click)="closeAssignModal()"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="mb-4 position-relative">
+                    <label class="form-label text-muted small text-uppercase fw-semibold mb-2">{{
+                        'ItHelpdesk::Ticket:SelectTechnician' | abpLocalization }}</label>
+                    <select class="form-select bg-dark text-white border-secondary rounded-pill shadow-none px-3 py-2"
+                        [(ngModel)]="assigneeInputId">
+                        <option value="">{{ 'ItHelpdesk::Ticket:UnassignedTechOption' | abpLocalization }}</option>
+                        <option *ngFor="let tech of allTechnicians" [value]="tech.id">{{ tech.name }}</option>
+                    </select>
+                </div>
+                <div class="mb-4 position-relative">
+                    <label class="form-label text-muted small text-uppercase fw-semibold mb-2">{{
+                        'ItHelpdesk::Ticket:SelectTeam' | abpLocalization }}</label>
+                    <select class="form-select bg-dark text-white border-secondary rounded-pill shadow-none px-3 py-2"
+                        [(ngModel)]="teamInputId">
+                        <option value="">{{ 'ItHelpdesk::Ticket:UnassignedTeamOption' | abpLocalization }}</option>
+                        <option *ngFor="let team of allTeams" [value]="team.id">{{ team.name }}</option>
+                    </select>
                 </div>
             </div>
+            <div class="modal-footer border-top border-secondary border-opacity-25 py-3 px-4">
+                <button type="button" class="btn btn-outline-light rounded-pill px-4" (click)="closeAssignModal()">{{
+                    'ItHelpdesk::Cancel' | abpLocalization }}</button>
+                <button type="button" class="btn btn-primary rounded-pill px-5 fw-bold" (click)="submitAssign()"
+                    [disabled]="isSubmitting">{{ 'ItHelpdesk::Confirm' | abpLocalization }}</button>
+            </div>
+        </div>
+    </div>
+</div>
 
+<div class="modal fade" [ngClass]="{'show d-block': isEditModalOpen}" tabindex="-1" aria-hidden="true"
+    [style.background-color]="isEditModalOpen ? 'rgba(0,0,0,0.5)' : 'transparent'">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content premium-glass-card border-0 shadow-lg text-light">
+            <div class="modal-header border-bottom border-secondary border-opacity-25">
+                <h5 class="modal-title fw-bold text-pink"><i class="fas fa-edit me-2"></i>{{
+                    'ItHelpdesk::Ticket:UpdateTitle' | abpLocalization }}</h5>
+                <button type="button" class="btn-close btn-close-white" (click)="closeEditModal()"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="mb-3">
+                    <label class="form-label text-muted small text-uppercase fw-semibold">{{
+                        'ItHelpdesk::Ticket:TitleLabel' | abpLocalization }}</label>
+                    <input type="text" class="form-control premium-input shadow-none p-3 text-white rounded-pill"
+                        [(ngModel)]="editData.title" [placeholder]="'ItHelpdesk::Ticket:TitlePlaceholder' | abpLocalization">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label text-muted small text-uppercase fw-semibold">{{
+                        'ItHelpdesk::Ticket:DescriptionLabel' | abpLocalization }}</label>
+                    <textarea class="form-control premium-input shadow-none p-3 text-white rounded-4" rows="5"
+                        [(ngModel)]="editData.description" [placeholder]="'ItHelpdesk::Ticket:DescriptionPlaceholder' | abpLocalization"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer border-top border-secondary border-opacity-25">
+                <button type="button" class="btn btn-outline-light rounded-pill px-4" (click)="closeEditModal()">{{
+                    'ItHelpdesk::Cancel' | abpLocalization }}</button>
+                <button type="button" class="btn btn-info rounded-pill px-5 fw-bold text-dark" (click)="submitEdit()"
+                    [disabled]="isSubmitting">{{ 'ItHelpdesk::Save' | abpLocalization }}</button>
+            </div>
         </div>
     </div>
 </div>
@@ -507,8 +644,6 @@
 <div class="text-center py-5 min-vh-100 d-flex justify-content-center align-items-center" *ngIf="isLoading">
     <div class="d-flex flex-column align-items-center">
         <i class="fas fa-cat fa-3x text-pink bounce-icon mb-3"></i>
-        <div class="spinner-border text-pink" role="status" style="width: 2rem; height: 2rem;">
-            <span class="visually-hidden">Đang tải dữ liệu...</span>
-        </div>
+        <div class="spinner-border text-pink" role="status" style="width: 2rem; height: 2rem;"></div>
     </div>
 </div>

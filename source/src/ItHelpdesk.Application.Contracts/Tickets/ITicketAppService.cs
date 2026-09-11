@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Volo.Abp.Application.Services;
-using ItHelpdesk.Users; // Bổ sung thư viện này để nhận diện UserDto
+using ItHelpdesk.Users;
 
 namespace ItHelpdesk.Tickets
 {
@@ -14,8 +14,8 @@ namespace ItHelpdesk.Tickets
         // Cập nhật trạng thái (Workflow)
         Task ChangeStatusAsync(long ticketId, TicketStatus newStatus, string? comment = null);
 
-        // Thêm bình luận (Comment)
-        Task AddCommentAsync(long ticketId, string content, bool isInternal = false);
+        // Thêm bình luận (Comment) - Đã thêm tham số parentId
+        Task AddCommentAsync(long ticketId, string content, bool isInternal = false, long? parentId = null);
 
         // Lấy lịch sử Timeline (Trộn Activity và Comment)
         Task<List<TicketTimelineDto>> GetTimelineAsync(long ticketId);

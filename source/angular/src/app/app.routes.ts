@@ -98,10 +98,15 @@ export const APP_ROUTES: Routes = [
     loadComponent: () => import('./account/avatar-upload/avatar-upload.component').then(c => c.AvatarUploadComponent),
     canActivate: [authGuard],
   },
+  // THÊM ĐƯỜNG DẪN TRANG THÔNG BÁO RIÊNG
+  {
+    path: 'notifications',
+    loadComponent: () => import('./notifications/notification-list/notification-list.component').then(c => c.NotificationListComponent),
+    canActivate: [authGuard],
+  },
   {
     path: 'user-management',
     loadComponent: () => import('./users/users.component').then(c => c.UsersComponent),
-    // DÒNG NÀY ĐỂ KÍCH HOẠT CHẶN BẰNG URL DỰA VÀO POLICY
     canActivate: [authGuard, permissionGuard], 
     data: { requiredPolicy: 'ItHelpdesk.UserManagement' }
   }

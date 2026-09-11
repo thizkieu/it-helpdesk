@@ -1,13 +1,20 @@
 import { Component, OnInit, inject } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { TicketService, CreateUpdateTicketDto } from '@proxy/tickets';
 import { CategoryService, CategoryDto } from '@proxy/categories';
 import { ServiceService, ServiceDto } from '@proxy/services';
 import { PriorityService, PriorityDto } from '@proxy/priorities';
-import { CoreModule, RestService } from '@abp/ng.core';
+import { CoreModule, RestService, LocalizationService } from '@abp/ng.core';
 import { CustomToastService } from '../shared/services/custom-toast.service';
+
+// Custom Validator: Chặn nhập toàn khoảng trắng (Space)
+export function noWhitespaceValidator(control: AbstractControl): ValidationErrors | null {
+  const isWhitespace = (control.value || '').toString().trim().length === 0;
+  const isValid = !isWhitespace;
+  return isValid ? null : { 'whitespace': true };
+}
 
 @Component({
   selector: 'app-create-ticket',
@@ -33,20 +40,25 @@ export class CreateTicketComponent implements OnInit {
   private restService = inject(RestService);
   private customToast = inject(CustomToastService);
   private router = inject(Router);
+  private localizationService = inject(LocalizationService);
 
   constructor() {
     this.ticketForm = this.fb.group({
-      title: ['', [Validators.required, Validators.maxLength(255)]],
+      title: ['', [Validators.required, noWhitespaceValidator, Validators.maxLength(255)]],
       categoryId: [null, Validators.required],
       serviceId: [null, Validators.required],
       priorityId: [null, Validators.required],
-      description: ['', Validators.required]
+      // Đã gỡ bỏ giới hạn độ dài cứng cho phần mô tả theo yêu cầu
+      description: ['', [Validators.required, noWhitespaceValidator]]
     });
   }
 
   ngOnInit(): void {
     this.loadDropdownData();
   }
+
+  // Getter hỗ trợ đếm số lượng ký tự trực tiếp trên HTML
+  get titleLength() { return this.ticketForm.get('title')?.value?.length || 0; }
 
   loadDropdownData(): void {
     this.categoryService.getList({ maxResultCount: 100 }).subscribe({
@@ -67,7 +79,8 @@ export class CreateTicketComponent implements OnInit {
         const file = input.files.item(i);
         if (file) {
           if (file.size > 10 * 1024 * 1024) {
-            this.customToast.show(`File ${file.name} quá lớn (tối đa 10MB).`, 'error');
+            const sizeErrorMsg = this.localizationService.instant('ItHelpdesk::Ticket:FileSizeError', file.name || '');
+            this.customToast.show(sizeErrorMsg, 'error');
             continue;
           }
           this.selectedFiles.push(file);
@@ -81,24 +94,41 @@ export class CreateTicketComponent implements OnInit {
   }
 
   submitTicket(): void {
-    // Lấy giá trị và cắt sạch khoảng trắng thừa (Whitespace Validation)
+    // Chặn hoàn toàn nếu form chưa hợp lệ hoặc đang xử lý
+    if (this.ticketForm.invalid || this.isSubmitting) {
+      this.ticketForm.markAllAsTouched();
+
+      const titleControl = this.ticketForm.get('title');
+      const descControl = this.ticketForm.get('description');
+
+      // Bắn ra thông báo lỗi minh bạch bằng đa ngôn ngữ nếu User cố tình nhấn nút Gửi (bằng phím Enter hoặc cách nào đó)
+      if (titleControl?.hasError('required')) {
+        this.customToast.show(this.localizationService.instant('ItHelpdesk::Ticket:ErrorTitleEmpty'), 'error');
+      } else if (titleControl?.hasError('whitespace')) {
+        this.customToast.show(this.localizationService.instant('ItHelpdesk::Ticket:ErrorTitleWhitespace'), 'error');
+      } else if (titleControl?.hasError('maxlength')) {
+        this.customToast.show(this.localizationService.instant('ItHelpdesk::Ticket:TitleMaxLength'), 'error');
+      } else if (this.ticketForm.get('categoryId')?.invalid || this.ticketForm.get('serviceId')?.invalid || this.ticketForm.get('priorityId')?.invalid) {
+        this.customToast.show(this.localizationService.instant('ItHelpdesk::Ticket:ErrorClassificationRequired'), 'error');
+      } else if (descControl?.hasError('required')) {
+        this.customToast.show(this.localizationService.instant('ItHelpdesk::Ticket:ErrorDescriptionEmpty'), 'error');
+      } else if (descControl?.hasError('whitespace')) {
+        this.customToast.show(this.localizationService.instant('ItHelpdesk::Ticket:ErrorDescriptionWhitespace'), 'error');
+      } else {
+        this.customToast.show(this.localizationService.instant('ItHelpdesk::FormValidationRequired'), 'error');
+      }
+      return;
+    }
+
     const titleValue = this.ticketForm.get('title')?.value?.trim() || '';
     const descValue = this.ticketForm.get('description')?.value?.trim() || '';
 
-    // Cập nhật lại giá trị đã trim vào form để đồng bộ
     this.ticketForm.patchValue({
       title: titleValue,
       description: descValue
     });
 
-    // Kiểm tra nếu form lỗi HOẶC title/description rỗng sau khi trim
-    if (this.ticketForm.invalid || !titleValue || !descValue) {
-      this.ticketForm.markAllAsTouched();
-      this.customToast.show('Vui lòng điền đầy đủ các trường (không được để trống hoặc toàn khoảng trắng)!', 'error');
-      return;
-    }
-
-    this.isSubmitting = true; // KHÓA NÚT NGAY LẬP TỨC ĐỂ CHỐNG DOUBLE-SUBMIT
+    this.isSubmitting = true;
     const input: CreateUpdateTicketDto = this.ticketForm.value;
 
     this.ticketService.create(input).subscribe({
@@ -126,42 +156,60 @@ export class CreateTicketComponent implements OnInit {
                 next: () => {
                   uploadCount++;
                   if (uploadCount === this.selectedFiles.length) {
-                    this.finalizeSuccess();
+                    this.finalizeSuccess(ticketId);
                   }
                 },
-                error: (err) => {
-                  console.error('Lỗi khi tải file lên:', err);
+                error: () => {
+                  this.customToast.show(this.localizationService.instant('ItHelpdesk::Ticket:UploadFileFailed', file.name || ''), 'error');
                   uploadCount++;
                   if (uploadCount === this.selectedFiles.length) {
-                    this.finalizeSuccess();
+                    this.finalizeSuccess(ticketId);
                   }
                 }
               });
             };
-            reader.onerror = (error) => {
-              console.error('Lỗi đọc file:', error);
+            reader.onerror = () => {
+              this.customToast.show(this.localizationService.instant('ItHelpdesk::Ticket:ReadFileFailed', file.name || ''), 'error');
               uploadCount++;
               if (uploadCount === this.selectedFiles.length) {
-                this.finalizeSuccess();
+                this.finalizeSuccess(ticketId);
               }
             };
           });
         } else {
-          this.finalizeSuccess();
+          this.finalizeSuccess(ticketId);
         }
       },
       error: () => {
-        this.customToast.show('Không thể gửi yêu cầu lúc này. Vui lòng thử lại sau.', 'error');
-        this.isSubmitting = false; // MỞ KHÓA NÚT NẾU LỖI
+        this.customToast.show(this.localizationService.instant('ItHelpdesk::Ticket:CreateError'), 'error');
+        this.isSubmitting = false;
       }
     });
   }
+  // Thêm biến cờ báo hiệu vượt quá độ dài
+  isTitleLimitReached = false;
 
-  private finalizeSuccess(): void {
-    this.customToast.show('Đã gửi yêu cầu hỗ trợ thành công!', 'success');
+  // Thêm hàm xử lý sự kiện khi gõ phím
+  onTitleInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.value.length > 255) {
+      // 1. Chặt đứt phần dư thừa, ép chuỗi về đúng 255 ký tự (đáp ứng "không nhận ký tự 256")
+      const truncatedValue = input.value.substring(0, 255);
+      this.ticketForm.get('title')?.setValue(truncatedValue);
+
+      // 2. Bật cờ báo lỗi ngay lập tức (đáp ứng "báo lỗi lên luôn")
+      this.isTitleLimitReached = true;
+    } else {
+      // Tắt lỗi nếu họ xóa bớt
+      this.isTitleLimitReached = false;
+    }
+  }
+  private finalizeSuccess(ticketId: number): void {
+    this.customToast.show(this.localizationService.instant('ItHelpdesk::Ticket:CreateSuccess'), 'success');
     this.ticketForm.reset();
     this.selectedFiles = [];
     this.isSubmitting = false;
-    this.router.navigate(['/tickets/my-tickets']);
+
+    this.router.navigate(['/tickets/detail', ticketId], { queryParams: { returnUrl: '/tickets/my-tickets' } });
   }
 }

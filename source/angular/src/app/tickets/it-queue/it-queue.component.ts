@@ -1,10 +1,11 @@
 import { Component, OnInit, OnDestroy, inject, ElementRef, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { TicketService, TicketDto, AssignTicketDto } from '@proxy/tickets';
+import { TicketService, TicketDto } from '@proxy/tickets';
 import { TeamService, TeamDto } from '@proxy/teams';
-import { CoreModule, ListService, PagedResultDto, ConfigStateService, RestService } from '@abp/ng.core';
+import { PriorityService, PriorityDto } from '@proxy/priorities';
+import { CoreModule, ListService, PagedResultDto, ConfigStateService, LocalizationService, LocalizationPipe } from '@abp/ng.core';
 import { ThemeSharedModule } from '@abp/ng.theme.shared';
 import { NgxDatatableModule } from '@swimlane/ngx-datatable';
 import { CustomToastService } from '../../shared/services/custom-toast.service';
@@ -14,7 +15,7 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 @Component({
   selector: 'app-it-queue',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, CoreModule, ThemeSharedModule, NgxDatatableModule],
+  imports: [CommonModule, RouterModule, FormsModule, CoreModule, ThemeSharedModule, NgxDatatableModule, LocalizationPipe],
   templateUrl: './it-queue.component.html',
   styleUrls: ['./it-queue.component.scss'],
   providers: [ListService]
@@ -22,31 +23,42 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 export class ItQueueComponent implements OnInit, OnDestroy {
   private ticketService = inject(TicketService);
   private teamService = inject(TeamService);
-  private restService = inject(RestService);
+  private priorityService = inject(PriorityService);
   public readonly list = inject(ListService);
   private customToast = inject(CustomToastService);
   private config = inject(ConfigStateService);
   private elementRef = inject(ElementRef);
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  public localizationService = inject(LocalizationService); // Đổi thành public để HTML cũng có thể dùng nếu cần
 
   items: TicketDto[] = [];
   totalCount = 0;
 
-  currentTab: 'all' | 'unassigned' | 'mine' | 'pending' = 'all';
+  currentTab: 'all' | 'unassigned' | 'mine' | 'inprogress' | 'overdue' = 'all';
   searchFilter: string = '';
   currentUserId: string = '';
+
+  advancedFilters = {
+    priorityId: null as number | null,
+    teamId: null as number | null,
+    overdueOnly: false
+  };
 
   skipCount: number = 0;
   maxResultCount: number = 10;
 
   teams: TeamDto[] = [];
   technicians: any[] = [];
+  priorities: PriorityDto[] = [];
 
   isAssignModalOpen: boolean = false;
   selectedTicket: TicketDto | null = null;
-  assignForm: AssignTicketDto = {
+  assignForm: any = {
     ticketId: 0,
     assigneeId: undefined,
-    teamId: undefined
+    teamId: undefined,
+    targetResolutionTime: undefined
   };
   isSavingAssign: boolean = false;
 
@@ -68,18 +80,42 @@ export class ItQueueComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    const currentUser = this.config.getOne('currentUser');
+    const currentUser = this.config.getOne('currentUser') as any;
     this.currentUserId = currentUser?.id || '';
 
     this.loadSearchHistory();
     this.setGreeting();
     this.loadDropdownData();
 
+    this.route.queryParams.subscribe(params => {
+      if (params['tab'] && ['all', 'unassigned', 'mine', 'inprogress', 'overdue'].includes(params['tab'])) {
+        this.currentTab = params['tab'];
+      }
+      if (params['filter']) {
+        this.searchFilter = params['filter'];
+      }
+      if (params['unassigned'] === 'true') {
+        this.currentTab = 'unassigned';
+      }
+      if (params['status'] === 'overdue' || params['tab'] === 'overdue') {
+        this.currentTab = 'overdue';
+        this.advancedFilters.overdueOnly = true;
+      }
+    });
+
     const ticketStreamCreator = (query: any) => {
       query.filter = this.searchFilter?.trim() || '';
-      if (this.currentTab === 'unassigned') query.unassigned = true;
-      if (this.currentTab === 'mine') query.assigneeId = this.currentUserId;
-      if (this.currentTab === 'pending') query.status = 1;
+
+      if (this.currentTab === 'unassigned') {
+        query.unassigned = true;
+      } else if (this.currentTab === 'mine') {
+        query.assigneeId = this.currentUserId;
+      } else if (this.currentTab === 'inprogress') {
+        query.status = 2; 
+      }
+
+      if (this.advancedFilters.teamId) query.teamId = this.advancedFilters.teamId;
+      if (this.advancedFilters.priorityId) query.priorityId = this.advancedFilters.priorityId;
 
       query.skipCount = this.skipCount;
       query.maxResultCount = this.maxResultCount;
@@ -89,12 +125,27 @@ export class ItQueueComponent implements OnInit, OnDestroy {
 
     this.list.hookToQuery(ticketStreamCreator).subscribe({
       next: (response: PagedResultDto<TicketDto>) => {
-        this.items = response.items || [];
-        this.totalCount = response.totalCount || 0;
+        let rawItems = response.items || [];
+
+        const now = new Date().getTime();
+        if (this.currentTab === 'overdue' || this.advancedFilters.overdueOnly) {
+          rawItems = rawItems.filter((t: any) => {
+            if (!t.targetResolutionTime) return false;
+            const targetTime = new Date(t.targetResolutionTime).getTime();
+            const isOpen = t.status !== 6 && t.status !== 7;
+            return targetTime < now && isOpen;
+          });
+        }
+
+        this.items = rawItems;
+        this.totalCount = (this.currentTab === 'overdue' || this.advancedFilters.overdueOnly)
+          ? rawItems.length
+          : (response.totalCount || 0);
+
         this.isLoading = false;
       },
       error: (err: any) => {
-        this.customToast.show('Không thể tải dữ liệu hàng đợi!', 'error');
+        this.customToast.show(this.localizationService.instant('ItHelpdesk::Queue:ErrorLoadQueue'), 'error');
         this.isLoading = false;
         console.error(err);
       }
@@ -109,12 +160,22 @@ export class ItQueueComponent implements OnInit, OnDestroy {
       }
       this.isLoading = true;
       this.skipCount = 0;
+      this.updateUrlParams();
       this.list.get();
     });
   }
 
   ngOnDestroy(): void {
     this.searchSubscription?.unsubscribe();
+  }
+
+  private updateUrlParams(): void {
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { tab: this.currentTab, filter: this.searchFilter || null },
+      queryParamsHandling: 'merge',
+      replaceUrl: true
+    });
   }
 
   onPageChange(event: any): void {
@@ -130,28 +191,37 @@ export class ItQueueComponent implements OnInit, OnDestroy {
       this.teams = res.items || [];
     });
 
+    this.priorityService.getList({ maxResultCount: 100 } as any).subscribe((res: any) => {
+      this.priorities = res.items || [];
+    });
+
     this.ticketService.getAssignableTechnicians().subscribe({
-      next: (res) => {
-        this.technicians = res || [];
-      },
-      error: (err) => {
-        console.error('Lỗi khi lấy danh sách kỹ thuật viên:', err);
+      next: (res) => { this.technicians = res || []; },
+      error: (err) => { 
+        console.error(this.localizationService.instant('ItHelpdesk::Queue:ErrorLoadTechnicians'), err); 
       }
     });
   }
 
   openAssignModal(ticket: TicketDto): void {
-    // LỚP BẢO VỆ FRONTEND THỨ 2: Chặn mở modal nếu vé đã bị Đóng (Zombie Ticket)
-    if (ticket.status === 7) {
-      this.customToast.show('Yêu cầu này đã đóng và chuyển sang trạng thái Chỉ đọc. Không thể phân công!', 'error');
+    if (ticket.status === 7 || ticket.status === 6) {
+      this.customToast.show(this.localizationService.instant('ItHelpdesk::Queue:ErrorTicketClosed'), 'error');
       return;
     }
 
     this.selectedTicket = ticket;
+
+    let formattedDate = undefined;
+    if (ticket.targetResolutionTime) {
+      const d = new Date(ticket.targetResolutionTime);
+      formattedDate = d.toISOString().slice(0, 16);
+    }
+
     this.assignForm = {
       ticketId: ticket.id!,
       assigneeId: ticket.assigneeId || undefined,
-      teamId: ticket.teamId || undefined
+      teamId: ticket.teamId || undefined,
+      targetResolutionTime: formattedDate
     };
     this.isAssignModalOpen = true;
   }
@@ -167,15 +237,15 @@ export class ItQueueComponent implements OnInit, OnDestroy {
     this.isSavingAssign = true;
     this.ticketService.assignTicket(this.assignForm).subscribe({
       next: () => {
-        this.customToast.show('Phân công thành công!', 'success');
+        this.customToast.show(this.localizationService.instant('ItHelpdesk::Toast:AssignSuccess'), 'success');
         this.isSavingAssign = false;
         this.closeAssignModal();
         this.list.get();
       },
       error: (err: any) => {
-        this.customToast.show('Phân công thất bại, vui lòng thử lại!', 'error');
+        const errorObj = err?.error as any;
+        this.customToast.show(errorObj?.error?.message || errorObj?.message || this.localizationService.instant('ItHelpdesk::Error:Generic'), 'error');
         this.isSavingAssign = false;
-        console.error(err);
       }
     });
   }
@@ -192,30 +262,9 @@ export class ItQueueComponent implements OnInit, OnDestroy {
     localStorage.setItem(this.storageKey, JSON.stringify(this.recentSearches));
   }
 
-  removeSearchHistoryItem(item: string, event: MouseEvent): void {
-    event.stopPropagation();
-    this.recentSearches = this.recentSearches.filter(x => x !== item);
-    localStorage.setItem(this.storageKey, JSON.stringify(this.recentSearches));
-  }
-
-  clearAllSearchHistory(event: MouseEvent): void {
-    event.stopPropagation();
-    this.recentSearches = [];
-    localStorage.removeItem(this.storageKey);
-  }
-
   onSearchInput(): void {
     this.showSearchSuggestions = true;
-    this.searchSubject.next(this.searchFilter);
-  }
-
-  selectSearchSuggestion(keyword: string): void {
-    this.searchFilter = keyword;
-    this.showSearchSuggestions = false;
-    this.saveSearchHistory(keyword);
-    this.isLoading = true;
-    this.skipCount = 0;
-    this.list.get();
+    this.searchSubject.next(this.searchFilter || '');
   }
 
   performSearch(): void {
@@ -226,6 +275,7 @@ export class ItQueueComponent implements OnInit, OnDestroy {
     }
     this.isLoading = true;
     this.skipCount = 0;
+    this.updateUrlParams();
     this.list.get();
   }
 
@@ -234,24 +284,44 @@ export class ItQueueComponent implements OnInit, OnDestroy {
     this.showSearchSuggestions = false;
     this.isLoading = true;
     this.skipCount = 0;
+    this.updateUrlParams();
     this.list.get();
   }
 
   setGreeting(): void {
     const hour = new Date().getHours();
     if (hour < 12) {
-      this.greetingMessage = '☕ Chào buổi sáng, chúc một ngày năng suất!';
+      this.greetingMessage = this.localizationService.instant('ItHelpdesk::Queue:GreetingMorning');
     } else if (hour < 18) {
-      this.greetingMessage = '🌤️ Chào buổi chiều, tiến độ tới đâu rồi?';
+      this.greetingMessage = this.localizationService.instant('ItHelpdesk::Queue:GreetingAfternoon');
     } else {
-      this.greetingMessage = '🌙 Đã tối rồi, xử lý nốt rồi nghỉ ngơi nhé!';
+      this.greetingMessage = this.localizationService.instant('ItHelpdesk::Queue:GreetingEvening');
     }
   }
 
-  changeTab(tab: 'all' | 'unassigned' | 'mine' | 'pending'): void {
+  changeTab(tab: 'all' | 'unassigned' | 'mine' | 'inprogress' | 'overdue'): void {
     this.currentTab = tab;
+    if (tab === 'overdue') {
+      this.advancedFilters.overdueOnly = true;
+    } else {
+      this.advancedFilters.overdueOnly = false;
+    }
     this.isLoading = true;
     this.skipCount = 0;
+    this.updateUrlParams();
+    this.list.get();
+    
+    this.customToast.show(this.localizationService.instant('ItHelpdesk::Queue:TabChangedSuccess', this.currentTab.toUpperCase()), 'success');
+  }
+
+  onAdvancedFilterChange(): void {
+    this.isLoading = true;
+    this.skipCount = 0;
+    this.list.get();
+  }
+
+  refreshQueue(): void {
+    this.isLoading = true;
     this.list.get();
   }
 

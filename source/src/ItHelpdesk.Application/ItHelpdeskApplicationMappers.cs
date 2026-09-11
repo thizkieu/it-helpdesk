@@ -209,6 +209,7 @@ public partial class ItHelpdesk_TicketListQueryResponse_To_TicketDto_Mapper : Ma
 [Mapper]
 public partial class ItHelpdesk_GetTicketListDto_To_TicketListRequest_Mapper : MapperBase<Tickets.GetTicketListDto, TicketListRequest>
 {
+    // Mapperly sẽ tự động map trường "IsOverdue" từ GetTicketListDto sang TicketListRequest vì trùng tên
     public override partial TicketListRequest Map(Tickets.GetTicketListDto source);
     public override partial void Map(Tickets.GetTicketListDto source, TicketListRequest destination);
 }
@@ -243,5 +244,24 @@ public partial class ItHelpdeskIdentityUserToUserDtoMapper : MapperBase<Volo.Abp
 {
     public override partial ItHelpdesk.Users.UserDto Map(Volo.Abp.Identity.IdentityUser source);
     public override partial void Map(Volo.Abp.Identity.IdentityUser source, ItHelpdesk.Users.UserDto destination);
+}
+#endregion
+
+#region Notifications
+[Mapper]
+public partial class ItHelpdeskNotificationToNotificationDtoMapper : MapperBase<ItHelpdesk.Notifications.AppNotification, ItHelpdesk.Notifications.AppNotificationDto>
+{
+    public override partial ItHelpdesk.Notifications.AppNotificationDto Map(ItHelpdesk.Notifications.AppNotification source);
+    public override partial void Map(ItHelpdesk.Notifications.AppNotification source, ItHelpdesk.Notifications.AppNotificationDto destination);
+}
+#endregion
+
+#region ExtendedUsers
+[Mapper]
+public partial class ItHelpdeskIdentityUserToExtendedUserDtoMapper : MapperBase<Volo.Abp.Identity.IdentityUser, ItHelpdesk.ExtendedUsers.ExtendedUserDto>
+{
+    public override partial ItHelpdesk.ExtendedUsers.ExtendedUserDto Map(Volo.Abp.Identity.IdentityUser source);
+    public override partial void Map(Volo.Abp.Identity.IdentityUser source, ItHelpdesk.ExtendedUsers.ExtendedUserDto destination);
+
 }
 #endregion

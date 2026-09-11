@@ -8,9 +8,16 @@ namespace ItHelpdesk.Tickets
         public string TicketNo { get; set; }
         public string Title { get; set; }
         public string Description { get; set; }
+
         public long CategoryId { get; set; }
+        public string CategoryName { get; set; } 
+
         public long PriorityId { get; set; }
+        public string PriorityName { get; set; } 
+
         public long ServiceId { get; set; }
+        public string ServiceName { get; set; }  
+
         public TicketStatus Status { get; set; }
         public Guid? AssigneeId { get; set; }
         public long? TeamId { get; set; }
@@ -19,7 +26,8 @@ namespace ItHelpdesk.Tickets
         public DateTime? TargetResponseTime { get; set; }
         public DateTime? TargetResolutionTime { get; set; }
 
-        // THUỘC TÍNH MỚI ĐỂ FRONTEND NHẬN DIỆN QUÁ HẠN
         public bool IsOverdue { get; set; }
+
+        public string CreatorName { get; set; }
     }
 }

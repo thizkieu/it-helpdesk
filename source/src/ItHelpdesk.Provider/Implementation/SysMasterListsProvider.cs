@@ -1,7 +1,7 @@
 ﻿using ItHelpdesk.EntityFrameworkCore.Connection;
 using Microsoft.Extensions.Logging;
 
-namespace ItHelpdesk.Provider
+namespace ItHelpdesk.Provider.Implementation
 {
     public class SysMasterListsProvider : ISysMasterListsProvider
     {

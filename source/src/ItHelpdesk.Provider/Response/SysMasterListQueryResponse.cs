@@ -5,8 +5,8 @@ namespace ItHelpdesk.Provider
     public class SysMasterListQueryResponse
     {
         public long MasterListID { get; set; }
-        public string MasterListCode { get; set; }
-        public string MasterListGroupCde { get; set; }
+        public string? MasterListCode { get; set; }
+        public string? MasterListGroupCde { get; set; }
         public string? MasterListCdeName { get; set; }
         public string? MastListDefaultValue { get; set; }
         public string? MastListExtendValue1 { get; set; }
@@ -19,12 +19,12 @@ namespace ItHelpdesk.Provider
         public bool? IsActive { get; set; }
     }
 
-    public class PageSysMasterListQueryResponse : SysMasterListQueryResponse, PageCustomModel
+    public class PageSysMasterListQueryResponse : SysMasterListQueryResponse, IPageCustomModel
     {
         public bool? IsDeleted { get; set; }
         public string? TenantId { get; set; }
         public string? RowVersion { get; set; }
-        public string CreateBy { get; set; }
+        public string? CreateBy { get; set; }
         public DateTime CreateDate { get; set; }
         public string? ModifiedBy { get; set; }
         public DateTime? ModifiedDate { get; set; }
@@ -33,12 +33,16 @@ namespace ItHelpdesk.Provider
         public int RowIndex { get; set; }
     }
 
-    public class InfoSysMasterListQueryResponse : SysMasterListQueryResponse, PageCustomModel
+    internal interface IPageCustomModel
+    {
+    }
+
+    public class InfoSysMasterListQueryResponse : SysMasterListQueryResponse, IPageCustomModel
     {
         public bool? IsDeleted { get; set; }
         public string? TenantId { get; set; }
         public string? RowVersion { get; set; }
-        public string CreateBy { get; set; }
+        public string? CreateBy { get; set; }
         public DateTime CreateDate { get; set; }
         public string? ModifiedBy { get; set; }
         public DateTime? ModifiedDate { get; set; }

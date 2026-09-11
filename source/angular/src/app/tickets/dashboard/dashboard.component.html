@@ -1,164 +1,258 @@
-<div class="ticket-page-wrapper py-4" *ngIf="!isLoading">
-    <div class="container-fluid">
+<div class="ticket-page-wrapper py-4 text-white">
+    <div class="container-fluid" style="max-width: 1550px;">
+
         <!-- HEADER -->
-        <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
             <div>
-                <span class="badge cute-badge-pill mb-2"><i class="fas fa-chart-pie me-1"></i> IT Analytics</span>
-                <h2 class="fw-bold page-title mb-0 text-white">Tổng quan hệ thống (Dashboard)</h2>
+                <span class="badge rounded-pill mb-2 px-3 py-2 text-info bg-info bg-opacity-10 border border-info border-opacity-25 fw-semibold" style="letter-spacing: 0.5px;">
+                    <i class="fas fa-chart-pie me-2"></i> {{ 'ItHelpdesk::Dashboard:ControlCenterBadge' | abpLocalization }}
+                </span>
+                <h2 class="fw-bold page-title mb-0 text-white">{{ 'ItHelpdesk::Dashboard:PageTitle' | abpLocalization }}</h2>
             </div>
-
-            <!-- CỤM NÚT BẤM ĐÃ ĐƯỢC CHÈN THÊM NÚT ĐỔI ẢNH ĐẠI DIỆN -->
-            <div class="d-flex gap-2">
-                <a routerLink="/tickets/it-queue" class="btn cute-outline-btn rounded-pill px-4 text-pink border-pink">
-                    <i class="fas fa-list me-1"></i> Xem hàng đợi Ticket
-                </a>
-                <a routerLink="/profile-avatar"
-                    class="btn cute-outline-btn rounded-pill px-4 text-info border-info shadow-sm">
-                    <i class="fas fa-camera-retro me-1"></i> Đổi ảnh đại diện
+            <div class="d-flex gap-3 flex-wrap">
+                <a routerLink="/tickets/it-queue" class="btn btn-outline-light rounded-pill px-4 d-inline-flex align-items-center justify-content-center shadow-sm transition-all" style="min-height: 42px; border-color: rgba(255,255,255,0.2);">
+                    <i class="fas fa-tasks me-2 text-info"></i> {{ 'ItHelpdesk::Dashboard:ViewTicketQueue' | abpLocalization }}
                 </a>
             </div>
-            <!-- ================================================= -->
+        </div>
 
+        <!-- ========================================== -->
+        <!-- THANH BỘ LỌC ĐIỀU KIỆN (ADVANCED FILTERS)   -->
+        <!-- ========================================== -->
+        <div class="card border border-secondary border-opacity-25 text-light rounded-4 mb-4 p-4 shadow-lg"
+            style="background: rgba(23, 28, 48, 0.9); backdrop-filter: blur(20px);">
+            <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom border-secondary border-opacity-25">
+                <h5 class="fw-bold text-pink mb-0"><i class="fas fa-filter me-2"></i> {{ 'ItHelpdesk::Dashboard:FilterTitle' | abpLocalization }}</h5>
+                <span class="text-muted small">{{ 'ItHelpdesk::Dashboard:FilterSubtitle' | abpLocalization }}</span>
+            </div>
+
+            <div class="row g-3 align-items-end">
+                <!-- Từ ngày -->
+                <div class="col-xl-2 col-md-4">
+                    <label class="form-label text-muted small text-uppercase fw-semibold">{{ 'ItHelpdesk::Dashboard:StartDate' | abpLocalization }}</label>
+                    <input type="date" class="form-control bg-dark text-white border-secondary rounded-pill shadow-none px-3 py-2" [(ngModel)]="filterParams.startDate">
+                </div>
+                <!-- Đến ngày -->
+                <div class="col-xl-2 col-md-4">
+                    <label class="form-label text-muted small text-uppercase fw-semibold">{{ 'ItHelpdesk::Dashboard:EndDate' | abpLocalization }}</label>
+                    <input type="date" class="form-control bg-dark text-white border-secondary rounded-pill shadow-none px-3 py-2" [(ngModel)]="filterParams.endDate">
+                </div>
+                <!-- Người xử lý (KTV) -->
+                <div class="col-xl-3 col-md-4">
+                    <label class="form-label text-muted small text-uppercase fw-semibold">{{ 'ItHelpdesk::Dashboard:Technician' | abpLocalization }}</label>
+                    <select class="form-select bg-dark text-white border-secondary rounded-pill shadow-none px-3 py-2" [(ngModel)]="filterParams.assigneeId">
+                        <option value="">{{ 'ItHelpdesk::Dashboard:AllTechnicians' | abpLocalization }}</option>
+                        <option *ngFor="let tech of technicians" [value]="tech.id">{{ tech.surname }} {{ tech.name }}</option>
+                    </select>
+                </div>
+                <!-- Trạng thái -->
+                <div class="col-xl-3 col-md-6">
+                    <label class="form-label text-muted small text-uppercase fw-semibold">{{ 'ItHelpdesk::Dashboard:TicketStatus' | abpLocalization }}</label>
+                    <select class="form-select bg-dark text-white border-secondary rounded-pill shadow-none px-3 py-2" [(ngModel)]="filterParams.status">
+                        <option [ngValue]="null">{{ 'ItHelpdesk::Dashboard:AllStatuses' | abpLocalization }}</option>
+                        <option [ngValue]="0">{{ 'ItHelpdesk::Dashboard:StatusNewOption' | abpLocalization }}</option>
+                        <option [ngValue]="2">{{ 'ItHelpdesk::Dashboard:StatusInProgressOption' | abpLocalization }}</option>
+                        <option [ngValue]="6">{{ 'ItHelpdesk::Dashboard:StatusCompletedOption' | abpLocalization }}</option>
+                        <option [ngValue]="7">{{ 'ItHelpdesk::Dashboard:StatusClosedOption' | abpLocalization }}</option>
+                    </select>
+                </div>
+                <!-- Nút thao tác lọc -->
+                <div class="col-xl-2 col-md-6 d-flex gap-2">
+                    <button class="btn btn-info rounded-pill w-100 fw-bold text-dark py-2 shadow-sm" (click)="onApplyFilter()">
+                        <i class="fas fa-search me-1"></i> {{ 'ItHelpdesk::Dashboard:FilterBtn' | abpLocalization }}
+                    </button>
+                    <button class="btn btn-outline-secondary rounded-pill py-2 px-3" (click)="onResetFilter()" [title]="'ItHelpdesk::Dashboard:ResetFilterTooltip' | abpLocalization">
+                        <i class="fas fa-undo"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- --- KHU VỰC KHUYẾN NGHỊ VẬN HÀNH --- -->
+        <div class="card border border-info border-opacity-25 text-light rounded-4 mb-4 p-4 shadow-lg"
+            style="background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(15px);">
+            <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+                <div class="d-flex align-items-start align-items-md-center gap-3">
+                    <div class="rounded-3 bg-info bg-opacity-15 text-info d-flex align-items-center justify-content-center flex-shrink-0"
+                        style="width: 48px; height: 48px; font-size: 1.2rem;">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <div>
+                        <h6 class="fw-bold text-info mb-1">{{ 'ItHelpdesk::Dashboard:RecommendationTitle' | abpLocalization }}</h6>
+                        <p class="mb-0 text-muted small">
+                            <span *ngIf="stats.unassignedTickets > 0" class="text-warning fw-medium">
+                                {{ 'ItHelpdesk::Dashboard:UnassignedWarning' | abpLocalization: stats.unassignedTickets }}
+                            </span>
+                            <span *ngIf="stats.overdueTickets > 0" class="text-danger fw-medium ms-2">
+                                {{ 'ItHelpdesk::Dashboard:OverdueWarning' | abpLocalization: stats.overdueTickets }}
+                            </span>
+                            <span *ngIf="stats.unassignedTickets === 0 && stats.overdueTickets === 0"
+                                class="text-success fw-medium">{{ 'ItHelpdesk::Dashboard:SystemStable' | abpLocalization }}</span>
+                        </p>
+                    </div>
+                </div>
+                <div>
+                    <button class="btn btn-sm btn-info rounded-pill px-4 py-2 text-dark fw-bold text-nowrap shadow-sm"
+                        (click)="navigateToQueue('unassigned')">
+                        {{ 'ItHelpdesk::Dashboard:ProcessNow' | abpLocalization }} <i class="fas fa-chevron-right ms-1" style="font-size: 0.75rem;"></i>
+                    </button>
+                </div>
+            </div>
         </div>
 
         <!-- KPI CARDS ROW -->
         <div class="row g-4 mb-4">
-            <!-- Tổng số Ticket -->
-            <div class="col-md-4 col-sm-6">
-                <div class="card premium-glass-card border-0 shadow-lg p-4">
+            <div class="col-xl-4 col-md-6">
+                <div class="card border-0 shadow-lg p-4 h-100 cursor-pointer transition-all rounded-4"
+                    style="background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(255,255,255,0.08) !important;"
+                    (click)="navigateToQueue('all')">
                     <div class="d-flex align-items-center">
-                        <div class="avatar bg-primary bg-opacity-25 text-primary rounded-circle d-flex justify-content-center align-items-center me-3"
-                            style="width: 55px; height: 55px; font-size: 1.5rem;">
-                            <i class="fas fa-ticket-alt"></i>
+                        <div class="avatar bg-primary bg-opacity-15 text-primary rounded-3 d-flex justify-content-center align-items-center me-3 flex-shrink-0"
+                            style="width: 50px; height: 50px; font-size: 1.3rem;">
+                            <i class="fas fa-layer-group"></i>
                         </div>
-                        <div>
-                            <span class="text-muted small text-uppercase fw-semibold">Tổng số yêu cầu</span>
-                            <h3 class="fw-bold text-white mb-0 mt-1">{{ stats.totalTickets }}</h3>
+                        <div class="overflow-hidden">
+                            <span class="text-muted small text-uppercase fw-semibold text-truncate d-block">{{ 'ItHelpdesk::Dashboard:TotalTickets' | abpLocalization }}</span>
+                            <h3 class="fw-bold text-white mb-0 mt-1 text-truncate">{{ stats.totalTickets }}</h3>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Ticket mới / Chờ xử lý -->
-            <div class="col-md-4 col-sm-6">
-                <div class="card premium-glass-card border-0 shadow-lg p-4">
+            <div class="col-xl-4 col-md-6">
+                <div class="card border-0 shadow-lg p-4 h-100 cursor-pointer transition-all rounded-4"
+                    style="background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(255,255,255,0.08) !important;"
+                    (click)="navigateToQueue('new')">
                     <div class="d-flex align-items-center">
-                        <div class="avatar bg-info bg-opacity-25 text-info rounded-circle d-flex justify-content-center align-items-center me-3"
-                            style="width: 55px; height: 55px; font-size: 1.5rem;">
-                            <i class="fas fa-clock"></i>
+                        <div class="avatar bg-info bg-opacity-15 text-info rounded-3 d-flex justify-content-center align-items-center me-3 flex-shrink-0"
+                            style="width: 50px; height: 50px; font-size: 1.3rem;">
+                            <i class="fas fa-inbox"></i>
                         </div>
-                        <div>
-                            <span class="text-muted small text-uppercase fw-semibold">Ticket mới (Chờ tiếp nhận)</span>
-                            <h3 class="fw-bold text-white mb-0 mt-1">{{ stats.newTickets }}</h3>
+                        <div class="overflow-hidden">
+                            <span class="text-muted small text-uppercase fw-semibold text-truncate d-block">{{ 'ItHelpdesk::Dashboard:NewTickets' | abpLocalization }}</span>
+                            <h3 class="fw-bold text-white mb-0 mt-1 text-truncate">{{ stats.newTickets }}</h3>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Chưa phân công -->
-            <div class="col-md-4 col-sm-6">
-                <div class="card premium-glass-card border-0 shadow-lg p-4">
+            <div class="col-xl-4 col-md-6">
+                <div class="card border-0 shadow-lg p-4 h-100 cursor-pointer transition-all rounded-4"
+                    style="background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(245, 158, 11, 0.3) !important;"
+                    (click)="navigateToQueue('unassigned')">
                     <div class="d-flex align-items-center">
-                        <div class="avatar bg-warning bg-opacity-25 text-warning rounded-circle d-flex justify-content-center align-items-center me-3"
-                            style="width: 55px; height: 55px; font-size: 1.5rem;">
-                            <i class="fas fa-user-slash"></i>
+                        <div class="avatar bg-warning bg-opacity-15 text-warning rounded-3 d-flex justify-content-center align-items-center me-3 flex-shrink-0"
+                            style="width: 50px; height: 50px; font-size: 1.3rem;">
+                            <i class="fas fa-user-clock"></i>
                         </div>
-                        <div>
-                            <span class="text-muted small text-uppercase fw-semibold">Chưa phân công</span>
-                            <h3 class="fw-bold text-white mb-0 mt-1">{{ stats.unassignedTickets }}</h3>
+                        <div class="overflow-hidden">
+                            <span class="text-warning small text-uppercase fw-semibold text-truncate d-block">{{ 'ItHelpdesk::Dashboard:UnassignedTickets' | abpLocalization }}</span>
+                            <h3 class="fw-bold text-warning mb-0 mt-1 text-truncate">{{ stats.unassignedTickets }}</h3>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Đã hoàn tất -->
-            <div class="col-md-4 col-sm-6">
-                <div class="card premium-glass-card border-0 shadow-lg p-4">
+            <div class="col-xl-4 col-md-6">
+                <div class="card border-0 shadow-lg p-4 h-100 rounded-4"
+                    style="background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(255,255,255,0.08) !important;">
                     <div class="d-flex align-items-center">
-                        <div class="avatar bg-success bg-opacity-25 text-success rounded-circle d-flex justify-content-center align-items-center me-3"
-                            style="width: 55px; height: 55px; font-size: 1.5rem;">
+                        <div class="avatar bg-success bg-opacity-15 text-success rounded-3 d-flex justify-content-center align-items-center me-3 flex-shrink-0"
+                            style="width: 50px; height: 50px; font-size: 1.3rem;">
                             <i class="fas fa-check-circle"></i>
                         </div>
-                        <div>
-                            <span class="text-muted small text-uppercase fw-semibold">Đã xử lý xong</span>
-                            <h3 class="fw-bold text-white mb-0 mt-1">{{ stats.resolvedTickets }}</h3>
+                        <div class="overflow-hidden">
+                            <span class="text-muted small text-uppercase fw-semibold text-truncate d-block">{{ 'ItHelpdesk::Dashboard:ResolvedTickets' | abpLocalization }}</span>
+                            <h3 class="fw-bold text-white mb-0 mt-1 text-truncate">{{ stats.resolvedTickets }}</h3>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Quá hạn SLA -->
-            <div class="col-md-4 col-sm-6">
-                <div class="card premium-glass-card border-0 shadow-lg p-4">
+            <div class="col-xl-4 col-md-6">
+                <div class="card border-0 shadow-lg p-4 h-100 cursor-pointer transition-all rounded-4"
+                    style="background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(239, 68, 68, 0.3) !important;"
+                    (click)="navigateToQueue('overdue')">
                     <div class="d-flex align-items-center">
-                        <div class="avatar bg-danger bg-opacity-25 text-danger rounded-circle d-flex justify-content-center align-items-center me-3"
-                            style="width: 55px; height: 55px; font-size: 1.5rem;">
-                            <i class="fas fa-exclamation-triangle"></i>
+                        <div class="avatar bg-danger bg-opacity-15 text-danger rounded-3 d-flex justify-content-center align-items-center me-3 flex-shrink-0"
+                            style="width: 50px; height: 50px; font-size: 1.3rem;">
+                            <i class="fas fa-exclamation-circle"></i>
                         </div>
-                        <div>
-                            <span class="text-muted small text-uppercase fw-semibold">Vi phạm hạn SLA</span>
-                            <h3 class="fw-bold text-danger mb-0 mt-1">{{ stats.overdueTickets }}</h3>
+                        <div class="overflow-hidden">
+                            <span class="text-danger small text-uppercase fw-semibold text-truncate d-block">{{ 'ItHelpdesk::Dashboard:OverdueTickets' | abpLocalization }}</span>
+                            <h3 class="fw-bold text-danger mb-0 mt-1 text-truncate">{{ stats.overdueTickets }}</h3>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Tỷ lệ tuân thủ SLA -->
-            <div class="col-md-4 col-sm-6">
-                <div class="card premium-glass-card border-0 shadow-lg p-4">
+            <div class="col-xl-4 col-md-6">
+                <div class="card border-0 shadow-lg p-4 h-100 rounded-4"
+                    style="background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(255,255,255,0.08) !important;">
                     <div class="d-flex align-items-center">
-                        <div class="avatar bg-purple-soft bg-opacity-25 text-purple-accent rounded-circle d-flex justify-content-center align-items-center me-3"
-                            style="width: 55px; height: 55px; font-size: 1.5rem;">
-                            <i class="fas fa-shield-alt"></i>
+                        <div class="avatar bg-purple bg-opacity-15 text-purple rounded-3 d-flex justify-content-center align-items-center me-3 flex-shrink-0"
+                            style="width: 50px; height: 50px; font-size: 1.3rem; color: #c084fc;">
+                            <i class="fas fa-chart-line"></i>
                         </div>
-                        <div>
-                            <span class="text-muted small text-uppercase fw-semibold">Tỷ lệ đúng hạn SLA</span>
-                            <h3 class="fw-bold text-pink mb-0 mt-1">{{ stats.slaComplianceRate }}%</h3>
+                        <div class="overflow-hidden">
+                            <span class="text-muted small text-uppercase fw-semibold text-truncate d-block">{{ 'ItHelpdesk::Dashboard:SlaComplianceRate' | abpLocalization }}</span>
+                            <h3 class="fw-bold text-white mb-0 mt-1 text-truncate">{{ stats.slaComplianceRate }}%</h3>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- --- KHU VỰC BIỂU ĐỒ (ANALYTICS CHARTS) --- -->
+        <!-- BIỂU ĐỒ (ANALYTICS CHARTS) -->
         <div class="row g-4 mb-4">
             <div class="col-lg-8">
-                <div class="card premium-glass-card border-0 shadow-lg p-4 h-100">
-                    <h5 class="fw-bold text-white mb-3">
-                        <i class="fas fa-chart-bar text-purple-accent me-2"></i> Tỷ lệ phân bố trạng thái yêu cầu
+                <div class="card border-0 shadow-lg p-4 h-100 rounded-4"
+                    style="background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(255,255,255,0.08) !important;">
+                    <h5 class="fw-bold text-white mb-2">
+                        <i class="fas fa-chart-bar text-info me-2"></i> {{ 'ItHelpdesk::Dashboard:ChartStatusDistribution' | abpLocalization }}
                     </h5>
-                    <div class="d-flex justify-content-center align-items-center" style="height: 320px;">
+                    <p class="text-muted small mb-3">{{ 'ItHelpdesk::Dashboard:ChartDescription' | abpLocalization }}</p>
+
+                    <div class="d-flex justify-content-center align-items-center overflow-auto" style="height: 300px;">
                         <ngx-charts-bar-vertical [results]="ticketStatusData" [scheme]="colorScheme" [gradient]="false"
                             [xAxis]="true" [yAxis]="true" [legend]="false" [showXAxisLabel]="true"
-                            [showYAxisLabel]="true" xAxisLabel="Trạng thái" yAxisLabel="Số lượng">
+                            [showYAxisLabel]="true" [xAxisLabel]="'ItHelpdesk::Dashboard:AxisStatus' | abpLocalization" [yAxisLabel]="'ItHelpdesk::Dashboard:AxisQuantity' | abpLocalization">
                         </ngx-charts-bar-vertical>
                     </div>
                 </div>
             </div>
 
             <div class="col-lg-4">
-                <div class="card premium-glass-card border-0 shadow-lg p-4 h-100">
-                    <h5 class="fw-bold text-white mb-3">
-                        <i class="fas fa-chart-pie text-pink me-2"></i> Tỷ lệ hoàn tất SLA
-                    </h5>
-                    <div class="d-flex flex-column justify-content-center align-items-center text-center h-100 py-4">
-                        <div class="display-4 fw-bold text-pink mb-2">{{ stats.slaComplianceRate }}%</div>
-                        <p class="text-muted small px-3">Hệ thống duy trì hiệu suất xử lý yêu cầu đúng hạn ở mức xuất
-                            sắc trong tháng này.</p>
-                        <div class="progress w-75 rounded-pill bg-dark" style="height: 10px;">
-                            <div class="progress-bar bg-purple-soft" role="progressbar"
-                                [style.width.%]="stats.slaComplianceRate"></div>
+                <div class="card border-0 shadow-lg p-4 h-100 rounded-4 d-flex flex-column justify-content-between"
+                    style="background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(255,255,255,0.08) !important;">
+                    <div>
+                        <h5 class="fw-bold text-white mb-2">
+                            <i class="fas fa-percentage text-info me-2"></i> {{ 'ItHelpdesk::Dashboard:SlaCompletionRate' | abpLocalization }}
+                        </h5>
+                        <p class="text-muted small mb-4">{{ 'ItHelpdesk::Dashboard:SlaChartSubtitle' | abpLocalization }}</p>
+                    </div>
+
+                    <div class="d-flex flex-column justify-content-center align-items-center text-center py-2">
+                        <div class="display-4 fw-bold text-white mb-2">{{ stats.slaComplianceRate }}%</div>
+                        <p class="text-muted small px-3">{{ 'ItHelpdesk::Dashboard:OnTimeCompletionRate' | abpLocalization }}</p>
+                        <div class="progress w-100 rounded-pill bg-dark mb-3" style="height: 8px;">
+                            <div class="progress-bar bg-info" role="progressbar" [style.width.%]="stats.slaComplianceRate"></div>
                         </div>
+                    </div>
+
+                    <div class="p-3 rounded-3 bg-dark bg-opacity-50 border border-secondary border-opacity-25 small text-muted">
+                        <i class="fas fa-info-circle text-info me-1"></i> {{ 'ItHelpdesk::Dashboard:SyncNotice' | abpLocalization }}
                     </div>
                 </div>
             </div>
         </div>
+
     </div>
 </div>
 
 <!-- Loading state -->
 <div class="text-center py-5 min-vh-100 d-flex justify-content-center align-items-center" *ngIf="isLoading">
-    <div class="spinner-border text-pink" role="status" style="width: 3rem; height: 3rem;">
-        <span class="visually-hidden">Loading...</span>
+    <div class="spinner-border text-info" role="status" style="width: 3rem; height: 3rem;">
+        <span class="visually-hidden">{{ 'ItHelpdesk::Dashboard:LoadingData' | abpLocalization }}</span>
     </div>
 </div>

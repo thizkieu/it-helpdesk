@@ -1,24 +1,19 @@
 ﻿using ItHelpdesk.EntityFrameworkCore.Connection;
 using Microsoft.Extensions.Logging;
 
-namespace ItHelpdesk.Provider
+namespace ItHelpdesk.Provider.Implementation
 {
-    public class LanguagesProvider : ILanguagesProvider
+    public class LanguagesProvider(
+        IConnectSqlExecute sql,
+        ILogger<LanguagesProvider> logger) : ILanguagesProvider
     {
-        private readonly IConnectSqlExecute _sql;
-        private readonly ILogger<LanguagesProvider> _logger;
+        private readonly IConnectSqlExecute _sql = sql;
+        private readonly ILogger<LanguagesProvider> _logger = logger;
 
-        public LanguagesProvider(
-            IConnectSqlExecute sql,
-            ILogger<LanguagesProvider> logger)
-        {
-            _sql = sql;
-            _logger = logger;
-        }
         public async Task<List<LanguageQueryResponse>> GetLanguagessAsync(LanguageRequest input)
         {
             var result = await _sql.ExecProcedureAsync<LanguageQueryResponse>("sp_AppLanguages_GetList", input);
-            return result.ToList();
+            return [.. result];
         }
 
         /*

@@ -27,7 +27,7 @@ namespace ItHelpdesk;
     typeof(AbpTenantManagementDomainSharedModule),
     typeof(BlobStoringDatabaseDomainSharedModule),
     typeof(AbpLocalizationModule)
-    )]
+)]
 public class ItHelpdeskDomainSharedModule : AbpModule
 {
     public override void PreConfigureServices(ServiceConfigurationContext context)
@@ -38,26 +38,27 @@ public class ItHelpdeskDomainSharedModule : AbpModule
 
     public override void ConfigureServices(ServiceConfigurationContext context)
     {
+        // 1. Nhúng toàn bộ thư mục Localization vào hệ thống ảo của Backend
         Configure<AbpVirtualFileSystemOptions>(options =>
         {
-            options.FileSets.AddEmbedded<ItHelpdeskDomainSharedModule>();
+            options.FileSets.AddEmbedded<ItHelpdeskDomainSharedModule>("ItHelpdesk");
         });
 
-        //Bước 1 — GIỮ Nguyên JSON trong Domain.Shared - Language Text
+        // 2. Đăng ký tài nguyên đa ngôn ngữ và khai báo cả 2 ngôn ngữ vi, en
         Configure<AbpLocalizationOptions>(options =>
         {
             options.Resources
-                .Add<ItHelpdeskResource>("vi")
+                .Add<ItHelpdeskResource>("vi") // Mặc định ưu tiên tiếng Việt
                 .AddBaseTypes(typeof(AbpValidationResource))
-                .AddVirtualJson("/Localization/ItHelpdesk");
+                .AddVirtualJson("/Localization/ItHelpdesk"); // Tự động quét cả file vi.json và en.json trong thư mục này
 
             options.DefaultResourceType = typeof(ItHelpdeskResource);
-            
-            options.Languages.Add(new LanguageInfo("vi", "vi", "Vietnamese")); 
-            options.Languages.Add(new LanguageInfo("en", "en", "English")); 
 
+            // Khai báo rõ ràng danh sách các ngôn ngữ hệ thống hỗ trợ hai chiều
+            options.Languages.Add(new LanguageInfo("vi", "vi", "Vietnamese"));
+            options.Languages.Add(new LanguageInfo("en", "en", "English"));
         });
-        
+
         Configure<AbpExceptionLocalizationOptions>(options =>
         {
             options.MapCodeNamespace("ItHelpdesk", typeof(ItHelpdeskResource));

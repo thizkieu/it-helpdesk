@@ -13,6 +13,13 @@ export interface ChangeTicketStatusInput {
   comment?: string;
 }
 
+export interface CreateTicketCommentDto {
+  ticketId: number;
+  parentId?: number;
+  content: string;
+  isInternal: boolean;
+}
+
 export interface CreateUpdateTicketDto {
   title: string;
   description: string;
@@ -37,12 +44,18 @@ export interface GetTicketListDto extends PagedAndSortedResultRequestDto {
   teamId?: number;
   unassigned?: boolean;
   isMyTickets?: boolean;
+  isOverdue?: boolean;
 }
 
 export interface TicketCommentDto extends AuditedEntityDto<number> {
   ticketId: number;
+  parentId?: number;
   content?: string;
   isInternal: boolean;
+  creatorName?: string;
+  userAvatar?: string;
+  userRole?: string;
+  replies: TicketCommentDto[];
 }
 
 export interface TicketDto extends FullAuditedEntityDto<number> {
@@ -50,8 +63,11 @@ export interface TicketDto extends FullAuditedEntityDto<number> {
   title?: string;
   description?: string;
   categoryId: number;
+  categoryName?: string;
   priorityId: number;
+  priorityName?: string;
   serviceId: number;
+  serviceName?: string;
   status?: TicketStatus;
   assigneeId?: string;
   teamId?: number;
@@ -60,15 +76,24 @@ export interface TicketDto extends FullAuditedEntityDto<number> {
   targetResponseTime?: string;
   targetResolutionTime?: string;
   isOverdue: boolean;
+  creatorName?: string;
 }
 
 export interface TicketTimelineDto {
+  id?: number;
+  parentId?: number;
   type?: string;
   content?: string;
   isInternal: boolean;
   creationTime?: string;
   creatorId?: string;
   creatorName?: string;
+  replies: TicketTimelineDto[];
+}
+
+export interface UpdateTicketCommentDto {
+  content: string;
+  isInternal: boolean;
 }
 
 export interface UploadAttachmentDto {

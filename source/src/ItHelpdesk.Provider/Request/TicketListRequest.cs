@@ -15,6 +15,9 @@ namespace ItHelpdesk.Provider.Request
         public int PageIndex { get; set; } = 0;
         public int PageSize { get; set; } = 10;
         public string? TenantId { get; set; }
+
+        // Bổ sung trường này để nhận dữ liệu từ công tắc trên Angular
+        public bool? IsOverdue { get; set; }
     }
 
     public class TicketInfoRequest

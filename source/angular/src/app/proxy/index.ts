@@ -1,12 +1,16 @@
 import * as Books from './books';
 import * as Categories from './categories';
+import * as ExtendedUsers from './extended-users';
 import * as KnowledgeBase from './knowledge-base';
 import * as LocalizationManagement from './localization-management';
+import * as Notifications from './notifications';
 import * as Priorities from './priorities';
 import * as Profile from './profile';
+import * as Provider from './provider';
 import * as Services from './services';
 import * as SysMasterLists from './sys-master-lists';
 import * as Teams from './teams';
 import * as Tickets from './tickets';
 import * as Users from './users';
-export { Books, Categories, KnowledgeBase, LocalizationManagement, Priorities, Profile, Services, SysMasterLists, Teams, Tickets, Users };
+import * as Volo from './volo';
+export { Books, Categories, ExtendedUsers, KnowledgeBase, LocalizationManagement, Notifications, Priorities, Profile, Provider, Services, SysMasterLists, Teams, Tickets, Users, Volo };

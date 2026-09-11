@@ -2,6 +2,7 @@
 using ItHelpdesk.Provider.Request;
 using ItHelpdesk.Provider.Response;
 using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -34,18 +35,18 @@ namespace ItHelpdesk.Provider
             return result.FirstOrDefault() ?? new TicketListQueryResponse();
         }
 
-        // 3. Thêm mới Ticket
-        public async Task<int> InsertAsync(TicketInsertOrUpdateRequest input)
+        // 3. Thêm mới Ticket (Đã đổi sang long để khớp với BIGINT trong SQL)
+        public async Task<long> InsertAsync(TicketInsertOrUpdateRequest input)
         {
             var result = await _sql.ExecWithReturnAsync("sp_Ticket_Insert_V01", input);
-            return result;
+            return Convert.ToInt64(result);
         }
 
-        // 4. Cập nhật Ticket
-        public async Task<int> UpdateAsync(TicketInsertOrUpdateRequest input)
+        // 4. Cập nhật Ticket (Đã đổi sang long để khớp với BIGINT trong SQL)
+        public async Task<long> UpdateAsync(TicketInsertOrUpdateRequest input)
         {
             var result = await _sql.ExecWithReturnAsync("sp_Ticket_Update_V01", input);
-            return result;
+            return Convert.ToInt64(result);
         }
 
         // 5. Xóa Ticket

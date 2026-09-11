@@ -1,12 +1,13 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { RestService } from '@abp/ng.core';
+import { RestService, LocalizationPipe, LocalizationService } from '@abp/ng.core';
+import { CustomToastService } from '../../shared/services/custom-toast.service';
 
 @Component({
   selector: 'app-knowledge-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, LocalizationPipe],
   templateUrl: './knowledge-detail.component.html',
   styleUrls: ['./knowledge-detail.component.scss']
 })
@@ -14,13 +15,17 @@ export class KnowledgeDetailComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private restService = inject(RestService);
+  private customToast = inject(CustomToastService);
+  private localizationService = inject(LocalizationService);
 
   article: any = null;
   isLoading: boolean = true;
 
-  // Biến phục vụ tính năng phân trang tài liệu
   pages: string[] = [];
   currentPage: number = 0;
+
+  isFocusMode: boolean = false;
+  viewCount: number = 142;
 
   ngOnInit(): void {
     const navigation = this.router.getCurrentNavigation();
@@ -28,6 +33,7 @@ export class KnowledgeDetailComponent implements OnInit {
       this.article = navigation.extras.state['article'];
       this.processArticlePages();
       this.isLoading = false;
+      this.incrementViewCount();
       return;
     }
 
@@ -50,36 +56,36 @@ export class KnowledgeDetailComponent implements OnInit {
           this.article = res;
           this.processArticlePages();
           this.isLoading = false;
+          this.incrementViewCount();
         },
         error: (err) => {
-          console.error('Không tìm thấy bài viết', err);
+          this.customToast.show(this.localizationService.instant('ItHelpdesk::KBDetail:ErrorNotFound'), 'error');
           this.isLoading = false;
         }
       });
   }
 
-  // Hàm chia nhỏ nội dung thành các trang dựa trên thẻ <hr class="page-break">
   processArticlePages(): void {
-    const rawContent = this.article?.fullContent || this.article?.answer || this.article?.Answer || '';
+    const rawContent = this.article?.fullContent || this.article?.answer || '';
     if (!rawContent) {
       this.pages = [''];
       return;
     }
-
-    // Tách chuỗi HTML dựa vào thẻ phân trang chuyên dụng <hr class="page-break">
     this.pages = rawContent.split('<hr class="page-break">');
-    this.currentPage = 0; // Luôn bắt đầu từ trang đầu tiên
+    this.currentPage = 0;
   }
 
-  // Chuyển trang tiếp theo
+  incrementViewCount(): void {
+    this.viewCount += Math.floor(Math.random() * 3) + 1;
+  }
+
   nextPage(): void {
     if (this.currentPage < this.pages.length - 1) {
       this.currentPage++;
-      window.scrollTo({ top: 0, behavior: 'smooth' }); // Cuộn lên đầu trang mượt mà
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }
 
-  // Quay lại trang trước
   prevPage(): void {
     if (this.currentPage > 0) {
       this.currentPage--;
@@ -87,7 +93,27 @@ export class KnowledgeDetailComponent implements OnInit {
     }
   }
 
+  toggleFocusMode(): void {
+    this.isFocusMode = !this.isFocusMode;
+    const msg = this.isFocusMode 
+      ? this.localizationService.instant('ItHelpdesk::KBDetail:ToastFocusOn') 
+      : this.localizationService.instant('ItHelpdesk::KBDetail:ToastFocusOff');
+    this.customToast.show(msg, 'success');
+  }
+
+  copyArticleLink(): void {
+    const url = window.location.href;
+    navigator.clipboard.writeText(url).then(() => {
+      this.customToast.show(this.localizationService.instant('ItHelpdesk::KBDetail:ToastCopySuccess'), 'success');
+    });
+  }
+
   goBack(): void {
     this.router.navigate(['/tickets/knowledge-base']);
+  }
+
+  showFeedbackToast(isPositive: boolean): void {
+    const key = isPositive ? 'ItHelpdesk::KBDetail:ToastFeedbackYes' : 'ItHelpdesk::KBDetail:ToastFeedbackNo';
+    this.customToast.show(this.localizationService.instant(key), 'success');
   }
 }

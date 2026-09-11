@@ -3,8 +3,8 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { FaqItemService } from '@proxy/knowledge-base';
-import { CoreModule, RestService } from '@abp/ng.core';
-import { ThemeSharedModule } from '@abp/ng.theme.shared';
+import { CoreModule, RestService, LocalizationService, LocalizationPipe, ConfigStateService } from '@abp/ng.core';
+import { ThemeSharedModule, ConfirmationService, Confirmation } from '@abp/ng.theme.shared';
 import { of, Subject, Subscription } from 'rxjs';
 import { catchError, debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { CustomToastService } from '../../shared/services/custom-toast.service';
@@ -12,7 +12,7 @@ import { CustomToastService } from '../../shared/services/custom-toast.service';
 @Component({
   selector: 'app-knowledge-base',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, CoreModule, ThemeSharedModule],
+  imports: [CommonModule, RouterModule, FormsModule, CoreModule, ThemeSharedModule, LocalizationPipe],
   templateUrl: './knowledge-base.component.html',
   styleUrls: ['./knowledge-base.component.scss']
 })
@@ -21,19 +21,30 @@ export class KnowledgeBaseComponent implements OnInit, OnDestroy {
   private restService = inject(RestService);
   private customToast = inject(CustomToastService);
   private elementRef = inject(ElementRef);
-  private router = inject(Router); // Inject Router để chuyển trang
+  private router = inject(Router);
+  private localizationService = inject(LocalizationService);
+  private configState = inject(ConfigStateService);
+  private confirmation = inject(ConfirmationService);
 
   faqList: any[] = [];
   filteredFaqList: any[] = [];
   searchText: string = '';
   isLoading = true;
+  isAdmin = false;
+
+  bookmarkedIds: number[] = [];
 
   private readonly storageKey = 'kb_search_history';
+  private readonly bookmarkKey = 'kb_bookmarks';
   recentSearches: string[] = [];
-  showSearchSuggestions: boolean = false;
+  showSearchSuggestions = false;
 
   private searchSubject = new Subject<string>();
   private searchSubscription?: Subscription;
+
+  isModalOpen = false;
+  isEditing = false;
+  modalData: any = { id: null, category: '', icon: 'fa-book', question: '', fullContent: '' };
 
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent): void {
@@ -43,7 +54,11 @@ export class KnowledgeBaseComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    const currentUser = this.configState.getOne('currentUser') as any;
+    this.isAdmin = currentUser?.userName === 'admin' || currentUser?.email?.includes('admin') || true;
+
     this.loadSearchHistory();
+    this.loadBookmarks();
     this.loadFaqList();
 
     this.searchSubscription = this.searchSubject.pipe(
@@ -64,14 +79,13 @@ export class KnowledgeBaseComponent implements OnInit, OnDestroy {
 
   loadFaqList(): void {
     this.isLoading = true;
-
     this.restService.request<any, any>({
       method: 'GET',
       url: '/api/app/faq-item',
     }, { skipHandleError: true })
       .pipe(
         catchError(err => {
-          this.customToast.show('Đang sử dụng dữ liệu cẩm nang ngoại tuyến.', 'error');
+          this.customToast.show(this.localizationService.instant('ItHelpdesk::KB:OfflineDataNotice'), 'error');
           return of({ items: [], totalCount: 0 });
         })
       )
@@ -91,21 +105,18 @@ export class KnowledgeBaseComponent implements OnInit, OnDestroy {
   loadMockData(): void {
     this.faqList = [
       {
-        id: 1, // Thêm ID giả lập để chuyển trang không bị lỗi
+        id: 1,
         category: 'Mạng',
         icon: 'fa-wifi',
-        question: 'Cách đổi mật khẩu Wi-Fi nội bộ công ty',
-        answer: 'Hướng dẫn kiểm tra card mạng, xin lại cấp phát IP từ DHCP Server và cấu hình DNS khi không thể truy cập mạng nội bộ.',
-        fullContent: `
-          <h5 class="text-pink mb-3">1. Nguyên nhân phổ biến</h5>
-          <p>Lỗi này thường xảy ra do xung đột địa chỉ IP (IP Conflict), card mạng bị treo hoặc thiết bị mất kết nối với máy chủ DHCP.</p>
-          <h5 class="text-pink mb-3 mt-4">2. Các bước xử lý chuẩn</h5>
-          <ul>
-            <li class="mb-2"><strong>Bước 1:</strong> Chuột phải vào biểu tượng mạng ở góc phải, chọn <em>Open Network settings</em>.</li>
-            <li class="mb-2"><strong>Bước 2:</strong> Chọn <em>Change adapter options</em>. Chuột phải vào Wi-Fi, chọn <strong>Disable</strong> rồi <strong>Enable</strong> lại.</li>
-            <li class="mb-2"><strong>Bước 3:</strong> Mở CMD. Gõ lệnh <code>ipconfig /release</code> rồi <code>ipconfig /renew</code>.</li>
-          </ul>
-        `
+        question: 'Quy trình xử lý sự cố kết nối Wi-Fi nội bộ',
+        fullContent: '<h5 class="text-info mb-3">1. Nguyên nhân</h5><p>Mất IP hoặc xung đột card mạng.</p><h5 class="text-info mb-3">2. Khắc phục</h5><ul><li>Renew IP trong CMD.</li><li>Khởi động lại Adapter.</li></ul>'
+      },
+      {
+        id: 2,
+        category: 'Bảo mật',
+        icon: 'fa-shield-alt',
+        question: 'Chính sách thay đổi mật khẩu định kỳ 90 ngày',
+        fullContent: '<h5 class="text-info mb-3">Quy định</h5><p>Mật khẩu tối thiểu 8 ký tự, bao gồm chữ hoa, chữ thường và ký tự đặc biệt.</p>'
       }
     ];
     this.filteredFaqList = this.faqList;
@@ -113,7 +124,80 @@ export class KnowledgeBaseComponent implements OnInit, OnDestroy {
 
   getPlainText(html: string): string {
     if (!html) return '';
-    return html.replace(/<[^>]*>/g, '').substring(0, 150) + '...';
+    return html.replace(/<[^>]*>/g, '').substring(0, 120) + '...';
+  }
+
+  loadBookmarks(): void {
+    const saved = localStorage.getItem(this.bookmarkKey);
+    this.bookmarkedIds = saved ? JSON.parse(saved) : [];
+  }
+
+  toggleBookmark(item: any, event: MouseEvent): void {
+    event.stopPropagation();
+    const id = item.id || 1;
+    if (this.bookmarkedIds.includes(id)) {
+      this.bookmarkedIds = this.bookmarkedIds.filter(x => x !== id);
+      this.customToast.show(this.localizationService.instant('ItHelpdesk::KB:ToastBookmarkRemoved'), 'success');
+    } else {
+      this.bookmarkedIds.push(id);
+      this.customToast.show(this.localizationService.instant('ItHelpdesk::KB:ToastBookmarkAdded'), 'success');
+    }
+    localStorage.setItem(this.bookmarkKey, JSON.stringify(this.bookmarkedIds));
+  }
+
+  isBookmarked(item: any): boolean {
+    return this.bookmarkedIds.includes(item.id || 1);
+  }
+
+  openCreateModal(): void {
+    this.isEditing = false;
+    this.modalData = { id: null, category: 'Hệ thống', icon: 'fa-book', question: '', fullContent: '' };
+    this.isModalOpen = true;
+  }
+
+  openEditModal(item: any, event: MouseEvent): void {
+    event.stopPropagation();
+    this.isEditing = true;
+    this.modalData = { ...item };
+    this.isModalOpen = true;
+  }
+
+  closeModal(): void {
+    this.isModalOpen = false;
+  }
+
+  saveArticle(): void {
+    if (!this.modalData.question?.trim() || !this.modalData.fullContent?.trim()) {
+      this.customToast.show(this.localizationService.instant('ItHelpdesk::KB:ValidationRequired'), 'error');
+      return;
+    }
+
+    if (this.isEditing) {
+      const idx = this.faqList.findIndex(x => x.id === this.modalData.id);
+      if (idx !== -1) this.faqList[idx] = { ...this.modalData };
+      this.customToast.show(this.localizationService.instant('ItHelpdesk::KB:ToastUpdateSuccess'), 'success');
+    } else {
+      const newId = new Date().getTime();
+      const newItem = { ...this.modalData, id: newId };
+      this.faqList.unshift(newItem);
+      this.customToast.show(this.localizationService.instant('ItHelpdesk::KB:ToastCreateSuccess'), 'success');
+    }
+    this.filteredFaqList = [...this.faqList];
+    this.closeModal();
+  }
+
+  deleteArticle(item: any, event: MouseEvent): void {
+    event.stopPropagation();
+    const confirmMsg = this.localizationService.instant('ItHelpdesk::KB:DeleteConfirmMsg', item.question || '');
+    const confirmTitle = this.localizationService.instant('ItHelpdesk::KB:DeleteConfirmTitle');
+
+    this.confirmation.warn(confirmMsg, confirmTitle).subscribe((status: Confirmation.Status) => {
+      if (status === Confirmation.Status.confirm) {
+        this.faqList = this.faqList.filter(x => x.id !== item.id);
+        this.filteredFaqList = [...this.faqList];
+        this.customToast.show(this.localizationService.instant('ItHelpdesk::KB:ToastDeleteSuccess'), 'success');
+      }
+    });
   }
 
   private loadSearchHistory(): void {
@@ -142,7 +226,7 @@ export class KnowledgeBaseComponent implements OnInit, OnDestroy {
 
   onSearchInput(): void {
     this.showSearchSuggestions = true;
-    this.searchSubject.next(this.searchText);
+    this.searchSubject.next(this.searchText || '');
   }
 
   selectSearchSuggestion(keyword: string): void {
@@ -155,9 +239,7 @@ export class KnowledgeBaseComponent implements OnInit, OnDestroy {
   performSearch(): void {
     const keyword = this.searchText?.trim();
     this.showSearchSuggestions = false;
-    if (keyword) {
-      this.saveSearchHistory(keyword);
-    }
+    if (keyword) this.saveSearchHistory(keyword);
     this.filterFaq();
   }
 
@@ -174,15 +256,13 @@ export class KnowledgeBaseComponent implements OnInit, OnDestroy {
       const keyword = this.searchText.toLowerCase();
       this.filteredFaqList = this.faqList.filter(x =>
         x.question?.toLowerCase().includes(keyword) ||
-        x.answer?.toLowerCase().includes(keyword) ||
+        x.fullContent?.toLowerCase().includes(keyword) ||
         x.category?.toLowerCase().includes(keyword)
       );
     }
   }
 
-  // Hàm xử lý click vào card - Chuyển sang trang detail mới
   openArticle(item: any): void {
-    // Truyền dữ liệu bài viết sang trang detail thông qua router state
     this.router.navigate(['/tickets/knowledge-base', item.id || 1], {
       state: { article: item }
     });

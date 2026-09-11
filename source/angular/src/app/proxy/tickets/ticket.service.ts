@@ -1,8 +1,9 @@
 import type { AssignTicketDto, ChangeTicketStatusInput, CreateUpdateTicketDto, DashboardStatsDto, GetTicketListDto, TicketDto, TicketTimelineDto, UploadAttachmentDto } from './models';
-import type { TicketStatus } from './ticket-status.enum';
 import { RestService, Rest } from '@abp/ng.core';
 import type { PagedResultDto } from '@abp/ng.core';
 import { Injectable, inject } from '@angular/core';
+import type { TicketDeleteRequest, TicketInfoRequest, TicketInsertOrUpdateRequest, TicketListRequest, TicketReportRequest } from '../provider/request/models';
+import type { TicketListQueryResponse, TicketReportResponse } from '../provider/response/models';
 import type { UserDto } from '../users/models';
 
 @Injectable({
@@ -11,14 +12,16 @@ import type { UserDto } from '../users/models';
 export class TicketService {
   private restService = inject(RestService);
   apiName = 'Default';
+  
 
-  addComment = (ticketId: number, content: string, isInternal?: boolean, config?: Partial<Rest.Config>) =>
+  addComment = (ticketId: number, content: string, isInternal?: boolean, parentId?: number, config?: Partial<Rest.Config>) =>
     this.restService.request<any, void>({
       method: 'POST',
-      url: `/api/app/ticket/comment/${ticketId}`,
-      params: { content, isInternal },
+      url: '/api/app/ticket/comment',
+      params: { ticketId, content, isInternal, parentId },
     },
     { apiName: this.apiName,...config });
+  
 
   assignTicket = (input: AssignTicketDto, config?: Partial<Rest.Config>) =>
     this.restService.request<any, void>({
@@ -27,8 +30,8 @@ export class TicketService {
       body: input,
     },
     { apiName: this.apiName,...config });
+  
 
-  // Chỉ giữ lại 1 hàm changeStatus duy nhất nhận DTO Object chuẩn
   changeStatus = (input: ChangeTicketStatusInput, config?: Partial<Rest.Config>) =>
     this.restService.request<any, void>({
       method: 'POST',
@@ -36,6 +39,7 @@ export class TicketService {
       body: input,
     },
     { apiName: this.apiName,...config });
+  
 
   create = (input: CreateUpdateTicketDto, config?: Partial<Rest.Config>) =>
     this.restService.request<any, TicketDto>({
@@ -44,6 +48,7 @@ export class TicketService {
       body: input,
     },
     { apiName: this.apiName,...config });
+  
 
   delete = (id: number, config?: Partial<Rest.Config>) =>
     this.restService.request<any, void>({
@@ -51,6 +56,16 @@ export class TicketService {
       url: `/api/app/ticket/${id}`,
     },
     { apiName: this.apiName,...config });
+  
+
+  deleteViaStore = (input: TicketDeleteRequest, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, number>({
+      method: 'DELETE',
+      url: '/api/app/ticket/via-store',
+      params: { id: input.id },
+    },
+    { apiName: this.apiName,...config });
+  
 
   get = (id: number, config?: Partial<Rest.Config>) =>
     this.restService.request<any, TicketDto>({
@@ -58,6 +73,7 @@ export class TicketService {
       url: `/api/app/ticket/${id}`,
     },
     { apiName: this.apiName,...config });
+  
 
   getAssignableTechnicians = (config?: Partial<Rest.Config>) =>
     this.restService.request<any, UserDto[]>({
@@ -65,6 +81,7 @@ export class TicketService {
       url: '/api/app/ticket/assignable-technicians',
     },
     { apiName: this.apiName,...config });
+  
 
   getAttachments = (ticketId: number, config?: Partial<Rest.Config>) =>
     this.restService.request<any, UploadAttachmentDto[]>({
@@ -72,6 +89,7 @@ export class TicketService {
       url: `/api/app/ticket/${ticketId}/attachments`,
     },
     { apiName: this.apiName,...config });
+  
 
   getDashboardStats = (config?: Partial<Rest.Config>) =>
     this.restService.request<any, DashboardStatsDto>({
@@ -79,14 +97,43 @@ export class TicketService {
       url: '/api/app/ticket/dashboard-stats',
     },
     { apiName: this.apiName,...config });
+  
+
+  getInfoFromStore = (input: TicketInfoRequest, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, TicketListQueryResponse>({
+      method: 'GET',
+      url: '/api/app/ticket/info-from-store',
+      params: { id: input.id },
+    },
+    { apiName: this.apiName,...config });
+  
 
   getList = (input: GetTicketListDto, config?: Partial<Rest.Config>) =>
     this.restService.request<any, PagedResultDto<TicketDto>>({
       method: 'GET',
       url: '/api/app/ticket',
-      params: { filter: input.filter, status: input.status, assigneeId: input.assigneeId, teamId: input.teamId, unassigned: input.unassigned, isMyTickets: input.isMyTickets, sorting: input.sorting, skipCount: input.skipCount, maxResultCount: input.maxResultCount },
+      params: { filter: input.filter, status: input.status, assigneeId: input.assigneeId, teamId: input.teamId, unassigned: input.unassigned, isMyTickets: input.isMyTickets, isOverdue: input.isOverdue, sorting: input.sorting, skipCount: input.skipCount, maxResultCount: input.maxResultCount },
     },
     { apiName: this.apiName,...config });
+  
+
+  getListFromStore = (input: TicketListRequest, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, TicketListQueryResponse[]>({
+      method: 'GET',
+      url: '/api/app/ticket/from-store',
+      params: { filterText: input.filterText, status: input.status, categoryId: input.categoryId, priorityId: input.priorityId, assigneeId: input.assigneeId, teamId: input.teamId, unassigned: input.unassigned, creatorId: input.creatorId, pageIndex: input.pageIndex, pageSize: input.pageSize, tenantId: input.tenantId, isOverdue: input.isOverdue },
+    },
+    { apiName: this.apiName,...config });
+  
+
+  getReportSummary = (input: TicketReportRequest, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, TicketReportResponse[]>({
+      method: 'GET',
+      url: '/api/app/ticket/report-summary',
+      params: { fromDate: input.fromDate, toDate: input.toDate },
+    },
+    { apiName: this.apiName,...config });
+  
 
   getTimeline = (ticketId: number, config?: Partial<Rest.Config>) =>
     this.restService.request<any, TicketTimelineDto[]>({
@@ -94,6 +141,16 @@ export class TicketService {
       url: `/api/app/ticket/timeline/${ticketId}`,
     },
     { apiName: this.apiName,...config });
+  
+
+  insertViaStore = (input: TicketInsertOrUpdateRequest, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, number>({
+      method: 'POST',
+      url: '/api/app/ticket/via-store',
+      body: input,
+    },
+    { apiName: this.apiName,...config });
+  
 
   update = (id: number, input: CreateUpdateTicketDto, config?: Partial<Rest.Config>) =>
     this.restService.request<any, TicketDto>({
@@ -102,6 +159,16 @@ export class TicketService {
       body: input,
     },
     { apiName: this.apiName,...config });
+  
+
+  updateViaStore = (input: TicketInsertOrUpdateRequest, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, number>({
+      method: 'PUT',
+      url: '/api/app/ticket/via-store',
+      body: input,
+    },
+    { apiName: this.apiName,...config });
+  
 
   uploadAttachment = (input: UploadAttachmentDto, config?: Partial<Rest.Config>) =>
     this.restService.request<any, void>({

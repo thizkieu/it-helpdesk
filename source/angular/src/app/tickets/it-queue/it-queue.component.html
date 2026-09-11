@@ -4,97 +4,123 @@
         <!-- HEADER TRANG -->
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
-                <span class="badge cute-badge-pill mb-2 px-3 py-2"><i class="fas fa-desktop me-1"></i> IT
-                    Workspace</span>
+                <span
+                    class="badge cute-badge-pill mb-2 px-3 py-2 text-info bg-info bg-opacity-10 border border-info border-opacity-25">
+                    <i class="fas fa-server me-1"></i> {{ 'ItHelpdesk::Queue:HeaderBadge' | abpLocalization }}
+                </span>
                 <h2 class="fw-bold page-title mb-0 text-white">{{ greetingMessage }}</h2>
+            </div>
+            <div>
+                <button type="button"
+                    class="btn btn-outline-info rounded-pill px-4 text-info border-info shadow-sm bg-transparent"
+                    style="cursor: pointer; position: relative; z-index: 10;" (click)="refreshQueue()">
+                    <i class="fas fa-sync-alt me-1"></i> {{ 'ItHelpdesk::Queue:RefreshQueue' | abpLocalization }}
+                </button>
             </div>
         </div>
 
-        <!-- THANH ĐIỀU HƯỚNG TAB & Ô TÌM KIẾM -->
-        <div class="card premium-glass-card border-0 shadow-lg mb-4 rounded-4"
+        <!-- THANH ĐIỀU HƯỚNG TAB & BỘ LỌC NÂNG CAO CHO ADMIN -->
+        <div class="card border-0 shadow-lg mb-4 rounded-4"
             style="background: rgba(23, 28, 48, 0.85) !important; backdrop-filter: blur(20px);">
-            <div
-                class="card-body p-4 d-flex flex-column flex-xl-row justify-content-between align-items-xl-center gap-4">
+            <div class="card-body p-4">
+                <div class="d-flex flex-column flex-xl-row justify-content-between align-items-xl-center gap-4 mb-3">
 
-                <!-- TABS ĐIỀU HƯỚNG -->
-                <ul class="nav nav-pills custom-pills mb-0">
-                    <li class="nav-item">
-                        <a class="nav-link fw-semibold cursor-pointer rounded-pill px-4 text-light"
-                            [class.active]="currentTab === 'all'" (click)="changeTab('all')">
-                            <i class="fas fa-list-ul me-2"></i> Tất cả
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link fw-semibold cursor-pointer rounded-pill px-4 text-light"
-                            [class.active]="currentTab === 'unassigned'" (click)="changeTab('unassigned')">
-                            <i class="fas fa-user-slash me-2"></i> Chưa phân công
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link fw-semibold cursor-pointer rounded-pill px-4 text-light"
-                            [class.active]="currentTab === 'mine'" (click)="changeTab('mine')">
-                            <i class="fas fa-user-check me-2"></i> Của tôi
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link fw-semibold cursor-pointer rounded-pill px-4 text-light"
-                            [class.active]="currentTab === 'pending'" (click)="changeTab('pending')">
-                            <i class="fas fa-hourglass-half me-2"></i> Đang chờ xử lý
-                        </a>
-                    </li>
-                </ul>
-
-                <!-- Ô TÌM KIẾM -->
-                <div class="position-relative search-wrapper flex-grow-1" style="max-width: 450px; z-index: 999;">
-                    <div class="input-group align-items-center rounded-pill px-3 py-1 position-relative"
-                        style="background: rgba(15, 23, 42, 0.9); border: 2.5px solid #ffffff; box-shadow: 0 0 25px rgba(255, 255, 255, 0.5), inset 0 0 15px rgba(255, 255, 255, 0.2); backdrop-filter: blur(12px);">
-
-                        <span class="text-white opacity-90 bg-transparent border-0 pe-2 ps-2">
-                            <i class="fas fa-search fs-5"></i>
-                        </span>
-
-                        <input type="text" class="form-control bg-transparent border-0 shadow-none text-white p-2"
-                            placeholder="Tìm mã hoặc tiêu đề..." [(ngModel)]="searchFilter" (input)="onSearchInput()"
-                            (keyup.enter)="performSearch()" (focus)="showSearchSuggestions = true"
-                            style="font-size: 0.95rem;">
-
-                        <button *ngIf="searchFilter"
-                            class="btn btn-link text-white opacity-75 p-0 ms-2 text-decoration-none me-2" type="button"
-                            (click)="clearSearch()" title="Xóa">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </div>
-
-                    <!-- Dropdown Lịch sử tìm kiếm -->
-                    <ul *ngIf="showSearchSuggestions && recentSearches.length > 0"
-                        class="dropdown-menu show w-100 shadow-lg border-0 mt-2 p-2 rounded-4 position-absolute text-start"
-                        style="background: rgba(22, 22, 35, 0.95); backdrop-filter: blur(12px); z-index: 1050; border: 1px solid rgba(255,255,255,0.1) !important;">
-                        <li class="d-flex justify-content-between align-items-center px-3 py-1 mb-1">
-                            <span class="text-pink small fw-bold">
-                                <i class="fas fa-history me-1"></i> Lịch sử tìm kiếm
-                            </span>
-                            <button class="btn btn-link text-muted p-0 small text-decoration-none"
-                                style="font-size: 0.75rem;" (click)="clearAllSearchHistory($event)">
-                                Xóa tất cả
-                            </button>
+                    <!-- TABS ĐIỀU HƯỚNG NGHIỆP VỤ (Đã tích hợp thêm Tab Quá Hạn) -->
+                    <ul class="nav nav-pills custom-pills mb-0 gap-2">
+                        <li class="nav-item">
+                            <a class="nav-link fw-semibold cursor-pointer rounded-pill px-4 text-light"
+                                [class.active]="currentTab === 'all'" (click)="changeTab('all')">
+                                <i class="fas fa-list-ul me-2"></i> {{ 'ItHelpdesk::Queue:TabAll' | abpLocalization }}
+                            </a>
                         </li>
-                        <li *ngFor="let item of recentSearches" (click)="selectSearchSuggestion(item)"
-                            class="dropdown-item text-light rounded-3 cursor-pointer px-3 py-2 my-1 d-flex justify-content-between align-items-center custom-dropdown-item">
-                            <div>
-                                <i class="fas fa-search text-purple-accent me-2 opacity-75"></i>
-                                <span>{{ item }}</span>
-                            </div>
-                            <i class="fas fa-times text-muted hover-pink ms-2 p-1" title="Xóa mục này"
-                                (click)="removeSearchHistoryItem(item, $event)"></i>
+                        <li class="nav-item">
+                            <a class="nav-link fw-semibold cursor-pointer rounded-pill px-4 text-light"
+                                [class.active]="currentTab === 'unassigned'" (click)="changeTab('unassigned')">
+                                <i class="fas fa-user-slash me-2"></i> {{ 'ItHelpdesk::Queue:TabUnassigned' |
+                                abpLocalization }}
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link fw-semibold cursor-pointer rounded-pill px-4 text-light"
+                                [class.active]="currentTab === 'mine'" (click)="changeTab('mine')">
+                                <i class="fas fa-user-check me-2"></i> {{ 'ItHelpdesk::Queue:TabMine' | abpLocalization
+                                }}
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link fw-semibold cursor-pointer rounded-pill px-4 text-light"
+                                [class.active]="currentTab === 'inprogress'" (click)="changeTab('inprogress')">
+                                <i class="fas fa-tools me-2"></i> {{ 'ItHelpdesk::Queue:TabPending' | abpLocalization }}
+                            </a>
+                        </li>
+                        <!-- TAB QUÁ HẠN MỚI -->
+                        <li class="nav-item">
+                            <a class="nav-link fw-semibold cursor-pointer rounded-pill px-4 text-danger border border-danger border-opacity-25"
+                                [class.bg-danger]="currentTab === 'overdue'"
+                                [class.text-white]="currentTab === 'overdue'" (click)="changeTab('overdue')"
+                                style="background: rgba(239, 68, 68, 0.1);">
+                                <i class="fas fa-fire me-2"></i> {{ 'ItHelpdesk::Queue:TabOverdue' | abpLocalization }}
+                            </a>
                         </li>
                     </ul>
+
+                    <!-- Ô TÌM KIẾM -->
+                    <div class="position-relative search-wrapper flex-grow-1" style="max-width: 400px; z-index: 999;">
+                        <div class="input-group align-items-center rounded-pill px-3 py-1 position-relative"
+                            style="background: rgba(15, 23, 42, 0.9); border: 2px solid rgba(255,255,255,0.2);">
+                            <span class="text-white opacity-75 bg-transparent border-0 pe-2 ps-2">
+                                <i class="fas fa-search"></i>
+                            </span>
+                            <input type="text" class="form-control bg-transparent border-0 shadow-none text-white p-2"
+                                [placeholder]="'ItHelpdesk::Queue:SearchPlaceholder' | abpLocalization"
+                                [(ngModel)]="searchFilter" (input)="onSearchInput()" (keyup.enter)="performSearch()"
+                                (focus)="showSearchSuggestions = true" style="font-size: 0.95rem;">
+                            <button *ngIf="searchFilter"
+                                class="btn btn-link text-white opacity-75 p-0 ms-2 text-decoration-none me-2"
+                                type="button" (click)="clearSearch()">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
+                <!-- BỘ LỌC MỞ RỘNG DÀNH CHO ADMIN KIỂM TRA -->
+                <div class="row g-3 pt-3 border-top border-secondary border-opacity-25 align-items-center">
+                    <div class="col-md-3">
+                        <select
+                            class="form-select bg-dark text-white border-secondary rounded-pill shadow-none px-3 py-2 text-sm"
+                            [(ngModel)]="advancedFilters.teamId" (change)="onAdvancedFilterChange()">
+                            <option [ngValue]="null">{{ 'ItHelpdesk::Queue:FilterTeamDefault' | abpLocalization }}
+                            </option>
+                            <option *ngFor="let t of teams" [value]="t.id">{{ t.name }}</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <select
+                            class="form-select bg-dark text-white border-secondary rounded-pill shadow-none px-3 py-2 text-sm"
+                            [(ngModel)]="advancedFilters.priorityId" (change)="onAdvancedFilterChange()">
+                            <option [ngValue]="null">{{ 'ItHelpdesk::Queue:FilterPriorityDefault' | abpLocalization }}
+                            </option>
+                            <option *ngFor="let p of priorities" [value]="p.id">{{ p.name }}</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-check form-switch pt-2">
+                            <input class="form-check-input" type="checkbox" id="overdueSwitch"
+                                [(ngModel)]="advancedFilters.overdueOnly" (change)="onAdvancedFilterChange()">
+                            <label class="form-check-label text-danger fw-bold small ms-2" for="overdueSwitch"
+                                style="cursor: pointer;">
+                                <i class="fas fa-fire me-1"></i> {{ 'ItHelpdesk::Queue:OverdueSwitchLabel' |
+                                abpLocalization }}
+                            </label>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
         <!-- KHUNG BẢNG DỮ LIỆU -->
-        <div class="card premium-glass-card border-0 shadow-lg rounded-4 overflow-hidden"
+        <div class="card border-0 shadow-lg rounded-4 overflow-hidden"
             style="background: rgba(23, 28, 48, 0.85) !important; backdrop-filter: blur(20px);">
             <div class="card-body p-0">
 
@@ -106,163 +132,136 @@
                     }
 
                     ::ng-deep .ngx-datatable.admin-datatable .datatable-body-cell {
-                        padding: 26px 20px !important;
-                    }
-
-                    ::ng-deep .ngx-datatable.admin-datatable .align-center-col .datatable-header-cell-template-wrap {
-                        display: flex;
-                        justify-content: center;
-                        align-items: center;
-                        width: 100%;
-                    }
-
-                    ::ng-deep .ngx-datatable.admin-datatable .align-center-col {
-                        display: flex !important;
-                        justify-content: center !important;
-                        align-items: center !important;
-                    }
-
-                    ::ng-deep .ngx-datatable.admin-datatable .align-left-col .datatable-header-cell-template-wrap {
-                        display: flex;
-                        justify-content: flex-start;
-                        align-items: center;
-                        width: 100%;
-                    }
-
-                    ::ng-deep .ngx-datatable.admin-datatable .align-left-col {
-                        display: flex !important;
-                        justify-content: flex-start !important;
-                        align-items: center !important;
-                        text-align: left !important;
-                        overflow: hidden;
+                        padding: 22px 20px !important;
                     }
 
                     .equal-badge {
                         min-width: 170px;
-                        height: 40px;
+                        height: 38px;
                         display: flex;
                         align-items: center;
                         justify-content: center;
-                        font-size: 0.95rem;
+                        font-size: 0.9rem;
                         padding: 0 16px;
                     }
                 </style>
 
-                <div *ngIf="isLoading" class="p-4">
-                    <div class="skeleton-row mb-3" *ngFor="let i of [1,2,3,4,5]"></div>
+                <div *ngIf="isLoading" class="p-5 text-center">
+                    <div class="spinner-border text-info" role="status"></div>
+                    <p class="text-muted mt-2">{{ 'ItHelpdesk::Queue:SyncingData' | abpLocalization }}</p>
                 </div>
 
-                <div class="table-responsive excel-table-wrapper" *ngIf="!isLoading">
+                <div class="table-responsive" *ngIf="!isLoading">
                     <ngx-datatable [rows]="items" [count]="totalCount" [externalPaging]="true" [limit]="maxResultCount"
                         [offset]="skipCount / maxResultCount" (page)="onPageChange($event)" default
                         [columnMode]="'force'" [scrollbarH]="true" [rowHeight]="'auto'" [footerHeight]="75"
                         class="admin-datatable w-100">
 
                         <!-- MÃ TICKET -->
-                        <ngx-datatable-column [name]="'::TicketNo' | abpLocalization" prop="ticketNo" [width]="220"
-                            [minWidth]="200" headerClass="align-left-col" cellClass="align-left-col">
+                        <ngx-datatable-column [name]="'ItHelpdesk::Queue:ColumnTicketNo' | abpLocalization"
+                            prop="ticketNo" [width]="200" [minWidth]="180" headerClass="align-left-col"
+                            cellClass="align-left-col">
                             <ng-template let-row="row" ngx-datatable-cell-template>
                                 <a [routerLink]="['/tickets/detail', row.id]"
+                                    [queryParams]="{ returnUrl: '/tickets/it-queue' }"
                                     class="fw-bold text-decoration-none d-block w-100 text-truncate text-start"
-                                    style="color: #f472b6; letter-spacing: 0.5px;">
+                                    style="color: #f472b6;">
                                     {{ row.ticketNo }}
                                 </a>
                             </ng-template>
                         </ngx-datatable-column>
 
                         <!-- TIÊU ĐỀ -->
-                        <ngx-datatable-column [name]="'::TicketSubject' | abpLocalization" prop="title" [width]="320"
-                            [minWidth]="280" headerClass="align-left-col" cellClass="align-left-col">
+                        <ngx-datatable-column [name]="'ItHelpdesk::Queue:ColumnTitle' | abpLocalization" prop="title"
+                            [width]="320" [minWidth]="280" headerClass="align-left-col" cellClass="align-left-col">
                             <ng-template let-row="row" ngx-datatable-cell-template>
-                                <div class="d-flex align-items-center w-100" style="max-width: 100%;">
+                                <div class="d-flex align-items-center w-100">
                                     <span class="fw-medium text-truncate d-inline-block" title="{{ row.title }}"
-                                        [ngClass]="row.isOverdue ? 'text-danger fw-bold' : 'text-light'"
+                                        [ngClass]="getSlaStatus(row.targetResolutionTime) === 'overdue' ? 'text-danger fw-bold' : 'text-light'"
                                         style="max-width: calc(100% - 24px);">
                                         {{ row.title }}
                                     </span>
-                                    <i *ngIf="row.isOverdue" class="fas fa-fire ms-2 text-danger flex-shrink-0"
-                                        title="Quá hạn xử lý!"></i>
                                 </div>
                             </ng-template>
                         </ngx-datatable-column>
 
                         <!-- TRẠNG THÁI -->
-                        <ngx-datatable-column [name]="'::Status' | abpLocalization" prop="status" [width]="260"
-                            [minWidth]="200" headerClass="align-center-col" cellClass="align-center-col">
+                        <ngx-datatable-column [name]="'ItHelpdesk::Queue:ColumnStatus' | abpLocalization" prop="status"
+                            [width]="220" [minWidth]="180" headerClass="align-center-col" cellClass="align-center-col">
                             <ng-template let-row="row" ngx-datatable-cell-template>
                                 <span
                                     class="badge bg-primary bg-opacity-75 rounded-pill text-white shadow-sm equal-badge">
-                                    {{ '::Enum:TicketStatus.' + row.status | abpLocalization }}
+                                    {{ 'ItHelpdesk::Enum:TicketStatus.' + row.status | abpLocalization }}
                                 </span>
                             </ng-template>
                         </ngx-datatable-column>
 
-                        <!-- HẠN XỬ LÝ -->
-                        <ngx-datatable-column [name]="'Hạn xử lý'" prop="targetResolutionTime" [width]="260"
-                            [minWidth]="200" headerClass="align-center-col" cellClass="align-center-col">
+                        <!-- HẠN XỬ LÝ (SLA) -->
+                        <ngx-datatable-column [name]="'ItHelpdesk::Queue:ColumnSla' | abpLocalization"
+                            prop="targetResolutionTime" [width]="260" [minWidth]="220" headerClass="align-center-col"
+                            cellClass="align-center-col">
                             <ng-template let-row="row" ngx-datatable-cell-template>
                                 <div *ngIf="row.targetResolutionTime"
                                     class="position-relative d-flex justify-content-center align-items-center w-100">
-                                    <span class="badge rounded-pill equal-badge" [ngClass]="{
-                                            'bg-danger text-white': getSlaStatus(row.targetResolutionTime) === 'overdue',
-                                            'bg-warning text-dark': getSlaStatus(row.targetResolutionTime) === 'warning',
-                                            'bg-secondary bg-opacity-50 text-light': getSlaStatus(row.targetResolutionTime) === 'normal'
-                                        }">
-                                        <i class="fas fa-hourglass-end me-2"></i>{{ row.targetResolutionTime | date:
-                                        'dd/MM/yyyy HH:mm' }}
+                                    <span class="badge rounded-pill equal-badge shadow-sm" [ngClass]="{
+                                        'bg-danger text-white fw-bold': getSlaStatus(row.targetResolutionTime) === 'overdue',
+                                        'bg-warning text-dark fw-bold': getSlaStatus(row.targetResolutionTime) === 'warning',
+                                        'bg-secondary bg-opacity-50 text-light': getSlaStatus(row.targetResolutionTime) === 'normal'
+                                    }">
+                                        <i class="fas me-1"
+                                            [ngClass]="getSlaStatus(row.targetResolutionTime) === 'overdue' ? 'fa-fire' : 'fa-clock'"></i>
+                                        {{ row.targetResolutionTime | date: 'dd/MM/yyyy HH:mm' }}
                                     </span>
-
-                                    <small *ngIf="getSlaStatus(row.targetResolutionTime) === 'overdue'"
-                                        class="text-danger fw-bold position-absolute"
-                                        style="bottom: -22px; left: 50%; transform: translateX(-50%); white-space: nowrap;">
-                                        <i class="fas fa-fire me-1"></i>Quá hạn
-                                    </small>
                                 </div>
-                                <span *ngIf="!row.targetResolutionTime" class="text-muted fst-italic">Chưa thiết
-                                    lập</span>
+                                <span *ngIf="!row.targetResolutionTime" class="text-muted fst-italic">{{
+                                    'ItHelpdesk::Queue:NotSet' | abpLocalization }}</span>
                             </ng-template>
                         </ngx-datatable-column>
 
                         <!-- NGƯỜI XỬ LÝ -->
-                        <ngx-datatable-column [name]="'Người xử lý'" prop="assigneeId" [width]="220" [minWidth]="180"
-                            headerClass="align-center-col" cellClass="align-center-col">
+                        <ngx-datatable-column [name]="'ItHelpdesk::Queue:ColumnAssignee' | abpLocalization"
+                            prop="assigneeId" [width]="200" [minWidth]="160" headerClass="align-center-col"
+                            cellClass="align-center-col">
                             <ng-template let-row="row" ngx-datatable-cell-template>
-                                <span
-                                    class="badge bg-warning bg-opacity-25 text-warning py-2 px-3 rounded-pill d-inline-block text-center"
+                                <span class="badge bg-warning bg-opacity-25 text-warning py-2 px-3 rounded-pill"
                                     *ngIf="!row.assigneeId">
-                                    <i class="fas fa-exclamation-circle me-1"></i> Chưa gán
+                                    <i class="fas fa-exclamation-circle me-1"></i> {{
+                                    'ItHelpdesk::Queue:UnassignedBadge' | abpLocalization }}
                                 </span>
                                 <span class="text-info fw-semibold" *ngIf="row.assigneeId">
-                                    <i class="fas fa-user-tag me-1"></i> Đã gán
+                                    <i class="fas fa-user-shield me-1"></i> {{ 'ItHelpdesk::Queue:AssignedBadge' |
+                                    abpLocalization }}
                                 </span>
                             </ng-template>
                         </ngx-datatable-column>
 
-                        <!-- PHÂN CÔNG (ĐÃ VÁ LỖ HỔNG ZOMBIE TICKET) -->
-                        <ngx-datatable-column name="Phân công" [sortable]="false" [width]="140" [minWidth]="130"
-                            headerClass="align-center-col" cellClass="align-center-col">
+                        <!-- THAO TÁC PHÂN CÔNG -->
+                        <ngx-datatable-column [name]="'ItHelpdesk::Queue:ColumnDispatch' | abpLocalization"
+                            [sortable]="false" [width]="140" [minWidth]="130" headerClass="align-center-col"
+                            cellClass="align-center-col">
                             <ng-template let-row="row" ngx-datatable-cell-template>
-                                <!-- Nút Phân công chỉ hiện khi Status khác 7 (Closed) -->
                                 <button *ngIf="row.status !== 7"
-                                    class="btn btn-sm btn-outline-info rounded-pill px-3 py-1 text-nowrap fw-semibold d-inline-flex justify-content-center align-items-center gap-1 mx-auto"
-                                    (click)="openAssignModal(row)" title="Phân công">
-                                    <i class="fas fa-user-plus"></i> Phân công
+                                    class="btn btn-sm btn-outline-info rounded-pill px-3 py-1 fw-semibold d-inline-flex align-items-center gap-1 shadow-sm"
+                                    (click)="openAssignModal(row)">
+                                    <i class="fas fa-user-plus"></i> {{ 'ItHelpdesk::Queue:ActionAssignBtn' |
+                                    abpLocalization }}
                                 </button>
-                                <!-- Hiện icon khóa nếu vé đã đóng -->
-                                <span *ngIf="row.status === 7" class="text-muted small fw-semibold" title="Vé đã đóng">
-                                    <i class="fas fa-lock me-1"></i> Đã khóa
-                                </span>
+                                <span *ngIf="row.status === 7" class="text-muted small"><i class="fas fa-lock me-1"></i>
+                                    {{ 'ItHelpdesk::Queue:Locked' | abpLocalization }}</span>
                             </ng-template>
                         </ngx-datatable-column>
 
                         <!-- CHI TIẾT -->
-                        <ngx-datatable-column name="Chi tiết" [sortable]="false" [width]="130" [minWidth]="120"
-                            headerClass="align-center-col" cellClass="align-center-col">
+                        <ngx-datatable-column [name]="'ItHelpdesk::Queue:ColumnAction' | abpLocalization"
+                            [sortable]="false" [width]="130" [minWidth]="120" headerClass="align-center-col"
+                            cellClass="align-center-col">
                             <ng-template let-row="row" ngx-datatable-cell-template>
                                 <a [routerLink]="['/tickets/detail', row.id]"
-                                    class="btn btn-sm cute-outline-btn rounded-pill px-3 py-1 text-nowrap fw-semibold d-inline-flex justify-content-center align-items-center gap-1 mx-auto"
-                                    style="border: 1px solid #f472b6; color: #f472b6; background: rgba(244, 114, 182, 0.05); transition: all 0.3s ease;">
-                                    <i class="fas fa-paw"></i> Chi tiết
+                                    [queryParams]="{ returnUrl: '/tickets/it-queue' }"
+                                    class="btn btn-sm rounded-pill px-3 py-1 fw-semibold d-inline-flex align-items-center gap-1 shadow-sm"
+                                    style="border: 1px solid #f472b6; color: #f472b6; background: rgba(244, 114, 182, 0.05);">
+                                    <i class="fas fa-arrow-right"></i> {{ 'ItHelpdesk::Queue:ActionViewBtn' |
+                                    abpLocalization }}
                                 </a>
                             </ng-template>
                         </ngx-datatable-column>
@@ -275,46 +274,59 @@
     </div>
 </div>
 
-<!-- MODAL PHÂN CÔNG TICKET -->
+<!-- MODAL PHÂN CÔNG KÈM CHỌN THỜI GIAN DEADLINE -->
 <div *ngIf="isAssignModalOpen" class="modal fade show d-block" tabindex="-1"
-    style="background: rgba(0,0,0,0.65); backdrop-filter: blur(4px);">
+    style="background: rgba(0,0,0,0.7); backdrop-filter: blur(6px);">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content premium-glass-card border-secondary border-opacity-25 text-white shadow-2xl rounded-4"
+        <div class="modal-content border-secondary border-opacity-25 text-white shadow-2xl rounded-4 overflow-hidden"
             style="background: rgba(23, 28, 48, 0.95) !important; backdrop-filter: blur(20px);">
             <div class="modal-header border-bottom border-secondary border-opacity-25 px-4 py-3">
                 <h5 class="modal-title fw-bold text-pink">
-                    <i class="fas fa-tasks me-2"></i>Phân công Ticket #{{ selectedTicket?.ticketNo }}
+                    <i class="fas fa-tasks me-2"></i> {{ 'ItHelpdesk::Queue:ModalDispatchTitle' | abpLocalization:
+                    (selectedTicket?.ticketNo || '') }}
                 </h5>
                 <button type="button" class="btn-close btn-close-white" (click)="closeAssignModal()"></button>
             </div>
             <div class="modal-body p-4">
                 <div class="mb-3">
-                    <label class="form-label text-light fw-bold">Nhóm tiếp nhận (Team)</label>
-                    <select
-                        class="form-select bg-dark text-white border-secondary rounded-pill shadow-none px-3 py-2 custom-select-box"
+                    <label class="form-label text-light fw-bold small text-uppercase">{{
+                        'ItHelpdesk::Queue:ModalTeamLabel' | abpLocalization }}</label>
+                    <select class="form-select bg-dark text-white border-secondary rounded-pill shadow-none px-3 py-2"
                         [(ngModel)]="assignForm.teamId">
-                        <option [ngValue]="undefined">-- Chọn Nhóm Kỹ Thuật --</option>
+                        <option [ngValue]="undefined">{{ 'ItHelpdesk::Ticket:UnassignedTeamOption' | abpLocalization }}
+                        </option>
                         <option *ngFor="let team of teams" [value]="team.id">{{ team.name }}</option>
                     </select>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label text-light fw-bold">Kỹ thuật viên chuyên trách</label>
-                    <select
-                        class="form-select bg-dark text-white border-secondary rounded-pill shadow-none px-3 py-2 custom-select-box"
+                    <label class="form-label text-light fw-bold small text-uppercase">{{
+                        'ItHelpdesk::Queue:ModalTechLabel' | abpLocalization }}</label>
+                    <select class="form-select bg-dark text-white border-secondary rounded-pill shadow-none px-3 py-2"
                         [(ngModel)]="assignForm.assigneeId">
-                        <option [ngValue]="undefined">-- Để trống (Chỉ gán Team) --</option>
+                        <option [ngValue]="undefined">{{ 'ItHelpdesk::Ticket:UnassignedTechOption' | abpLocalization }}
+                        </option>
                         <option *ngFor="let tech of technicians" [value]="tech.id">{{ tech.surname }} {{ tech.name }}
                             ({{ tech.userName }})</option>
                     </select>
                 </div>
+                <div class="mb-2">
+                    <label class="form-label text-light fw-bold small text-uppercase">{{
+                        'ItHelpdesk::Queue:ModalDeadlineLabel' | abpLocalization }}</label>
+                    <input type="datetime-local"
+                        class="form-control bg-dark text-white border-secondary rounded-pill shadow-none px-3 py-2"
+                        [(ngModel)]="assignForm.targetResolutionTime">
+                    <small class="text-muted mt-1 d-block">{{ 'ItHelpdesk::Queue:ModalDeadlineDesc' | abpLocalization
+                        }}</small>
+                </div>
             </div>
             <div class="modal-footer border-top border-secondary border-opacity-25 px-4 py-3">
-                <button type="button" class="btn btn-outline-light rounded-pill px-4"
-                    (click)="closeAssignModal()">Hủy</button>
+                <button type="button" class="btn btn-outline-light rounded-pill px-4" (click)="closeAssignModal()">{{
+                    'ItHelpdesk::Cancel' | abpLocalization }}</button>
                 <button type="button" class="btn btn-primary rounded-pill px-4" [disabled]="isSavingAssign"
                     (click)="saveAssignment()">
                     <span *ngIf="isSavingAssign" class="spinner-border spinner-border-sm me-1"></span>
-                    <i *ngIf="!isSavingAssign" class="fas fa-check me-1"></i> Lưu phân công
+                    <i *ngIf="!isSavingAssign" class="fas fa-check me-1"></i> {{ 'ItHelpdesk::Confirm' |
+                    abpLocalization }}
                 </button>
             </div>
         </div>

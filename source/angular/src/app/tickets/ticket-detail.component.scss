@@ -107,6 +107,25 @@
             }
         }
 
+        /* --- THÊM PHẦN STYLE CHO BÌNH LUẬN TRẢ LỜI LỒNG NHAU (REPLY) --- */
+        .nested-replies {
+            position: relative;
+
+            /* Ghi đè lại viền Bootstrap mặc định để viền đẹp và neon hơn */
+            border-left: none !important;
+
+            &::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                bottom: 0;
+                left: 0;
+                width: 2px;
+                background: linear-gradient(to bottom, rgba(13, 202, 240, 0.5), rgba(192, 132, 252, 0.2));
+                border-radius: 4px;
+            }
+        }
+
         @keyframes bounceCat {
 
             0%,
@@ -249,5 +268,130 @@
 
     .dropdown-menu::-webkit-scrollbar-thumb:hover {
         background: rgba(236, 72, 153, 0.8);
+    }
+
+    ::ng-deep {
+
+        /* --- TABS --- */
+        .premium-tabs {
+            background: rgba(15, 23, 42, 0.6);
+            padding: 0.5rem;
+            border-radius: 50rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+
+            .nav-link {
+                color: #cbd5e1;
+                font-weight: 600;
+                transition: all 0.3s ease;
+
+                &:hover {
+                    color: #f472b6;
+                }
+
+                &.active {
+                    background: linear-gradient(135deg, #c084fc 0%, #ec4899 100%);
+                    color: white !important;
+                    box-shadow: 0 4px 15px rgba(236, 72, 153, 0.4);
+                }
+            }
+        }
+
+        /* --- STEPPER (Tiến độ) --- */
+        .workflow-stepper {
+            display: flex;
+            justify-content: space-between;
+            padding: 0 1rem;
+            position: relative;
+
+            .step {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                z-index: 2;
+                opacity: 0.4;
+                transition: all 0.3s;
+
+                .step-icon {
+                    width: 45px;
+                    height: 45px;
+                    border-radius: 50%;
+                    background: #1e293b;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    font-size: 1.2rem;
+                    color: #cbd5e1;
+                    border: 2px solid #334155;
+                    margin-bottom: 0.5rem;
+                }
+
+                .step-text {
+                    font-size: 0.8rem;
+                    font-weight: 600;
+                    color: #cbd5e1;
+                }
+
+                &.active {
+                    opacity: 1;
+
+                    .step-icon {
+                        background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+                        border-color: transparent;
+                        color: white;
+                        box-shadow: 0 0 15px rgba(139, 92, 246, 0.5);
+                    }
+
+                    .step-text {
+                        color: #8b5cf6;
+                    }
+                }
+
+                &.rejected {
+                    opacity: 1;
+
+                    .step-icon {
+                        background: #64748b;
+                        box-shadow: none;
+                    }
+
+                    .step-text {
+                        color: #64748b;
+                        text-decoration: line-through;
+                    }
+                }
+            }
+
+            .step-line {
+                flex-grow: 1;
+                height: 4px;
+                background: #334155;
+                margin: 0 10px;
+                margin-top: -25px;
+                border-radius: 4px;
+                transition: all 0.3s;
+
+                &.active {
+                    background: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 100%);
+                    box-shadow: 0 0 10px rgba(139, 92, 246, 0.4);
+                }
+            }
+        }
+
+        /* Hiệu ứng chuyển Tab */
+        .animate-fade-in {
+            animation: fadeIn 0.4s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
     }
 }

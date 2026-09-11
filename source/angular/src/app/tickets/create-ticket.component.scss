@@ -176,3 +176,13 @@
 .text-pink {
     color: #f472b6 !important;
 }
+
+/* Ẩn thông báo lỗi mặc định của ABP Framework để ưu tiên hiển thị Custom HTML */
+::ng-deep abp-validation-error {
+    display: none !important;
+}
+
+/* Ẩn class invalid-feedback mặc định của Bootstrap (nếu có) */
+::ng-deep .invalid-feedback {
+    display: none !important;
+}

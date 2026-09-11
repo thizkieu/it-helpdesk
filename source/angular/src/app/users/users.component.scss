@@ -1,3 +1,35 @@
+/* =========================================================
+   TÙY CHỈNH THANH CUỘN (SCROLLBAR) NHƯ ỨNG DỤNG DESKTOP
+   ========================================================= */
+.custom-scrollbar {
+    &::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+
+    &::-webkit-scrollbar-track {
+        background: rgba(0, 0, 0, 0.15);
+        border-radius: 10px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background: rgba(192, 132, 252, 0.4);
+        border-radius: 10px;
+        border: 2px solid transparent;
+        background-clip: padding-box;
+
+        &:hover {
+            background-color: rgba(192, 132, 252, 0.8);
+        }
+    }
+}
+
+.modal-body-scroll {
+    max-height: calc(100vh - 200px);
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
 /* Thiết lập không gian cho trang quản trị */
 .admin-page-container {
     padding-bottom: 2rem;
@@ -82,12 +114,13 @@
                 }
             }
 
-            /* SCROLLBAR MỎNG NHẸ */
+            /* SCROLLBAR MỎNG NHẸ DÀNH CHO BẢNG */
             .datatable-body {
                 background: transparent !important;
 
                 &::-webkit-scrollbar {
                     height: 8px !important;
+                    width: 8px !important;
                 }
 
                 &::-webkit-scrollbar-track {
@@ -106,7 +139,7 @@
             }
 
             /* =========================================================
-               FOOTER & THANH PHÂN TRANG (PAGINATION) SÁNG SỦA, KHÔNG CHÌM
+               FOOTER & THANH PHÂN TRANG (PAGINATION) SÁNG SỦA
                ========================================================= */
             .datatable-footer {
                 background: rgba(15, 23, 42, 0.85) !important;

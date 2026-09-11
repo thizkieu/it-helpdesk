@@ -7,6 +7,9 @@ using Volo.Abp.PermissionManagement;
 using Volo.Abp.SettingManagement;
 using Volo.Abp.TenantManagement;
 using Volo.Abp.BlobStoring.Database;
+using Volo.Abp; 
+using Volo.Abp.BackgroundWorkers; 
+using ItHelpdesk.Workers; 
 
 namespace ItHelpdesk;
 
@@ -25,7 +28,7 @@ public class ItHelpdeskApplicationModule : AbpModule
 {
     public override void ConfigureServices(ServiceConfigurationContext context)
     {
-        // 2. Thêm cấu hình Blob Storing lưu vào Database ở đây
+        // 2. Cấu hình Blob Storing lưu vào Database ở đây
         Configure<AbpBlobStoringOptions>(options =>
         {
             options.Containers.ConfigureDefault(container =>
@@ -33,5 +36,14 @@ public class ItHelpdeskApplicationModule : AbpModule
                 container.UseDatabase();
             });
         });
+    }
+
+    // HÀM NÀY ĐỂ KÍCH HOẠT WORKER CHẠY NGẦM KHI START APP
+    public override void OnApplicationInitialization(ApplicationInitializationContext context)
+    {
+        base.OnApplicationInitialization(context);
+
+        // Đăng ký bộ đếm giờ theo dõi SLA
+        context.AddBackgroundWorkerAsync<SlaTrackingWorker>();
     }
 }

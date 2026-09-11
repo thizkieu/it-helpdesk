@@ -515,6 +515,63 @@ namespace ItHelpdesk.Migrations
                     b.ToTable("AbpLanguages", (string)null);
                 });
 
+            modelBuilder.Entity("ItHelpdesk.Notifications.AppNotification", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)")
+                        .HasColumnName("ConcurrencyStamp");
+
+                    b.Property<DateTime>("CreationTime")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("CreationTime");
+
+                    b.Property<Guid?>("CreatorId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("CreatorId");
+
+                    b.Property<string>("ExtraProperties")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("ExtraProperties");
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("LinkUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("AppAppNotifications", (string)null);
+                });
+
             modelBuilder.Entity("ItHelpdesk.Priorities.Priority", b =>
                 {
                     b.Property<long>("Id")
@@ -580,6 +637,56 @@ namespace ItHelpdesk.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("AppPriorities", (string)null);
+                });
+
+            modelBuilder.Entity("ItHelpdesk.Security.SecurityAlertLog", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("AlertType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime>("CreationTime")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("CreationTime");
+
+                    b.Property<Guid?>("CreatorId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("CreatorId");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("IpAddress")
+                        .IsRequired()
+                        .HasMaxLength(45)
+                        .HasColumnType("nvarchar(45)");
+
+                    b.Property<string>("ResourceName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<Guid?>("TargetUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("TargetUserName")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AlertType");
+
+                    b.HasIndex("CreationTime");
+
+                    b.ToTable("AppSecurityAlertLogs", (string)null);
                 });
 
             modelBuilder.Entity("ItHelpdesk.Services.Service", b =>
@@ -1007,6 +1114,9 @@ namespace ItHelpdesk.Migrations
 
                     b.Property<bool>("IsInternal")
                         .HasColumnType("bit");
+
+                    b.Property<long?>("ParentId")
+                        .HasColumnType("bigint");
 
                     b.Property<long>("TicketId")
                         .HasColumnType("bigint");
@@ -2985,23 +3095,29 @@ namespace ItHelpdesk.Migrations
 
             modelBuilder.Entity("ItHelpdesk.Tickets.Ticket", b =>
                 {
-                    b.HasOne("ItHelpdesk.Categories.Category", null)
+                    b.HasOne("ItHelpdesk.Categories.Category", "Category")
                         .WithMany()
                         .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.HasOne("ItHelpdesk.Priorities.Priority", null)
+                    b.HasOne("ItHelpdesk.Priorities.Priority", "Priority")
                         .WithMany()
                         .HasForeignKey("PriorityId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.HasOne("ItHelpdesk.Services.Service", null)
+                    b.HasOne("ItHelpdesk.Services.Service", "Service")
                         .WithMany()
                         .HasForeignKey("ServiceId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
+
+                    b.Navigation("Category");
+
+                    b.Navigation("Priority");
+
+                    b.Navigation("Service");
                 });
 
             modelBuilder.Entity("ItHelpdesk.Tickets.TicketAttachment", b =>
