@@ -1,4 +1,4 @@
-import { Directive, HostListener, ViewChild, inject, OnInit, OnDestroy } from '@angular/core';
+import { Directive, HostListener, ViewChild, inject, OnInit, OnDestroy, ElementRef } from '@angular/core';
 import { Subject, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { DatatableComponent } from '@swimlane/ngx-datatable';
@@ -7,6 +7,7 @@ import { ListService } from '@abp/ng.core';
 @Directive()
 export abstract class AdminBaseComponent implements OnInit, OnDestroy {
   public readonly list = inject(ListService);
+  protected elementRef = inject(ElementRef); // BỔ SUNG: Dùng để dò tìm vị trí click chuột
 
   // Biến dùng chung cho tất cả ô input [(ngModel)]="searchFilter" ở các trang con
   searchFilter: string = '';
@@ -25,6 +26,14 @@ export abstract class AdminBaseComponent implements OnInit, OnDestroy {
   onResize() {
     if (this.table) {
       this.table.recalculate();
+    }
+  }
+
+  // BỔ SUNG: Lắng nghe sự kiện click toàn trang để đóng dropdown gợi ý tìm kiếm
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    if (!this.elementRef.nativeElement.querySelector('.search-wrapper')?.contains(event.target as Node)) {
+      this.showSearchSuggestions = false;
     }
   }
 

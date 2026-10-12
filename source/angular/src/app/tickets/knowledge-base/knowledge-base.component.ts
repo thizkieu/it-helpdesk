@@ -2,7 +2,6 @@ import { Component, OnInit, OnDestroy, inject, ElementRef, HostListener } from '
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { FaqItemService } from '@proxy/knowledge-base';
 import { CoreModule, RestService, LocalizationService, LocalizationPipe, ConfigStateService } from '@abp/ng.core';
 import { ThemeSharedModule, ConfirmationService, Confirmation } from '@abp/ng.theme.shared';
 import { of, Subject, Subscription } from 'rxjs';
@@ -17,12 +16,11 @@ import { CustomToastService } from '../../shared/services/custom-toast.service';
   styleUrls: ['./knowledge-base.component.scss']
 })
 export class KnowledgeBaseComponent implements OnInit, OnDestroy {
-  private faqService = inject(FaqItemService);
   private restService = inject(RestService);
   private customToast = inject(CustomToastService);
   private elementRef = inject(ElementRef);
   private router = inject(Router);
-  private localizationService = inject(LocalizationService);
+  public localizationService = inject(LocalizationService);
   private configState = inject(ConfigStateService);
   private confirmation = inject(ConfirmationService);
 
@@ -31,20 +29,28 @@ export class KnowledgeBaseComponent implements OnInit, OnDestroy {
   searchText: string = '';
   isLoading = true;
   isAdmin = false;
-
   bookmarkedIds: number[] = [];
 
   private readonly storageKey = 'kb_search_history';
   private readonly bookmarkKey = 'kb_bookmarks';
   recentSearches: string[] = [];
   showSearchSuggestions = false;
-
   private searchSubject = new Subject<string>();
   private searchSubscription?: Subscription;
 
   isModalOpen = false;
   isEditing = false;
-  modalData: any = { id: null, category: '', icon: 'fa-book', question: '', fullContent: '' };
+  langTab: string = 'vi';
+  
+  modalData: any = { 
+    id: null, 
+    category: '', 
+    icon: 'fa-book', 
+    question_Vi: '', 
+    question_En: '', 
+    answer_Vi: '', 
+    answer_En: '' 
+  };
 
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent): void {
@@ -55,8 +61,7 @@ export class KnowledgeBaseComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     const currentUser = this.configState.getOne('currentUser') as any;
-    this.isAdmin = currentUser?.userName === 'admin' || currentUser?.email?.includes('admin') || true;
-
+    this.isAdmin = currentUser?.roles?.some((r: string) => r.toLowerCase() === 'admin') || false;
     this.loadSearchHistory();
     this.loadBookmarks();
     this.loadFaqList();
@@ -92,34 +97,10 @@ export class KnowledgeBaseComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (res: any) => {
           this.faqList = res?.items || [];
-          if (this.faqList.length === 0) {
-            this.loadMockData();
-          } else {
-            this.filteredFaqList = this.faqList;
-          }
+          this.filteredFaqList = this.faqList;
           this.isLoading = false;
         }
       });
-  }
-
-  loadMockData(): void {
-    this.faqList = [
-      {
-        id: 1,
-        category: 'Mạng',
-        icon: 'fa-wifi',
-        question: 'Quy trình xử lý sự cố kết nối Wi-Fi nội bộ',
-        fullContent: '<h5 class="text-info mb-3">1. Nguyên nhân</h5><p>Mất IP hoặc xung đột card mạng.</p><h5 class="text-info mb-3">2. Khắc phục</h5><ul><li>Renew IP trong CMD.</li><li>Khởi động lại Adapter.</li></ul>'
-      },
-      {
-        id: 2,
-        category: 'Bảo mật',
-        icon: 'fa-shield-alt',
-        question: 'Chính sách thay đổi mật khẩu định kỳ 90 ngày',
-        fullContent: '<h5 class="text-info mb-3">Quy định</h5><p>Mật khẩu tối thiểu 8 ký tự, bao gồm chữ hoa, chữ thường và ký tự đặc biệt.</p>'
-      }
-    ];
-    this.filteredFaqList = this.faqList;
   }
 
   getPlainText(html: string): string {
@@ -151,13 +132,23 @@ export class KnowledgeBaseComponent implements OnInit, OnDestroy {
 
   openCreateModal(): void {
     this.isEditing = false;
-    this.modalData = { id: null, category: 'Hệ thống', icon: 'fa-book', question: '', fullContent: '' };
+    this.langTab = 'vi';
+    this.modalData = {
+      id: null,
+      category: this.localizationService.instant('ItHelpdesk::KB:DefaultCategorySystem'),
+      icon: 'fa-book',
+      question_Vi: '',
+      question_En: '',
+      answer_Vi: '',
+      answer_En: ''
+    };
     this.isModalOpen = true;
   }
 
   openEditModal(item: any, event: MouseEvent): void {
     event.stopPropagation();
     this.isEditing = true;
+    this.langTab = 'vi';
     this.modalData = { ...item };
     this.isModalOpen = true;
   }
@@ -167,23 +158,25 @@ export class KnowledgeBaseComponent implements OnInit, OnDestroy {
   }
 
   saveArticle(): void {
-    if (!this.modalData.question?.trim() || !this.modalData.fullContent?.trim()) {
+    if (!this.modalData.question_Vi?.trim() || !this.modalData.answer_Vi?.trim()) {
       this.customToast.show(this.localizationService.instant('ItHelpdesk::KB:ValidationRequired'), 'error');
       return;
     }
+    const request$ = this.isEditing
+      ? this.restService.request({ method: 'PUT', url: `/api/app/faq-item/${this.modalData.id}`, body: this.modalData })
+      : this.restService.request({ method: 'POST', url: '/api/app/faq-item', body: this.modalData });
 
-    if (this.isEditing) {
-      const idx = this.faqList.findIndex(x => x.id === this.modalData.id);
-      if (idx !== -1) this.faqList[idx] = { ...this.modalData };
-      this.customToast.show(this.localizationService.instant('ItHelpdesk::KB:ToastUpdateSuccess'), 'success');
-    } else {
-      const newId = new Date().getTime();
-      const newItem = { ...this.modalData, id: newId };
-      this.faqList.unshift(newItem);
-      this.customToast.show(this.localizationService.instant('ItHelpdesk::KB:ToastCreateSuccess'), 'success');
-    }
-    this.filteredFaqList = [...this.faqList];
-    this.closeModal();
+    request$.subscribe({
+      next: () => {
+        const msgKey = this.isEditing ? 'ItHelpdesk::KB:ToastUpdateSuccess' : 'ItHelpdesk::KB:ToastCreateSuccess';
+        this.customToast.show(this.localizationService.instant(msgKey), 'success');
+        this.closeModal();
+        this.loadFaqList();
+      },
+      error: () => {
+        this.customToast.show(this.localizationService.instant('ItHelpdesk::KB:ToastSaveError'), 'error');
+      }
+    });
   }
 
   deleteArticle(item: any, event: MouseEvent): void {
@@ -193,9 +186,10 @@ export class KnowledgeBaseComponent implements OnInit, OnDestroy {
 
     this.confirmation.warn(confirmMsg, confirmTitle).subscribe((status: Confirmation.Status) => {
       if (status === Confirmation.Status.confirm) {
-        this.faqList = this.faqList.filter(x => x.id !== item.id);
-        this.filteredFaqList = [...this.faqList];
-        this.customToast.show(this.localizationService.instant('ItHelpdesk::KB:ToastDeleteSuccess'), 'success');
+        this.restService.request({ method: 'DELETE', url: `/api/app/faq-item/${item.id}` }).subscribe(() => {
+          this.customToast.show(this.localizationService.instant('ItHelpdesk::KB:ToastDeleteSuccess'), 'success');
+          this.loadFaqList();
+        });
       }
     });
   }
@@ -256,7 +250,7 @@ export class KnowledgeBaseComponent implements OnInit, OnDestroy {
       const keyword = this.searchText.toLowerCase();
       this.filteredFaqList = this.faqList.filter(x =>
         x.question?.toLowerCase().includes(keyword) ||
-        x.fullContent?.toLowerCase().includes(keyword) ||
+        x.answer?.toLowerCase().includes(keyword) ||
         x.category?.toLowerCase().includes(keyword)
       );
     }
@@ -266,5 +260,13 @@ export class KnowledgeBaseComponent implements OnInit, OnDestroy {
     this.router.navigate(['/tickets/knowledge-base', item.id || 1], {
       state: { article: item }
     });
+  }
+
+  goBack(): void {
+    if (this.isAdmin) {
+      this.router.navigate(['/tickets/it-queue']);
+    } else {
+      this.router.navigate(['/tickets/my-tickets']);
+    }
   }
 }

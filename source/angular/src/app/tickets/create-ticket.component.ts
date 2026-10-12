@@ -1,7 +1,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { Router, RouterModule } from '@angular/router';
+import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { TicketService, CreateUpdateTicketDto } from '@proxy/tickets';
 import { CategoryService, CategoryDto } from '@proxy/categories';
 import { ServiceService, ServiceDto } from '@proxy/services';
@@ -9,7 +9,6 @@ import { PriorityService, PriorityDto } from '@proxy/priorities';
 import { CoreModule, RestService, LocalizationService } from '@abp/ng.core';
 import { CustomToastService } from '../shared/services/custom-toast.service';
 
-// Custom Validator: Chặn nhập toàn khoảng trắng (Space)
 export function noWhitespaceValidator(control: AbstractControl): ValidationErrors | null {
   const isWhitespace = (control.value || '').toString().trim().length === 0;
   const isValid = !isWhitespace;
@@ -32,6 +31,10 @@ export class CreateTicketComponent implements OnInit {
   services: ServiceDto[] = [];
   priorities: PriorityDto[] = [];
 
+  parentTicketId: number | null = null;
+  parentTicketNo: string = '';
+  isTitleLimitReached = false;
+
   private fb = inject(FormBuilder);
   private ticketService = inject(TicketService);
   private categoryService = inject(CategoryService);
@@ -40,6 +43,7 @@ export class CreateTicketComponent implements OnInit {
   private restService = inject(RestService);
   private customToast = inject(CustomToastService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
   private localizationService = inject(LocalizationService);
 
   constructor() {
@@ -48,16 +52,22 @@ export class CreateTicketComponent implements OnInit {
       categoryId: [null, Validators.required],
       serviceId: [null, Validators.required],
       priorityId: [null, Validators.required],
-      // Đã gỡ bỏ giới hạn độ dài cứng cho phần mô tả theo yêu cầu
-      description: ['', [Validators.required, noWhitespaceValidator]]
+      description: ['', [Validators.required, noWhitespaceValidator]],
+      parentTicketId: [null]
     });
   }
 
   ngOnInit(): void {
     this.loadDropdownData();
+
+    this.route.queryParams.subscribe(params => {
+      if (params['refTicketId']) {
+        this.parentTicketId = Number(params['refTicketId']);
+        this.loadOldTicketData(this.parentTicketId);
+      }
+    });
   }
 
-  // Getter hỗ trợ đếm số lượng ký tự trực tiếp trên HTML
   get titleLength() { return this.ticketForm.get('title')?.value?.length || 0; }
 
   loadDropdownData(): void {
@@ -69,6 +79,33 @@ export class CreateTicketComponent implements OnInit {
     });
     this.priorityService.getList({ maxResultCount: 100 }).subscribe({
       next: (res: any) => this.priorities = res?.items || []
+    });
+  }
+
+  loadOldTicketData(id: number): void {
+    this.ticketService.get(id).subscribe({
+      next: (oldTicket) => {
+        this.parentTicketNo = oldTicket.ticketNo || '';
+        const titlePrefix = this.localizationService.instant('ItHelpdesk::Ticket:FollowUpTitlePrefix');
+        const descPrefix = this.localizationService.instant('ItHelpdesk::Ticket:FollowUpDescPrefix', oldTicket.ticketNo || '');
+
+        let truncatedTitle = `${titlePrefix} ${oldTicket.title}`;
+        if (truncatedTitle.length > 255) {
+          truncatedTitle = truncatedTitle.substring(0, 255);
+        }
+
+        this.ticketForm.patchValue({
+          title: truncatedTitle,
+          categoryId: oldTicket.categoryId,
+          serviceId: oldTicket.serviceId,
+          priorityId: oldTicket.priorityId,
+          parentTicketId: oldTicket.id,
+          description: `${descPrefix}\n\n`
+        });
+      },
+      error: () => {
+        console.error(this.localizationService.instant('ItHelpdesk::Error:LoadDetailFailed'));
+      }
     });
   }
 
@@ -93,30 +130,21 @@ export class CreateTicketComponent implements OnInit {
     this.selectedFiles.splice(index, 1);
   }
 
+  onTitleInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.value.length > 255) {
+      const truncatedValue = input.value.substring(0, 255);
+      this.ticketForm.get('title')?.setValue(truncatedValue);
+      this.isTitleLimitReached = true;
+    } else {
+      this.isTitleLimitReached = false;
+    }
+  }
+
   submitTicket(): void {
-    // Chặn hoàn toàn nếu form chưa hợp lệ hoặc đang xử lý
     if (this.ticketForm.invalid || this.isSubmitting) {
       this.ticketForm.markAllAsTouched();
-
-      const titleControl = this.ticketForm.get('title');
-      const descControl = this.ticketForm.get('description');
-
-      // Bắn ra thông báo lỗi minh bạch bằng đa ngôn ngữ nếu User cố tình nhấn nút Gửi (bằng phím Enter hoặc cách nào đó)
-      if (titleControl?.hasError('required')) {
-        this.customToast.show(this.localizationService.instant('ItHelpdesk::Ticket:ErrorTitleEmpty'), 'error');
-      } else if (titleControl?.hasError('whitespace')) {
-        this.customToast.show(this.localizationService.instant('ItHelpdesk::Ticket:ErrorTitleWhitespace'), 'error');
-      } else if (titleControl?.hasError('maxlength')) {
-        this.customToast.show(this.localizationService.instant('ItHelpdesk::Ticket:TitleMaxLength'), 'error');
-      } else if (this.ticketForm.get('categoryId')?.invalid || this.ticketForm.get('serviceId')?.invalid || this.ticketForm.get('priorityId')?.invalid) {
-        this.customToast.show(this.localizationService.instant('ItHelpdesk::Ticket:ErrorClassificationRequired'), 'error');
-      } else if (descControl?.hasError('required')) {
-        this.customToast.show(this.localizationService.instant('ItHelpdesk::Ticket:ErrorDescriptionEmpty'), 'error');
-      } else if (descControl?.hasError('whitespace')) {
-        this.customToast.show(this.localizationService.instant('ItHelpdesk::Ticket:ErrorDescriptionWhitespace'), 'error');
-      } else {
-        this.customToast.show(this.localizationService.instant('ItHelpdesk::FormValidationRequired'), 'error');
-      }
+      this.customToast.show(this.localizationService.instant('ItHelpdesk::FormValidationRequired'), 'error');
       return;
     }
 
@@ -186,24 +214,7 @@ export class CreateTicketComponent implements OnInit {
       }
     });
   }
-  // Thêm biến cờ báo hiệu vượt quá độ dài
-  isTitleLimitReached = false;
 
-  // Thêm hàm xử lý sự kiện khi gõ phím
-  onTitleInput(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    if (input.value.length > 255) {
-      // 1. Chặt đứt phần dư thừa, ép chuỗi về đúng 255 ký tự (đáp ứng "không nhận ký tự 256")
-      const truncatedValue = input.value.substring(0, 255);
-      this.ticketForm.get('title')?.setValue(truncatedValue);
-
-      // 2. Bật cờ báo lỗi ngay lập tức (đáp ứng "báo lỗi lên luôn")
-      this.isTitleLimitReached = true;
-    } else {
-      // Tắt lỗi nếu họ xóa bớt
-      this.isTitleLimitReached = false;
-    }
-  }
   private finalizeSuccess(ticketId: number): void {
     this.customToast.show(this.localizationService.instant('ItHelpdesk::Ticket:CreateSuccess'), 'success');
     this.ticketForm.reset();

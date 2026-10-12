@@ -206,20 +206,8 @@ public partial class ItHelpdesk_TicketListQueryResponse_To_TicketDto_Mapper : Ma
     protected Tickets.TicketStatus MapStatus(int status) => (Tickets.TicketStatus)status;
 }
 
-[Mapper]
-public partial class ItHelpdesk_GetTicketListDto_To_TicketListRequest_Mapper : MapperBase<Tickets.GetTicketListDto, TicketListRequest>
-{
-    // Mapperly sẽ tự động map trường "IsOverdue" từ GetTicketListDto sang TicketListRequest vì trùng tên
-    public override partial TicketListRequest Map(Tickets.GetTicketListDto source);
-    public override partial void Map(Tickets.GetTicketListDto source, TicketListRequest destination);
-}
-
-[Mapper]
-public partial class ItHelpdesk_CreateUpdateTicketDto_To_TicketInsertOrUpdateRequest_Mapper : MapperBase<Tickets.CreateUpdateTicketDto, TicketInsertOrUpdateRequest>
-{
-    public override partial TicketInsertOrUpdateRequest Map(Tickets.CreateUpdateTicketDto source);
-    public override partial void Map(Tickets.CreateUpdateTicketDto source, TicketInsertOrUpdateRequest destination);
-}
+// ĐÃ XÓA: ItHelpdesk_GetTicketListDto_To_TicketListRequest_Mapper
+// ĐÃ XÓA: ItHelpdesk_CreateUpdateTicketDto_To_TicketInsertOrUpdateRequest_Mapper
 #endregion
 
 #region KnowledgeBase
@@ -262,6 +250,5 @@ public partial class ItHelpdeskIdentityUserToExtendedUserDtoMapper : MapperBase<
 {
     public override partial ItHelpdesk.ExtendedUsers.ExtendedUserDto Map(Volo.Abp.Identity.IdentityUser source);
     public override partial void Map(Volo.Abp.Identity.IdentityUser source, ItHelpdesk.ExtendedUsers.ExtendedUserDto destination);
-
 }
 #endregion

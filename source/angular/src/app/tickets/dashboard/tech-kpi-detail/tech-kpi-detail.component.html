@@ -1,0 +1,223 @@
+<div class="ticket-page-wrapper py-4 text-white w-100 overflow-hidden print-wrapper">
+    <div class="container-fluid" style="max-width: 1600px;" *ngIf="!isLoading">
+        
+        <!-- HEADER CHỈ GIỮ LẠI NÚT QUAY LẠI VÀ TOOLBAR LỌC (Không bị ngang với tên nữa) -->
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4 no-print">
+            <button class="btn btn-outline-info rounded-circle d-flex justify-content-center align-items-center shadow-sm transition-all hover-elevate flex-shrink-0" style="width: 44px; height: 44px;" (click)="goBack()">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            
+            <!-- Thanh công cụ (Xuất báo cáo & Lọc tháng/năm) -->
+            <div class="cyber-toolbar d-flex align-items-center rounded-pill shadow-sm px-3 py-2 border border-info border-opacity-25 bg-dark bg-opacity-50">
+                <div class="dropdown" ngbDropdown>
+                    <button class="btn btn-sm btn-action-export rounded-pill d-flex align-items-center gap-2 fw-semibold border-0 text-info" ngbDropdownToggle style="background: transparent;">
+                        <i class="fas fa-file-export"></i> {{ 'ItHelpdesk::Dashboard:ExportReport' | abpLocalization }}
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-dark shadow-lg border-0 py-2 custom-action-menu" ngbDropdownMenu>
+                        <button class="dropdown-item py-2 text-info fw-medium" (click)="exportTechDetailReport()">
+                            <i class="fas fa-file-excel me-2 text-success"></i> {{ 'ItHelpdesk::Dashboard:ExportExcel' | abpLocalization }}
+                        </button>
+                        <button class="dropdown-item py-2 text-info fw-medium" (click)="exportAsPDF()">
+                            <i class="fas fa-file-pdf me-2 text-danger"></i> {{ 'ItHelpdesk::Dashboard:ExportPDF' | abpLocalization }}
+                        </button>
+                    </div>
+                </div>
+                <div class="toolbar-divider mx-2"></div>
+                <div class="d-flex align-items-center text-slate-300 small fw-medium">
+                    <i class="far fa-calendar-alt me-2 text-info"></i>
+                    <select class="cyber-select-inline form-select-sm shadow-none" [(ngModel)]="filterParams.month" (change)="onApplyFilter()">
+                        <option [ngValue]="null">{{ 'ItHelpdesk::Dashboard:AllYear' | abpLocalization }}</option>
+                        <option *ngFor="let m of months" [value]="m">{{ 'ItHelpdesk::Dashboard:MonthPrefix' | abpLocalization }} {{ m }}</option>
+                    </select>
+                    <span class="mx-1 text-slate-500">/</span>
+                    <select class="cyber-select-inline form-select-sm shadow-none" [(ngModel)]="filterParams.year" (change)="onApplyFilter()">
+                        <option *ngFor="let y of years" [value]="y">{{ y }}</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        
+        <div class="print-only-header mb-4 text-center text-dark" style="display: none;">
+            <h2 class="fw-bold text-uppercase">{{ 'ItHelpdesk::TechDetail:ReportTitle' | abpLocalization }}</h2>
+            <h4>{{ 'ItHelpdesk::TechDetail:Staff' | abpLocalization }} {{ selectedTech.name }}</h4>
+            <p>{{ 'ItHelpdesk::Dashboard:MonthPrefix' | abpLocalization }} {{ filterParams.month || ('ItHelpdesk::Dashboard:AllYear' | abpLocalization) }} / {{ 'ItHelpdesk::TechDetail:YearPrefix' | abpLocalization }} {{ filterParams.year }}</p>
+            <hr>
+        </div>
+        
+        <!-- PHẦN 1: HỒ SƠ & FORM ĐÁNH GIÁ -->
+        <div class="row g-4 mb-4 align-items-stretch">
+            
+            <!-- CỘT TRÁI: HỒ SƠ CÁ NHÂN (CĂN GIỮA TUYỆT ĐỐI THEO ẢNH CHỤP) -->
+            <div class="col-12 col-xl-4 page-break-inside-avoid">
+                <div class="card premium-glass-card border-0 h-100 p-4 d-flex flex-column align-items-center text-center w-100 position-relative overflow-hidden print-card border-info">
+                    <div class="bg-glow-effect"></div>
+                    
+                    <div class="position-relative z-1 mb-3 mt-4">
+                        <div class="modern-avatar-large shadow-lg mx-auto">
+                            <i class="fas fa-user-tie"></i>
+                        </div>
+                        <span class="badge bg-success position-absolute bottom-0 start-50 translate-middle-x rounded-pill border border-dark shadow-sm px-3 py-1" style="transform: translateY(40%); font-size: 0.75rem;">{{ 'ItHelpdesk::TechDetail:StatusActive' | abpLocalization }}</span>
+                    </div>
+                    
+                    <h3 class="fw-bold text-white mb-2 z-1 mt-3">{{ selectedTech.name }}</h3>
+                    <span class="tech-id-badge shadow-sm mb-4 z-1">{{ displayTechId }}</span>
+                    
+                    <div class="w-100 text-start z-1 mt-2 d-flex flex-column gap-3">
+                        <div class="profile-info-item">
+                            <div class="icon-box"><i class="fas fa-shield-alt text-warning"></i></div>
+                            <div class="info-content">
+                                <span class="label">{{ 'ItHelpdesk::TechDetail:RoleLabel' | abpLocalization }}</span>
+                                <span class="value">{{ selectedTech.roleName }}</span>
+                            </div>
+                        </div>
+                        <div class="profile-info-item">
+                            <div class="icon-box"><i class="fas fa-envelope text-info"></i></div>
+                            <div class="info-content">
+                                <span class="label">{{ 'ItHelpdesk::TechDetail:EmailLabel' | abpLocalization }}</span>
+                                <span class="value">{{ selectedTech.email }}</span>
+                            </div>
+                        </div>
+                        <div class="profile-info-item">
+                            <div class="icon-box"><i class="fas fa-phone-alt text-success"></i></div>
+                            <div class="info-content">
+                                <span class="label">{{ 'ItHelpdesk::TechDetail:PhoneLabel' | abpLocalization }}</span>
+                                <span class="value">{{ selectedTech.phoneNumber || '---' }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- CỘT PHẢI: FORM ĐÁNH GIÁ & TỔNG HỢP KPI -->
+            <div class="col-12 col-xl-8 page-break-inside-avoid">
+                <div class="card premium-glass-card border-0 h-100 p-4 w-100 d-flex flex-column">
+                    <h5 class="fw-bold text-white mb-4 tracking-wide border-bottom border-secondary border-opacity-50 pb-3 d-flex align-items-center">
+                        <i class="fas fa-clipboard-check text-success me-2 fs-4"></i> {{ 'ItHelpdesk::TechDetail:EvaluationForm' | abpLocalization }}
+                    </h5>
+                    
+                    <!-- 4 THẺ CHỈ SỐ KPI -->
+                    <div class="row g-3 mb-4 align-items-stretch">
+                        <div class="col-12 col-sm-6 col-xl-3">
+                            <div class="kpi-mini-box border-info h-100">
+                                <div class="kpi-content">
+                                    <span class="kpi-title text-info">{{ 'ItHelpdesk::TechDetail:TotalAssigned' | abpLocalization }}</span>
+                                    <span class="kpi-value neon-text-info">{{ stats.totalTickets }}</span>
+                                </div>
+                                <i class="fas fa-briefcase kpi-icon text-info opacity-25"></i>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6 col-xl-3">
+                            <div class="kpi-mini-box border-success h-100">
+                                <div class="kpi-content">
+                                    <span class="kpi-title text-success">{{ 'ItHelpdesk::TechDetail:SlaOnTime' | abpLocalization }}</span>
+                                    <span class="kpi-value neon-text-success">{{ selectedTech.onTimeRate }}%</span>
+                                </div>
+                                <i class="fas fa-check-circle kpi-icon text-success opacity-25"></i>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6 col-xl-3">
+                            <div class="kpi-mini-box border-danger h-100">
+                                <div class="kpi-content">
+                                    <span class="kpi-title text-danger">{{ 'ItHelpdesk::TechDetail:OverdueRate' | abpLocalization }}</span>
+                                    <span class="kpi-value neon-text-danger">{{ selectedTech.overdueRate }}%</span>
+                                </div>
+                                <i class="fas fa-radiation kpi-icon text-danger opacity-25"></i>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6 col-xl-3">
+                            <div class="kpi-mini-box border-warning h-100" style="background: rgba(245, 158, 11, 0.05);">
+                                <div class="kpi-content">
+                                    <span class="kpi-title text-warning">{{ 'ItHelpdesk::TechDetail:NetSalary' | abpLocalization }}</span>
+                                    <span class="kpi-value neon-text-warning fs-4">{{ selectedTech.netSalary | number }} đ</span>
+                                </div>
+                                <i class="fas fa-money-bill-wave kpi-icon text-warning opacity-25"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="evaluation-form-wrapper flex-grow-1 d-flex flex-column">
+                        <label class="form-label text-slate-300 small fw-bold text-uppercase mb-2"><i class="fas fa-pen-nib me-1 text-info"></i> {{ 'ItHelpdesk::TechDetail:ManagerNoteLabel' | abpLocalization }}</label>
+                        <textarea class="form-control cyber-textarea flex-grow-1 shadow-none print-text-dark" 
+                            [(ngModel)]="managerNote" 
+                            [placeholder]="'ItHelpdesk::TechDetail:ManagerNotePlaceholder' | abpLocalization"></textarea>
+                        
+                        <div class="d-flex justify-content-end mt-3 no-print">
+                            <button class="btn btn-cyber-primary rounded-pill px-5 fw-bold shadow-sm" (click)="saveEvaluation()" [disabled]="isSavingNote">
+                                <span *ngIf="isSavingNote" class="spinner-border spinner-border-sm me-2"></span>
+                                <i *ngIf="!isSavingNote" class="fas fa-save me-2"></i> {{ 'ItHelpdesk::TechDetail:SaveEvaluation' | abpLocalization }}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- PHẦN 2: BẢNG DANH SÁCH VÉ -->
+        <div class="card premium-glass-card text-light p-3 p-md-4 border-0 w-100 overflow-hidden page-break-before">
+            <h5 class="fw-bold text-white mb-4 border-bottom border-secondary border-opacity-50 pb-3 tracking-wide d-flex align-items-center">
+                <i class="fas fa-list-alt text-info me-2 fs-4"></i> {{ 'ItHelpdesk::TechDetail:TicketsListTitle' | abpLocalization }}
+            </h5>
+            
+            <div class="data-table-card table-bottom-layer position-relative" style="min-height: 400px; border: none !important; background: transparent !important; box-shadow: none !important;">
+                <ngx-datatable [rows]="techTickets" [count]="techTickets.length" [limit]="pageSize" 
+                    [headerHeight]="55" [footerHeight]="65" [rowHeight]="80" [columnMode]="'standard'" [scrollbarH]="true"
+                    [messages]="{ emptyMessage: ('ItHelpdesk::NoData' | abpLocalization), totalMessage: ('ItHelpdesk::Dashboard:TicketUnit' | abpLocalization) }"
+                    class="clean-datatable w-100 h-100 print-table">
+                    
+                    <ngx-datatable-column [name]="'ItHelpdesk::TechDetail:ColTicketNo' | abpLocalization" prop="ticketNo" [width]="180" headerClass="align-center-col" cellClass="align-center-col">
+                        <ng-template let-row="row" ngx-datatable-cell-template>
+                            <span class="fw-bold text-info">{{ row.ticketNo || row.id }}</span>
+                        </ng-template>
+                    </ngx-datatable-column>
+                    
+                    <ngx-datatable-column [name]="'ItHelpdesk::TechDetail:ColTitle' | abpLocalization" prop="title" [width]="450" headerClass="align-center-col" cellClass="align-left-col">
+                        <ng-template let-row="row" ngx-datatable-cell-template>
+                            <div class="w-100 ps-4">
+                                <span class="text-white text-wrap print-text-dark fw-medium" style="max-width: 400px; display: block; line-height: 1.5;">{{ row.title }}</span>
+                            </div>
+                        </ng-template>
+                    </ngx-datatable-column>
+                    
+                    <ngx-datatable-column [name]="'ItHelpdesk::TechDetail:ColStatus' | abpLocalization" prop="status" [width]="240" headerClass="align-center-col" cellClass="align-center-col">
+                        <ng-template let-row="row" ngx-datatable-cell-template>
+                            <div class="w-100 d-flex justify-content-center align-items-center h-100">
+                                <span class="status-pill text-nowrap shadow-sm" [ngClass]="getStatusClass(row.status)">
+                                    <span class="status-dot"></span>
+                                    {{ getStatusName(row.status) }}
+                                </span>
+                            </div>
+                        </ng-template>
+                    </ngx-datatable-column>
+                    
+                    <ngx-datatable-column [name]="'ItHelpdesk::TechDetail:ColCreationTime' | abpLocalization" prop="creationTime" [width]="220" headerClass="align-center-col" cellClass="align-center-col">
+                        <ng-template let-row="row" ngx-datatable-cell-template>
+                            <div class="w-100 d-flex justify-content-center align-items-center h-100">
+                                <span class="text-slate-300 print-text-dark fw-medium"><i class="far fa-clock me-2 opacity-50 text-info no-print"></i>{{ row.creationTime | date:'dd/MM/yyyy HH:mm' }}</span>
+                            </div>
+                        </ng-template>
+                    </ngx-datatable-column>
+                    
+                    <ngx-datatable-column [name]="'ItHelpdesk::Dashboard:ColAction' | abpLocalization" [sortable]="false" [width]="180" headerClass="align-center-col no-print" cellClass="align-center-col no-print">
+                        <ng-template let-row="row" ngx-datatable-cell-template>
+                            <div class="w-100 d-flex justify-content-center align-items-center h-100">
+                                <a [routerLink]="['/tickets/detail', row.ticketNo || row.id]" [queryParams]="{ returnUrl: '/tickets/dashboard/tech-detail/' + techId }" 
+                                   class="btn btn-sm btn-cyber-action rounded-pill px-4 fw-bold shadow-sm hover-elevate text-decoration-none">
+                                    <i class="fas fa-eye me-1"></i> {{ 'ItHelpdesk::TechDetail:ViewDetail' | abpLocalization }}
+                                </a>
+                            </div>
+                        </ng-template>
+                    </ngx-datatable-column>
+                </ngx-datatable>
+            </div>
+            
+            <div class="d-flex align-items-center justify-content-between mt-3 no-print" *ngIf="techTickets.length > 0">
+                <div class="d-flex align-items-center gap-3">
+                    <span class="text-slate-400 small fw-medium tracking-wide">{{ 'ItHelpdesk::TechDetail:TotalTickets' | abpLocalization }} <strong class="text-white fs-6">{{ techTickets.length }}</strong></span>
+                    <select class="form-select form-select-sm bg-dark text-white border-secondary rounded-3 shadow-none custom-select-glow py-1 px-3" style="width: 80px;" [(ngModel)]="pageSize" (change)="onPageSizeChange()">
+                        <option *ngFor="let size of pageSizeOptions" [ngValue]="size">{{ size }}</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

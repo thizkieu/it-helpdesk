@@ -1,0 +1,226 @@
+<div class="elegant-dark-viewport">
+    <div class="container-fluid position-relative z-1" style="max-width: 1300px; padding-top: 2rem; padding-bottom: 4rem;">
+        
+        <!-- TOP NAVIGATION BAR -->
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 hud-top-bar gap-3">
+            <button class="btn-elegant-back" (click)="goBack()">
+                <i class="fas fa-chevron-left me-2"></i> {{ 'ItHelpdesk::UserCv:Back' | abpLocalization }}
+            </button>
+            
+            <div class="d-flex gap-3 align-items-center">
+                <button class="btn-elegant-danger-outline" (click)="logout()">
+                    <i class="fas fa-power-off me-2"></i> {{ 'ItHelpdesk::UserCv:Logout' | abpLocalization }}
+                </button>
+                <button class="btn-elegant-primary" (click)="saveProfileInfo()" [disabled]="isSaving">
+                    <i class="fas fa-save me-2" *ngIf="!isSaving"></i>
+                    <i class="fas fa-circle-notch fa-spin me-2" *ngIf="isSaving"></i> 
+                    {{ 'ItHelpdesk::UserCv:UpdateInfo' | abpLocalization }}
+                </button>
+            </div>
+        </div>
+        
+        <div *ngIf="isLoading" class="d-flex flex-column justify-content-center align-items-center min-vh-50">
+            <div class="spinner-border text-primary mb-3"></div>
+            <div class="text-slate-400 font-monospace">{{ 'ItHelpdesk::Dashboard:LoadingData' | abpLocalization }}</div>
+        </div>
+        
+        <div class="row g-4" *ngIf="!isLoading">
+            
+            <!-- CỘT TRÁI: IDENTITY CARD -->
+            <div class="col-xl-4 col-lg-5">
+                <div class="elegant-card text-center p-5">
+                    
+                    <div class="identity-visual mb-4 mx-auto">
+                        <div class="photo-box" *ngIf="isInternalStaff">
+                            <img [src]="cvData.photoUrl" alt="ID Photo">
+                        </div>
+                        <div class="avatar-circle" *ngIf="!isInternalStaff">
+                            {{ userData?.userName?.charAt(0) | uppercase }}
+                        </div>
+                        <label class="btn-upload-elegant" *ngIf="isInternalStaff" [title]="'ItHelpdesk::UserCv:ChangeAvatar' | abpLocalization">
+                            <i class="fas fa-camera"></i>
+                            <input type="file" hidden (change)="onPhotoSelected($event)" accept="image/*">
+                        </label>
+                    </div>
+                    
+                    <h3 class="fw-bold text-white mb-2">{{ userData?.surname }} {{ userData?.name }}</h3>
+                    <div class="badge-role mb-3">
+                        {{ isInternalStaff ? (cvData.jobTitle || ('ItHelpdesk::UserCv:Specialist' | abpLocalization)) : ('ItHelpdesk::Users:EndUserRole' | abpLocalization) }}
+                    </div>
+                    
+                    <p class="text-slate-500 small mb-4">{{ userData?.userName }}</p>
+                    <div class="elegant-divider mb-4"></div>
+                    
+                    <div class="completion-tracker text-start">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-slate-400 small fw-medium">{{ 'ItHelpdesk::UserCv:ProfileCompletion' | abpLocalization }}</span>
+                            <span class="text-primary small fw-bold">{{ completionRate }}%</span>
+                        </div>
+                        <div class="progress elegant-progress">
+                            <div class="progress-bar bg-primary" [style.width.%]="completionRate"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- CỘT PHẢI: DATA TERMINAL -->
+            <div class="col-xl-8 col-lg-7">
+                <div class="elegant-card h-100 d-flex flex-column p-4 p-md-5">
+                    
+                    <!-- MENU TABS BÊN TRONG CARD -->
+                    <div class="elegant-tabs-header mb-4">
+                        <button class="tab-btn" [class.active]="activeTab === 'overview'" (click)="setTab('overview')">
+                            {{ 'ItHelpdesk::UserCv:BasicInfoTab' | abpLocalization }}
+                        </button>
+                        <button class="tab-btn" [class.active]="activeTab === 'skills'" (click)="setTab('skills')" *ngIf="isInternalStaff">
+                            {{ 'ItHelpdesk::UserCv:SkillsTab' | abpLocalization }}
+                        </button>
+                        <button class="tab-btn" [class.active]="activeTab === 'settings'" (click)="setTab('settings')">
+                            {{ 'ItHelpdesk::UserCv:SettingsTab' | abpLocalization }}
+                        </button>
+                    </div>
+                    
+                    <div class="flex-grow-1">
+                        
+                        <!-- TAB 1: OVERVIEW -->
+                        <div class="tab-pane fade show active" *ngIf="activeTab === 'overview'">
+                            <div class="row g-4">
+                                <div class="col-md-6">
+                                    <div class="elegant-input-group">
+                                        <label>{{ 'ItHelpdesk::Users:ModalSurnameLabel' | abpLocalization }}</label>
+                                        <div class="input-wrapper editable">
+                                            <input type="text" class="elegant-input" [(ngModel)]="userData.surname" [placeholder]="'ItHelpdesk::Users:ModalSurnamePlaceholder' | abpLocalization">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="elegant-input-group">
+                                        <label>{{ 'ItHelpdesk::Users:ModalNameLabel' | abpLocalization }}</label>
+                                        <div class="input-wrapper editable">
+                                            <input type="text" class="elegant-input" [(ngModel)]="userData.name" [placeholder]="'ItHelpdesk::Users:ModalNamePlaceholder' | abpLocalization">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="elegant-input-group">
+                                        <label>{{ 'ItHelpdesk::Users:ModalEmailLabel' | abpLocalization }}</label>
+                                        <div class="input-wrapper disabled-wrapper">
+                                            <input type="text" class="elegant-input" [(ngModel)]="userData.email" disabled>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="elegant-input-group">
+                                        <label>{{ 'ItHelpdesk::Users:ModalPhoneLabel' | abpLocalization }}</label>
+                                        <div class="input-wrapper editable">
+                                            <input type="text" class="elegant-input" [(ngModel)]="userData.phoneNumber" [placeholder]="'ItHelpdesk::Users:ModalPhonePlaceholder' | abpLocalization">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6" *ngIf="isInternalStaff">
+                                    <div class="elegant-input-group">
+                                        <label>{{ 'ItHelpdesk::UserCv:JobTitle' | abpLocalization }}</label>
+                                        <div class="input-wrapper editable">
+                                            <input type="text" class="elegant-input" [placeholder]="'ItHelpdesk::UserCv:JobTitlePlaceholder' | abpLocalization" [(ngModel)]="cvData.jobTitle">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6" *ngIf="isInternalStaff">
+                                    <div class="elegant-input-group">
+                                        <label>{{ 'ItHelpdesk::UserCv:Department' | abpLocalization }}</label>
+                                        <div class="input-wrapper editable">
+                                            <input type="text" class="elegant-input" [placeholder]="'ItHelpdesk::UserCv:DepartmentPlaceholder' | abpLocalization" [(ngModel)]="cvData.department">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="elegant-input-group">
+                                        <label>{{ 'ItHelpdesk::UserCv:Address' | abpLocalization }}</label>
+                                        <div class="input-wrapper editable">
+                                            <input type="text" class="elegant-input" [placeholder]="'ItHelpdesk::UserCv:AddressPlaceholder' | abpLocalization" [(ngModel)]="cvData.address">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-12" *ngIf="!isInternalStaff">
+                                    <div class="elegant-input-group">
+                                        <label>{{ 'ItHelpdesk::UserCv:CustomerNote' | abpLocalization }}</label>
+                                        <textarea class="elegant-textarea editable" rows="3" [placeholder]="'ItHelpdesk::UserCv:CustomerNotePlaceholder' | abpLocalization" [(ngModel)]="cvData.bio"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- TAB 2: SKILLS & BIO -->
+                        <div class="tab-pane fade show active" *ngIf="activeTab === 'skills' && isInternalStaff">
+                            <div class="elegant-input-group mb-4">
+                                <label>{{ 'ItHelpdesk::UserCv:SkillsList' | abpLocalization }}</label>
+                                <textarea class="elegant-textarea editable" rows="3" [placeholder]="'ItHelpdesk::UserCv:SkillsPlaceholder' | abpLocalization" [(ngModel)]="cvData.skills"></textarea>
+                            </div>
+                            <div class="elegant-input-group">
+                                <label>{{ 'ItHelpdesk::UserCv:BioAndExperience' | abpLocalization }}</label>
+                                <textarea class="elegant-textarea editable" rows="6" [placeholder]="'ItHelpdesk::UserCv:BioPlaceholder' | abpLocalization" [(ngModel)]="cvData.bio"></textarea>
+                            </div>
+                        </div>
+                        
+                        <!-- TAB 3: SETTINGS -->
+                        <div class="tab-pane fade show active" *ngIf="activeTab === 'settings'">
+                            <h6 class="text-white fw-bold mb-4">{{ 'ItHelpdesk::UserCv:DisplaySettingsTitle' | abpLocalization }}</h6>
+                            
+                            <div class="settings-list mb-5">
+                                <div class="setting-item">
+                                    <div class="setting-info">
+                                        <div class="d-flex align-items-center gap-2 mb-1">
+                                            <span class="text-slate-500 fs-5 lh-1">&bull;</span>
+                                            <span class="text-white fw-bold">{{ 'ItHelpdesk::UserCv:ReceiveNotifications' | abpLocalization }}</span>
+                                        </div>
+                                        <p class="text-slate-500 small mb-0 ms-3">{{ 'ItHelpdesk::UserCv:ReceiveNotificationsDesc' | abpLocalization }}</p>
+                                    </div>
+                                    <div class="elegant-switch" [class.on]="cvData.allowNotifications" (click)="toggleSetting('allowNotifications')">
+                                        <div class="switch-handle"></div>
+                                    </div>
+                                </div>
+                                <div class="setting-item">
+                                    <div class="setting-info">
+                                        <div class="d-flex align-items-center gap-2 mb-1">
+                                            <span class="text-slate-500 fs-5 lh-1">&bull;</span>
+                                            <span class="text-white fw-bold">{{ 'ItHelpdesk::UserCv:PublicProfile' | abpLocalization }}</span>
+                                        </div>
+                                        <p class="text-slate-500 small mb-0 ms-3">{{ 'ItHelpdesk::UserCv:PublicProfileDesc' | abpLocalization }}</p>
+                                    </div>
+                                    <div class="elegant-switch" [class.on]="cvData.publicProfile" (click)="toggleSetting('publicProfile')">
+                                        <div class="switch-handle"></div>
+                                    </div>
+                                </div>
+                                <div class="setting-item">
+                                    <div class="setting-info">
+                                        <div class="d-flex align-items-center gap-2 mb-1">
+                                            <span class="text-slate-500 fs-5 lh-1">&bull;</span>
+                                            <span class="text-white fw-bold">{{ 'ItHelpdesk::UserCv:TwoFactorAuth' | abpLocalization }}</span>
+                                        </div>
+                                        <p class="text-slate-500 small mb-0 ms-3">{{ 'ItHelpdesk::UserCv:TwoFactorAuthDesc' | abpLocalization }}</p>
+                                    </div>
+                                    <div class="elegant-switch" [class.on]="cvData.twoFactorEnabled" (click)="toggleSetting('twoFactorEnabled')">
+                                        <div class="switch-handle"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Vùng Đăng xuất dưới cùng -->
+                            <div class="logout-zone d-flex flex-wrap gap-3 justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="text-white fw-bold mb-1">{{ 'ItHelpdesk::UserCv:CurrentSession' | abpLocalization }}</h6>
+                                    <p class="text-slate-500 small mb-0">{{ 'ItHelpdesk::UserCv:CurrentSessionDesc' | abpLocalization }}</p>
+                                </div>
+                                <button class="btn btn-elegant-danger-outline px-4" (click)="logout()">
+                                    {{ 'ItHelpdesk::UserCv:Logout' | abpLocalization }}
+                                </button>
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

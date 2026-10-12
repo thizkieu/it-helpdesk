@@ -1,308 +1,147 @@
-/* =========================================================================
-   1. TIÊU ĐỀ TRANG
-   ========================================================================= */
-.page-title {
-    color: #ffffff !important;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
-    font-size: 1.85rem;
-    letter-spacing: -0.01em;
+:host {
+    display: block; width: 100%; min-height: 100vh; 
+    background-color: #0f172a !important; color: #f8fafc;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+.page-wrapper { background: transparent; min-height: calc(100vh - 80px); }
+.page-title { font-size: 1.4rem; letter-spacing: -0.02em; color: #fafafa; }
+.text-primary { color: #38bdf8 !important; }
+.cursor-pointer { cursor: pointer; }
+.hover-text-danger:hover { color: #ef4444 !important; text-shadow: 0 0 8px rgba(239, 68, 68, 0.4); }
+.hover-text-info:hover { color: #38bdf8 !important; text-shadow: 0 0 8px rgba(56, 189, 248, 0.4); }
+
+.ticket-title-link {
+    color: #ffffff !important; text-decoration: none; transition: all 0.2s ease;
+    &:hover { color: #ffffff !important; text-decoration: underline !important; text-shadow: 0 0 10px rgba(255, 255, 255, 0.3); }
 }
 
-/* =========================================================================
-   2. KHUNG TÌM KIẾM & BỘ LỌC (ĐÃ NÂNG Z-INDEX ĐỂ KHÔNG BỊ CHE)
-   ========================================================================= */
-.premium-glass-card {
-    position: relative;
-    z-index: 100;
+@keyframes bounceCat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-3px) scale(1.1); }
 }
 
-.custom-search-box {
-    border: 2px solid #cbd5e1 !important;
-    border-radius: 50rem !important;
-    background-color: #f8fafc !important;
-    transition: all 0.2s ease-in-out;
-
-    &:focus-within {
-        border-color: #ec4899 !important;
-        background-color: #ffffff !important;
-        box-shadow: 0 0 0 0.2rem rgba(236, 72, 153, 0.2) !important;
-    }
-
-    input {
-        color: #0f172a !important;
-        font-weight: 500;
-
-        &::placeholder {
-            color: #94a3b8;
-        }
-    }
+.btn-cyber-primary {
+    background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%) !important; border: none !important; color: #ffffff !important; transition: all 0.3s ease; height: 42px; box-shadow: 0 0 10px rgba(14, 165, 233, 0.4) !important;
+    &:hover { box-shadow: 0 0 20px rgba(14, 165, 233, 0.8), 0 0 40px rgba(2, 132, 199, 0.4) !important; transform: translateY(-2px); }
 }
 
-/* =========================================================================
-   3. NÚT BẤM & BADGE TIÊU ĐỀ
-   ========================================================================= */
-.cute-badge-pill {
-    background-color: #fce7f3 !important;
-    color: #db2777 !important;
-    padding: 0.45rem 0.85rem;
-    font-weight: 700;
-    border-radius: 50rem;
-    font-size: 0.8rem;
-    border: 1px solid #fbcfe8 !important;
+.btn-cyber-outline {
+    background: rgba(56, 189, 248, 0.05) !important; border: 1px solid rgba(56, 189, 248, 0.4) !important; color: #38bdf8 !important; transition: all 0.3s ease; height: 38px; font-size: 0.85rem; font-weight: 600;
+    &:hover { background: rgba(56, 189, 248, 0.2) !important; border-color: #38bdf8 !important; color: #ffffff !important; box-shadow: 0 0 15px rgba(56, 189, 248, 0.8), inset 0 0 10px rgba(56, 189, 248, 0.4) !important; transform: translateY(-2px); }
+    &.btn-glow:hover .bounce-icon-hover { animation: bounceCat 1s infinite; color: #fff; }
 }
 
-.cute-outline-btn {
-    border: 2px solid #8b5cf6 !important;
-    color: #7c3aed !important;
-    background-color: transparent !important;
-    transition: all 0.2s ease;
+.control-panel-card { background-color: rgba(15, 23, 42, 0.7); border: 1px solid rgba(255, 255, 255, 0.3) !important; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3), 0 0 15px rgba(255, 255, 255, 0.06) !important; }
+.data-table-card { background-color: rgba(15, 23, 42, 0.7) !important; border: 1px solid rgba(255, 255, 255, 0.3) !important; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), 0 0 20px rgba(255, 255, 255, 0.06) !important; display: flex; flex-direction: column; width: 100%; flex-grow: 1; min-height: 500px; margin-bottom: 2rem; border-radius: 20px; overflow: hidden; }
 
-    &:hover {
-        background-color: #8b5cf6 !important;
-        color: #ffffff !important;
-        box-shadow: 0 3px 10px rgba(139, 92, 246, 0.25);
-    }
+.clean-search-box {
+    display: flex !important; align-items: center !important; height: 44px; background: rgba(15, 23, 42, 0.6) !important; border: 1px solid rgba(255, 255, 255, 0.15) !important; box-shadow: none !important; transition: all 0.3s ease; padding-left: 1rem; padding-right: 40px; border-radius: 50rem !important;
+    &:focus-within, &:hover { background: rgba(15, 23, 42, 0.9) !important; border-color: #38bdf8 !important; box-shadow: 0 0 15px rgba(56, 189, 248, 0.4) !important; }
+    .search-icon { display: flex; align-items: center; justify-content: center; }
+    .search-input { height: 100%; width: 100%; margin: 0; padding: 0 0 0 12px; font-size: 0.95rem; }
+    .btn-clear-search { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: transparent; border: none; padding: 0; display: flex; align-items: center; justify-content: center; border-radius: 50%; width: 28px; height: 28px; z-index: 10; &:hover { color: #ef4444 !important; text-shadow: 0 0 8px rgba(239, 68, 68, 0.6); } }
 }
 
-/* =========================================================================
-   4. CẤU HÌNH BẢNG NGX-DATATABLE & TRẠNG THÁI
-   ========================================================================= */
+.clean-select-btn { background: rgba(15, 23, 42, 0.6) !important; border: 1px solid rgba(255, 255, 255, 0.15) !important; box-shadow: none !important; color: #f8fafc !important; transition: all 0.3s ease; border-radius: 50rem !important; height: 44px; &:hover, &:focus { border-color: #38bdf8 !important; background: rgba(15, 23, 42, 0.9) !important; box-shadow: 0 0 15px rgba(56, 189, 248, 0.4) !important; } }
+
+.transition-transform { transition: transform 0.2s ease; }
+.rotate-180 { transform: rotate(180deg); }
+
+.clean-dropdown { background-color: #18181b !important; border: 1px solid rgba(255,255,255,0.2) !important; z-index: 1050; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border-radius: 12px !important; margin-top: 8px !important; .custom-dropdown-item { font-size: 0.9rem; transition: all 0.2s; border-radius: 6px; cursor: pointer; &:hover { background: rgba(56, 189, 248, 0.1) !important; color: #ffffff !important; } } }
+.filter-top-layer { z-index: 50 !important; position: relative; overflow: visible !important; }
+.table-bottom-layer { z-index: 10 !important; position: relative; }
+
 ::ng-deep {
-    .ngx-datatable.admin-datatable {
-        .datatable-header-cell {
-            color: #ffffff !important;
-            font-weight: 700 !important;
-            padding: 16px 20px !important;
-        }
-
-        .datatable-body-cell {
-            padding: 16px 20px !important;
-        }
-
-        .align-center-col {
-            display: flex !important;
-            justify-content: center !important;
-            align-items: center !important;
-            text-align: center !important;
-
-            .datatable-header-cell-template-wrap {
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                width: 100%;
-            }
-        }
-
-        .align-left-col {
-            display: flex !important;
-            justify-content: flex-start !important;
-            align-items: center !important;
-            text-align: left !important;
-            overflow: hidden;
-
-            .datatable-header-cell-template-wrap {
-                display: flex;
-                justify-content: flex-start;
-                align-items: center;
-                width: 100%;
-            }
-        }
-
-        /* KHU VỰC TRẠNG THÁI: Cố định tuyệt đối chiều rộng để các ô bằng nhau tăm tắp, không bị so le */
-        .status-badge {
-            display: inline-flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            margin: 0 auto !important;
-            padding: 0.45rem 1rem !important;
-            font-size: 0.8125rem !important;
-            font-weight: 600 !important;
-            border-radius: 50rem !important;
-            white-space: nowrap !important;
-
-            /* Ép cứng độ rộng chuẩn lấy theo chuỗi dài nhất "Đã phân công" */
-            width: 145px !important;
-            min-width: 145px !important;
-            max-width: 145px !important;
-            height: 34px !important;
-
-            text-align: center !important;
-
-            &.status-new {
-                background-color: #0d6efd !important;
-                color: #ffffff !important;
-            }
-
-            &.status-in-progress {
-                background-color: #ffc107 !important;
-                color: #1e293b !important;
-            }
-
-            &.status-completed {
-                background-color: #198754 !important;
-                color: #ffffff !important;
-            }
-        }
-
-        /* --- THANH CUỘN (SCROLLBAR) --- */
-        .datatable-body {
-            background: transparent !important;
-
-            &::-webkit-scrollbar {
-                height: 8px !important;
-            }
-
-            &::-webkit-scrollbar-track {
-                background: rgba(15, 23, 42, 0.4) !important;
-                border-radius: 4px;
-            }
-
-            &::-webkit-scrollbar-thumb {
-                background: rgba(192, 132, 252, 0.5) !important;
-                border-radius: 4px;
-            }
-
-            &::-webkit-scrollbar-thumb:hover {
-                background: rgba(192, 132, 252, 0.9) !important;
-            }
-        }
-
-        /* --- PHÂN TRANG (PAGINATION) --- */
-        .datatable-footer {
-            background: rgba(15, 23, 42, 0.6) !important;
-            border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
-            padding: 0 24px !important;
-            color: #cbd5e1 !important;
-            display: flex !important;
-            align-items: center !important;
-            justify-content: space-between !important;
-
-            .page-count {
-                font-size: 0.95rem !important;
-                font-weight: 500 !important;
-                color: #94a3b8 !important;
-            }
-
-            .datatable-pager {
-                display: flex !important;
-                align-items: center !important;
-
-                .pager {
-                    display: flex !important;
-                    gap: 8px !important;
-                    margin: 0 !important;
-                    padding: 0 !important;
-                    list-style: none !important;
-
-                    li {
-                        a {
-                            display: flex !important;
-                            align-items: center !important;
-                            justify-content: center !important;
-                            min-width: 38px !important;
-                            height: 38px !important;
-                            border-radius: 10px !important;
-                            background: rgba(255, 255, 255, 0.05) !important;
-                            color: #cbd5e1 !important;
-                            font-weight: 600 !important;
-                            font-size: 0.95rem !important;
-                            text-decoration: none !important;
-                            transition: all 0.3s ease !important;
-                            border: 1px solid rgba(255, 255, 255, 0.05) !important;
-
-                            i {
-                                font-size: 0.85rem !important;
-                            }
-
-                            &:hover {
-                                background: rgba(192, 132, 252, 0.15) !important;
-                                color: #c084fc !important;
-                                border-color: rgba(192, 132, 252, 0.3) !important;
-                                transform: translateY(-2px);
-                            }
-                        }
-
-                        &.active a {
-                            background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%) !important;
-                            color: #ffffff !important;
-                            box-shadow: 0 4px 12px rgba(236, 72, 153, 0.4) !important;
-                            border-color: transparent !important;
-                            transform: scale(1.05);
-                        }
-
-                        &.disabled a {
-                            opacity: 0.4 !important;
-                            cursor: not-allowed !important;
-                            background: transparent !important;
-                            border-color: transparent !important;
-
-                            &:hover {
-                                transform: none !important;
-                                color: #cbd5e1 !important;
-                                background: transparent !important;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-/* =========================================================================
-   5. CUSTOM STATUS DROPDOWN STYLES (ĐƯA RA NGOÀI NGX-DUMMY ĐỂ KHÔNG BỊ CHE)
-   ========================================================================= */
-.premium-glass-card {
-    overflow: visible !important; /* Cho phép menu xổ ra ngoài biên của card mà không bị cắt */
-}
-
-.status-dropdown-wrapper {
-    position: relative !important;
-    z-index: 9999 !important;
-
-    .custom-select-btn {
-        &:hover,
-        &:focus {
-            border-color: #c084fc !important;
-            box-shadow: 0 0 15px rgba(192, 132, 252, 0.25) !important;
-        }
-
-        .fa-chevron-down {
-            transition: transform 0.3s ease;
-        }
-
-        .rotate-180 {
-            transform: rotate(180deg);
-        }
-    }
-
-    .custom-dropdown-list {
-        position: absolute !important;
-        top: 100% !important;
-        left: 0 !important;
-        right: 0 !important;
-        z-index: 10000 !important;
-        background: rgba(22, 22, 35, 0.98) !important;
-        backdrop-filter: blur(16px);
-        border: 1px solid rgba(255, 255, 255, 0.2) !important;
-        margin-top: 8px !important;
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7) !important;
-
-        .dropdown-item {
-            transition: all 0.2s ease;
-
-            &:hover {
-                background-color: rgba(192, 132, 252, 0.15) !important;
-                color: #c084fc !important;
-            }
-
-            &.active-custom-item {
-                background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%) !important;
-                color: #ffffff !important;
-                font-weight: 600;
-            }
-        }
-    }
-}
+    .clean-datatable {
+        background: transparent !important; color: #d4d4d8 !important; box-shadow: none !important; width: 100% !important; height: 100% !important; color-scheme: dark; display: flex !important; flex-direction: column !important;
         
-    
+        .datatable-header { flex: 0 0 55px !important; height: 55px !important; background: #0f172a !important; border-bottom: 2px solid #38bdf8 !important; width: 100%; z-index: 2;
+            .datatable-header-cell { color: #38bdf8 !important; font-weight: 600 !important; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; padding: 16px 28px !important; &:hover { background-color: transparent !important; } .datatable-header-cell-template-wrap { display: flex; align-items: center; width: 100%; height: 100%; white-space: nowrap !important; } }
+        }
+        
+        datatable-body, .datatable-body { flex: 1 1 auto !important; height: auto !important; min-height: 400px; width: 100%; overflow-y: auto !important; overflow-x: auto !important; background-color: transparent !important;
+            &::-webkit-scrollbar { width: 10px; height: 10px; } &::-webkit-scrollbar-track { background: #0f172a !important; } &::-webkit-scrollbar-thumb { background: #334155 !important; border-radius: 4px; border: 2px solid #0f172a; } &::-webkit-scrollbar-thumb:hover { background: #475569 !important; } &::-webkit-scrollbar-corner { background: #0f172a !important; } 
+            .datatable-row-wrapper { border-bottom: none !important; transition: background-color 0.2s ease; &:hover { background-color: rgba(255, 255, 255, 0.05) !important; } }
+            .datatable-body-row { height: 95px !important; width: 100%; border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important; } 
+            .datatable-body-cell { padding: 0 28px !important; display: flex !important; align-items: center !important; .datatable-body-cell-template-wrap { width: 100%; height: 100%; display: flex; align-items: center; white-space: nowrap !important; overflow: visible; text-overflow: ellipsis; } }
+        }
+        
+        .align-center-col { display: flex !important; justify-content: center !important; text-align: center; .datatable-header-cell-template-wrap, .datatable-body-cell-template-wrap { width: 100%; display: flex; justify-content: center; align-items: center; } }
+        .align-left-col { display: flex !important; justify-content: flex-start !important; text-align: left; .datatable-header-cell-template-wrap, .datatable-body-cell-template-wrap { width: 100%; display: flex; justify-content: flex-start; align-items: center; } }
+        
+        .datatable-footer { flex: 0 0 65px !important; height: 65px !important; background-color: rgba(0,0,0,0.2) !important; border-top: 1px solid rgba(255,255,255,0.1) !important; padding: 0 24px !important; color: #71717a !important; width: 100%; z-index: 3;
+            .page-count { font-size: 0.85rem !important; }
+            .datatable-pager .pager { display: flex !important; gap: 6px !important; margin: 0 !important; align-items: center;
+                li a { display: flex !important; align-items: center !important; justify-content: center !important; min-width: 32px !important; height: 32px !important; border-radius: 6px !important; background: transparent !important; color: #71717a !important; border: 1px solid transparent !important; transition: all 0.3s ease; &:hover { background: rgba(56, 189, 248, 0.15) !important; color: #fff !important; box-shadow: 0 0 12px rgba(56, 189, 248, 0.6) !important; text-shadow: 0 0 8px rgba(255,255,255,0.8); } }
+                li.active a { background: #38bdf8 !important; color: #09090b !important; font-weight: 700 !important; box-shadow: 0 0 15px #38bdf8, 0 0 30px rgba(56, 189, 248, 0.8) !important; }
+                li.disabled a { opacity: 0.3 !important; cursor: not-allowed; box-shadow: none !important; }
+            }
+        }
+    }
+}
+.text-nowrap { white-space: nowrap !important; }
+
+.fixed-width-badge {
+    width: 155px; display: inline-flex; align-items: center; justify-content: center; background: rgba(14, 165, 233, 0.1); color: #38bdf8; font-weight: 600; font-size: 0.85rem; padding: 8px 0; border-radius: 6px; border: 1px solid rgba(56, 189, 248, 0.3); text-decoration: none; letter-spacing: 0.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+/* ====================================================
+   8 DẢI MÀU TRẠNG THÁI KHÁC BIỆT RÕ RÀNG NHẤT
+==================================================== */
+.status-pill {
+    width: 160px;
+    padding: 8px 12px;
+    border-radius: 50px; 
+    font-size: 0.75rem; 
+    font-weight: 700; 
+    letter-spacing: 0.05em;
+    display: inline-flex; 
+    align-items: center; 
+    justify-content: center; 
+    border: 1px solid transparent; 
+    text-transform: uppercase;
+    white-space: nowrap; 
+    flex-shrink: 0;
+}
+
+/* Kích thước chấm tròn to và phát sáng rực */
+.status-pill .status-dot { 
+    width: 8px; 
+    height: 8px; 
+    border-radius: 50%; 
+    margin-right: 8px; 
+    flex-shrink: 0; 
+    box-shadow: 0 0 12px currentColor; 
+}
+
+/* 0: Mới -> Màu Xanh Lơ (Cyan Sáng) */
+.status-new { color: #00e5ff; background: rgba(0, 229, 255, 0.1); border-color: rgba(0, 229, 255, 0.3); } 
+.status-new .status-dot { background-color: #00e5ff; }
+
+/* 1: Đã phân công -> Màu Tím Neon */
+.status-assigned { color: #d946ef; background: rgba(217, 70, 239, 0.1); border-color: rgba(217, 70, 239, 0.3); }
+.status-assigned .status-dot { background-color: #d946ef; }
+
+/* 2: Đang xử lý -> Màu Xanh Biển Sáng */
+.status-inprogress { color: #3b82f6; background: rgba(59, 130, 246, 0.1); border-color: rgba(59, 130, 246, 0.3); }
+.status-inprogress .status-dot { background-color: #3b82f6; }
+
+/* 3: Chờ phản hồi -> Màu Cam Rực */
+.status-pending { color: #ff8a00; background: rgba(255, 138, 0, 0.1); border-color: rgba(255, 138, 0, 0.3); }
+.status-pending .status-dot { background-color: #ff8a00; }
+
+/* 4: Vượt cấp -> Màu Hồng Cánh Sen (Rose) */
+.status-escalated { color: #f43f5e; background: rgba(244, 63, 94, 0.1); border-color: rgba(244, 63, 94, 0.3); }
+.status-escalated .status-dot { background-color: #f43f5e; }
+
+/* 5: Đã giải quyết -> Màu Xanh Ngọc (Teal) */
+.status-resolved { color: #2dd4bf; background: rgba(45, 212, 191, 0.1); border-color: rgba(45, 212, 191, 0.3); }
+.status-resolved .status-dot { background-color: #2dd4bf; }
+
+/* 6: Hoàn thành -> Màu Xanh Lá Sáng */
+.status-completed { color: #10b981; background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.3); }
+.status-completed .status-dot { background-color: #10b981; }
+
+/* 7: Đóng / Hủy -> Màu Xám Bạc */
+.status-closed { color: #94a3b8; background: rgba(148, 163, 184, 0.1); border-color: rgba(148, 163, 184, 0.3); }
+.status-closed .status-dot { background-color: #94a3b8; }

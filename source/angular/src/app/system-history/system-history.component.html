@@ -1,0 +1,94 @@
+<div class="system-history-page-wrapper py-4">
+    <div class="container-fluid" style="max-width: 1200px;">
+        
+        <!-- HEADER TRANG -->
+        <div class="d-flex flex-wrap align-items-center justify-content-between mb-4 gap-3 header-section">
+            <div class="d-flex align-items-center gap-3">
+                <div class="header-icon-box"
+                    style="background-color: #1e293b; width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                    <i class="fas fa-clipboard-list fs-5" style="color: #8b5cf6;"></i>
+                </div>
+                <div>
+                    <h2 class="fw-bold page-title mb-1 text-white" style="font-size: 1.5rem;">
+                        {{ 'ItHelpdesk::Menu:SystemHistory' | abpLocalization }}
+                    </h2>
+                    <p class="text-muted mb-0" style="font-size: 0.9rem; margin-bottom: 0;">
+                        {{ 'ItHelpdesk::SystemHistory:PageSubtitle' | abpLocalization }}
+                    </p>
+                </div>
+            </div>
+            
+            <div class="d-flex align-items-center gap-3">
+                <button class="btn btn-creative-refresh d-inline-flex align-items-center shadow-lg flex-shrink-0" 
+                        (click)="fetchHistory()" [disabled]="isLoading">
+                    <span class="icon-ring" [class.fa-spin]="isLoading">
+                        <i class="fas fa-sync-alt"></i>
+                    </span>
+                    <span class="btn-text pe-3">{{ 'ItHelpdesk::Refresh' | abpLocalization }}</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- NỘI DUNG TIMELINE (GLASSMORPHISM) -->
+        <div class="premium-glass-card p-4 p-md-5 position-relative min-vh-50">
+            
+            <div *ngIf="isLoading" class="text-center py-5 absolute-center w-100">
+                <div class="spinner-border text-info" role="status" style="width: 3rem; height: 3rem;"></div>
+                <p class="text-slate-400 mt-3 fw-medium">{{ 'ItHelpdesk::Loading' | abpLocalization }}</p>
+            </div>
+
+            <div *ngIf="!isLoading && historyLogs.length === 0" class="text-center py-5 absolute-center w-100">
+                <i class="fas fa-history fa-4x text-slate-600 mb-3 opacity-50"></i>
+                <h5 class="fw-bold text-slate-300">{{ 'ItHelpdesk::SystemHistory:NoDataTitle' | abpLocalization }}</h5>
+                <p class="text-slate-500">{{ 'ItHelpdesk::SystemHistory:NoDataDetail' | abpLocalization }}</p>
+            </div>
+
+            <!-- TIMELINE -->
+            <div class="history-timeline" *ngIf="!isLoading && historyLogs.length > 0">
+                <div class="timeline-item" *ngFor="let log of historyLogs" [ngClass]="getActionTheme(log.actionType)">
+                    
+                    <div class="timeline-marker shadow-sm d-flex align-items-center justify-content-center">
+                        <i [ngClass]="getActionIcon(log.actionType)"></i>
+                    </div>
+                    <div class="timeline-content card border-0">
+                        <div class="card-body p-4">
+                            <div class="d-flex justify-content-between align-items-md-center flex-column flex-md-row mb-2 gap-2">
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="badge action-badge rounded-pill px-3 py-1 fw-bold text-uppercase shadow-sm">
+                                        {{ getActionName(log.actionType) }}
+                                    </span>
+                                    <span class="badge bg-slate-800 text-slate-300 border border-slate-600 rounded-pill px-2 py-1" *ngIf="log.entityType">
+                                        <i class="fas fa-cube me-1 opacity-75"></i> 
+                                        <!-- Dịch loại Entity -->
+                                        {{ 'ItHelpdesk::Entity:' + log.entityType | abpLocalization }}
+                                    </span>
+                                </div>
+                                <span class="time-text small fw-medium text-slate-400">
+                                    <i class="far fa-clock me-1"></i> {{ log.creationTime | date:'dd/MM/yyyy HH:mm:ss' }}
+                                </span>
+                            </div>
+                            
+                            <!-- Bổ sung Pipe Đa ngôn ngữ cho nội dung log -->
+                            <p class="mb-3 log-desc-text fw-medium">
+                                {{ log.content | abpLocalization }}
+                            </p>
+                            
+                            <div class="d-flex align-items-center gap-2 log-user-info pt-2 border-top border-slate-700">
+                                <div class="avatar-sm rounded-circle d-flex align-items-center justify-content-center bg-slate-700 text-slate-300 fw-bold shadow-sm">
+                                    <i class="fas" [ngClass]="log.isCurrentUser ? 'fa-user-tie text-info' : 'fa-user'"></i>
+                                </div>
+                                <span class="small text-slate-300">
+                                    {{ 'ItHelpdesk::SystemHistory:By' | abpLocalization }} 
+                                    <span class="fw-bold" [ngClass]="log.isCurrentUser ? 'text-info' : 'text-white'">
+                                        <!-- Nếu không có creatorName (Hệ thống tự làm) thì sẽ hiện chữ "Hệ thống / System" -->
+                                        {{ log.isCurrentUser ? ('ItHelpdesk::SystemHistory:Me' | abpLocalization) : (log.creatorName || ('ItHelpdesk::SystemHistory:SystemAuto' | abpLocalization)) }}
+                                    </span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -24,5 +24,6 @@ namespace ItHelpdesk.Provider
 
         // 6. Báo cáo thống kê tổng hợp Ticket
         Task<List<TicketReportResponse>> GetReportSummaryAsync(TicketReportRequest input);
+
     }
 }

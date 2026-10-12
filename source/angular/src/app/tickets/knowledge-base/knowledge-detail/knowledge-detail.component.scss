@@ -1,0 +1,124 @@
+/* =========================================================================
+   KNOWLEDGE DETAIL (MAGICAL CYBER-GLASS THEME)
+   ========================================================================= */
+:host {
+    display: block;
+    width: 100%;
+}
+.ticket-page-wrapper {
+    background: radial-gradient(circle at 50% 10%, #1e1b4b 0%, #0c0f1d 100%) !important;
+    margin: -2rem !important;
+    padding: 2.5rem 1.5rem !important;
+    min-height: calc(100vh + 4rem) !important;
+    transition: background-color 0.5s ease;
+    .text-magical { color: #a78bfa !important; }
+    .text-cyan { color: #38bdf8 !important; }
+    .text-slate-200 { color: #e2e8f0 !important; }
+    .text-slate-300 { color: #cbd5e1 !important; }
+    .text-slate-400 { color: #94a3b8 !important; }
+    
+    .hover-text-cyan:hover { color: #38bdf8 !important; }
+    .hover-text-white:hover { color: #ffffff !important; }
+}
+
+/* ====================================================
+   🔥 HIỆU ỨNG KHI BẬT CHẾ ĐỘ TẬP TRUNG (FOCUS MODE)
+   ==================================================== */
+.focus-mode-active {
+    background: #000000 !important;
+    
+    .content-container {
+        transition: max-width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .top-toolbar, .bottom-toolbar {
+        opacity: 0.15;
+        transition: opacity 0.3s ease;
+        &:hover { opacity: 1; }
+    }
+    .premium-glass-card {
+        background: #0f172a !important;
+        border: none !important;
+        box-shadow: none !important;
+    }
+    .article-content ::ng-deep {
+        p, li {
+            color: #f8fafc !important;
+            font-size: 1.15rem;
+            line-height: 2.1;
+        }
+        h1, h2, h3, h4, h5, h6 { color: #ffffff !important; }
+    }
+}
+
+/* Thẻ bài viết chính */
+.premium-glass-card {
+    background: rgba(23, 28, 48, 0.85) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 24px !important;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), inset 0 0 0 1px rgba(255,255,255,0.05) !important;
+    color: #ffffff !important;
+    transition: all 0.4s ease;
+}
+
+/* Nút bấm viền phát sáng */
+.magical-outline-btn {
+    color: #38bdf8 !important;
+    border: 1px solid rgba(56, 189, 248, 0.4) !important;
+    background: transparent !important;
+    transition: all 0.3s ease;
+    &:hover {
+        background: rgba(56, 189, 248, 0.15) !important;
+        border-color: rgba(56, 189, 248, 0.6) !important;
+        color: white !important;
+        box-shadow: 0 4px 15px rgba(56, 189, 248, 0.3) !important;
+        i { color: white !important; }
+    }
+}
+
+/* =======================================
+   ANIMATIONS (BLINK BLINK, FLOAT, FADE)
+   ======================================= */
+@keyframes twinkling {
+    0% { opacity: 0.1; transform: scale(0.6); text-shadow: 0 0 0px rgba(253, 230, 138, 0); }
+    50% { opacity: 1; transform: scale(1.3); text-shadow: 0 0 10px rgba(253, 230, 138, 0.8); }
+    100% { opacity: 0.1; transform: scale(0.6); text-shadow: 0 0 0px rgba(253, 230, 138, 0); }
+}
+.blink-star { position: absolute; color: #fde68a; animation: twinkling 2.5s infinite ease-in-out; pointer-events: none; }
+.star-1 { top: 25px; left: 10%; animation-delay: 0s; font-size: 0.9rem; }
+.star-2 { top: 60px; right: 15%; animation-delay: 0.8s; font-size: 1.1rem; }
+.star-3 { bottom: 40px; left: 20%; animation-delay: 1.2s; font-size: 0.7rem; }
+.star-top-right { top: -10px; right: -20px; font-size: 0.85rem; animation-delay: 0.3s;}
+@keyframes floatUp {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-3px); }
+}
+.float-animation { display: inline-block; animation: floatUp 3s infinite ease-in-out; }
+.hover-elevate { transition: all 0.2s ease-in-out; &:hover { transform: translateY(-2px); } }
+.animate-fade-in-up { animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+.delay-1 { animation-delay: 0.1s; opacity: 0; }
+@keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+/* =======================================
+   TÙY CHỈNH NỘI DUNG HTML ĐƯỢC RENDER
+   ======================================= */
+.article-content {
+    ::ng-deep {
+        h1, h2, h3, h4, h5, h6 { color: #ffffff; margin-top: 1.8rem; margin-bottom: 1rem; font-weight: 600; }
+        h5, h4 { color: #38bdf8 !important; letter-spacing: 0.3px; }
+        h3 { color: #a78bfa !important; }
+        p, li { color: #e2e8f0; margin-bottom: 1rem; transition: all 0.3s ease; }
+        ul, ol { padding-left: 1.8rem; margin-bottom: 1.5rem; li { margin-bottom: 0.5rem; } }
+        strong, b { color: #ffffff; font-weight: 700; }
+        em, i { color: #94a3b8; }
+        a {
+            color: #38bdf8 !important; text-decoration: none !important; border-bottom: 1px dashed #38bdf8; transition: all 0.2s ease;
+            &:hover { color: #7dd3fc !important; border-bottom: 1px solid #7dd3fc; opacity: 0.9; }
+        }
+        code { background-color: rgba(15, 23, 42, 0.8); color: #a78bfa; padding: 3px 8px; border-radius: 6px; font-family: 'Courier New', Courier, monospace; font-size: 0.9em; border: 1px solid rgba(167, 139, 250, 0.2); }
+        .alert { background: rgba(56, 189, 248, 0.1); border-left: 4px solid #38bdf8; color: #38bdf8; padding: 1rem 1.25rem; border-radius: 8px; margin-bottom: 1.5rem; box-shadow: 0 4px 12px rgba(0,0,0,0.1); p { margin-bottom: 0; color: inherit !important; } }
+        img { max-width: 100%; height: auto; border-radius: 12px; margin: 1rem 0; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        table { width: 100%; margin-bottom: 1.5rem; border-collapse: collapse; th, td { padding: 0.75rem; border: 1px solid rgba(255,255,255,0.1); color: #e2e8f0; } th { background: rgba(15, 23, 42, 0.8); color: #ffffff; font-weight: 600; } }
+    }
+}

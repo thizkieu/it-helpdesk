@@ -8,7 +8,6 @@ import { TicketService, TicketDto } from '@proxy/tickets';
 import { NgxDatatableModule } from '@swimlane/ngx-datatable';
 import { Subject, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
-
 import { CustomToastService } from '../shared/services/custom-toast.service'; 
 
 @Component({
@@ -25,29 +24,22 @@ export class MyTicketsComponent implements OnInit, OnDestroy {
   private elementRef = inject(ElementRef);
   private localizationService = inject(LocalizationService);
   private customToast = inject(CustomToastService);
-
+  
   data: PagedResultDto<TicketDto> = { items: [], totalCount: 0 };
-
   filters = {
     filterText: '',
     status: null as number | null,
     skipCount: 0,
-    maxResultCount: 10,
-    isMyTickets: true,
-    isOverdue: false
+    maxResultCount: 10
   };
-
-  private readonly storageKey = 'my_tickets_search_history';
   
-  // [SỬA LỖI 2571]: Khai báo mảng kiểu string tường minh
+  private readonly storageKey = 'my_tickets_search_history';
   recentSearches: string[] = []; 
   showSearchSuggestions = false;
   showStatusDropdown = false;
-
   private searchSubject = new Subject<string>();
   private searchSubscription?: Subscription;
 
-  // Sử dụng khóa ngôn ngữ thay vì text cứng
   userFriendlyStatuses = [
     { value: null, label: 'ItHelpdesk::MyTickets:AllStatus' },
     { value: 0, label: 'ItHelpdesk::Enum:TicketStatus.0' },
@@ -69,51 +61,40 @@ export class MyTicketsComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadSearchHistory();
-
     const streamCreator = (query: any) => {
       query.filter = this.filters.filterText?.trim() || '';
-      
       if (this.filters.status !== null) {
         query.status = this.filters.status;
-      } else {
-        delete query.status;
       }
-
       query.skipCount = this.filters.skipCount;
       query.maxResultCount = this.filters.maxResultCount;
-      query.isMyTickets = this.filters.isMyTickets;
-      query.isOverdue = this.filters.isOverdue;
-
+      
+      // KHÓA CHẶT BỘ LỌC CÁ NHÂN TẠI ĐÂY
+      query.isMyTickets = true; 
+      
       return this.ticketService.getList(query);
     };
-
+    
     this.list.hookToQuery(streamCreator).subscribe({
-      next: (res: PagedResultDto<TicketDto>) => {
-        this.data = res;
-      },
-      // [SỬA LỖI 2571]: Định nghĩa rõ err là type any
+      next: (res: PagedResultDto<TicketDto>) => { this.data = res; },
       error: (err: any) => {
         this.customToast.show(this.localizationService.instant('ItHelpdesk::Error:Generic'), 'error');
         console.error(err);
       }
     });
-
+    
     this.searchSubscription = this.searchSubject.pipe(
       debounceTime(350),
       distinctUntilChanged()
     ).subscribe((keyword: string) => {
       const cleanKeyword = keyword.trim();
-      if (cleanKeyword) {
-        this.saveSearchHistory(cleanKeyword);
-      }
+      if (cleanKeyword) this.saveSearchHistory(cleanKeyword);
       this.filters.skipCount = 0;
       this.list.get();
     });
   }
 
-  ngOnDestroy(): void {
-    this.searchSubscription?.unsubscribe();
-  }
+  ngOnDestroy(): void { this.searchSubscription?.unsubscribe(); }
 
   onPageChange(event: any): void {
     const newSkipCount = event.offset * this.filters.maxResultCount;
@@ -125,14 +106,12 @@ export class MyTicketsComponent implements OnInit, OnDestroy {
 
   private loadSearchHistory(): void {
     const saved = localStorage.getItem(this.storageKey);
-    // [SỬA LỖI 2571]: Ép kiểu an toàn từ JSON.parse
     this.recentSearches = saved ? (JSON.parse(saved) as string[]) : [];
   }
 
   private saveSearchHistory(keyword: string): void {
     if (!keyword || !keyword.trim()) return;
     const clean = keyword.trim();
-    // [SỬA LỖI 2571]: Ép kiểu an toàn khi thao tác mảng
     const filtered = this.recentSearches.filter(x => x.toLowerCase() !== clean.toLowerCase());
     this.recentSearches = [clean, ...filtered].slice(0, 5);
     localStorage.setItem(this.storageKey, JSON.stringify(this.recentSearches));
@@ -155,6 +134,11 @@ export class MyTicketsComponent implements OnInit, OnDestroy {
     this.searchSubject.next(this.filters.filterText || '');
   }
 
+  onSearchFocus(): void {
+    this.showSearchSuggestions = true;
+    this.showStatusDropdown = false; 
+  }
+
   selectSearchSuggestion(keyword: string): void {
     this.filters.filterText = keyword;
     this.showSearchSuggestions = false;
@@ -166,9 +150,7 @@ export class MyTicketsComponent implements OnInit, OnDestroy {
   performSearch(): void {
     const keyword = this.filters.filterText?.trim();
     this.showSearchSuggestions = false;
-    if (keyword) {
-      this.saveSearchHistory(keyword);
-    }
+    if (keyword) this.saveSearchHistory(keyword);
     this.filters.skipCount = 0;
     this.list.get();
   }
@@ -180,32 +162,35 @@ export class MyTicketsComponent implements OnInit, OnDestroy {
     this.list.get();
   }
 
-  onFilterChange(): void {
-    this.filters.skipCount = 0;
-    this.list.get();
-  }
-
-  onOverdueToggle(): void {
-    this.filters.skipCount = 0;
-    this.list.get();
+  toggleStatusDropdown(event: MouseEvent): void {
+    event.stopPropagation();
+    this.showStatusDropdown = !this.showStatusDropdown;
+    this.showSearchSuggestions = false; 
   }
 
   selectStatus(status: number | null): void {
     this.filters.status = status;
     this.showStatusDropdown = false;
-    this.onFilterChange();
+    this.filters.skipCount = 0;
+    this.list.get();
   }
 
-  // HÀM ÁNH XẠ TRẠNG THÁI (ĐA NGÔN NGỮ)
   getStatusLabel(status: number | null): string {
     const found = this.userFriendlyStatuses.find(s => s.value === status);
-    if (found) {
-      return this.localizationService.instant(found.label);
-    }
-    // Gộp trạng thái Đang xử lý
-    if (status === 3 || status === 4 || status === 5) {
-      return this.localizationService.instant('ItHelpdesk::Enum:TicketStatus.2');
-    }
+    if (found) return this.localizationService.instant(found.label);
+    if (status === 3 || status === 4 || status === 5) return this.localizationService.instant('ItHelpdesk::Enum:TicketStatus.2');
     return this.localizationService.instant('ItHelpdesk::MyTickets:AllStatus');
+  }
+
+  getStatusClass(status: number | undefined): string {
+    switch (status) {
+      case 0: return 'status-new';
+      case 1: return 'status-assigned';
+      case 2: case 3: case 4: return 'status-inprogress';
+      case 5: return 'status-resolved';
+      case 6: return 'status-completed';
+      case 7: return 'status-closed';
+      default: return '';
+    }
   }
 }

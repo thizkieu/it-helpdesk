@@ -2,7 +2,7 @@ using ItHelpdesk.MultiTenancy;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using System;
-using Volo.Abp; // Bắt buộc phải có thư viện này cho ApplicationInitializationContext
+using Volo.Abp;
 using Volo.Abp.AuditLogging;
 using Volo.Abp.BackgroundJobs;
 using Volo.Abp.BlobStoring.Database;
@@ -18,8 +18,8 @@ using Volo.Abp.PermissionManagement.Identity;
 using Volo.Abp.PermissionManagement.OpenIddict;
 using Volo.Abp.SettingManagement;
 using Volo.Abp.TenantManagement;
-using Volo.Abp.BackgroundWorkers; // Thêm thư viện để gọi AddBackgroundWorkerAsync
-using ItHelpdesk.Workers; // Gọi thư mục chứa SlaMonitorWorker
+using Volo.Abp.BackgroundWorkers;
+using ItHelpdesk.Workers;
 
 namespace ItHelpdesk;
 
@@ -51,9 +51,12 @@ public class ItHelpdeskDomainModule : AbpModule
 #endif
     }
 
-    // ĐÂY LÀ HÀM THÊM VÀO ĐỂ KHỞI CHẠY WORKER SLA
     public override void OnApplicationInitialization(ApplicationInitializationContext context)
     {
+        // Worker giám sát SLA hiện tại của bạn
         context.AddBackgroundWorkerAsync<SlaMonitorWorker>();
+
+        // Khởi chạy Worker tự động đóng Ticket sau 3 ngày ân hạn
+        context.AddBackgroundWorkerAsync<TicketAutoCloseWorker>();
     }
 }

@@ -14,6 +14,9 @@ namespace ItHelpdesk.Tickets
         public Guid? CreatorId { get; set; }
         public string? CreatorName { get; set; }
 
+        // Thêm trường CreatorAvatar để chứa ảnh đại diện cá nhân (ảnh blob hoặc chibi)
+        public string? CreatorAvatar { get; set; }
+
         // Thêm danh sách chứa các bình luận trả lời (nested replies)
         public List<TicketTimelineDto> Replies { get; set; } = new();
     }

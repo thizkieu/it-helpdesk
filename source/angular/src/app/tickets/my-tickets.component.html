@@ -1,162 +1,181 @@
-<div class="ticket-page-wrapper py-4 text-white">
-  <div class="container-fluid" style="max-width: 1400px;">
+<div class="ticket-page-wrapper py-4 text-white w-100 overflow-hidden print-wrapper">
+    <div class="container-fluid flex-grow-1 d-flex flex-column h-100" style="max-width: 1600px;">
 
-    <!-- HEADER TRANG -->
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
-      <div>
-        <span class="badge cute-badge-pill mb-2 px-3 py-2"
-          style="background: rgba(192, 132, 252, 0.15); border: 1px dashed rgba(192, 132, 252, 0.45); color: #c084fc;">
-          <i class="fas fa-paw me-1"></i> {{ 'ItHelpdesk::MyTickets:HeaderBadge' | abpLocalization }}
-        </span>
-        <h2 class="fw-bold page-title mb-0 text-white">{{ 'ItHelpdesk::Menu:MyTickets' | abpLocalization }}</h2>
-      </div>
-      <div>
-        <a routerLink="/tickets/create"
-          class="btn rounded-pill px-4 fw-semibold d-inline-flex align-items-center justify-content-center shadow-sm hover-elevate"
-          style="border: 1px solid #c084fc; color: #c084fc; background: transparent; min-height: 42px;">
-          <i class="fas fa-plus me-2"></i> {{ 'ItHelpdesk::MyTickets:CreateNew' | abpLocalization }}
-        </a>
-      </div>
-    </div>
-
-    <!-- THANH TÌM KIẾM & BỘ LỌC -->
-    <div class="card premium-glass-card border-0 shadow-lg mb-4 p-4 rounded-4"
-      style="background: rgba(23, 28, 48, 0.85) !important; backdrop-filter: blur(20px); position: relative; z-index: 105;">
-
-      <div class="row align-items-center justify-content-between g-4">
-        <!-- Ô Search -->
-        <div class="col-xl-5 col-lg-5 position-relative search-wrapper" style="z-index: 999;">
-          <div class="input-group align-items-center rounded-pill px-3 py-1 position-relative"
-            style="background: rgba(15, 23, 42, 0.9); border: 2.5px solid #ffffff; box-shadow: 0 0 25px rgba(255, 255, 255, 0.5), inset 0 0 15px rgba(255, 255, 255, 0.2); backdrop-filter: blur(12px);">
-            <span class="text-white opacity-90 bg-transparent border-0 pe-2 ps-2">
-              <i class="fas fa-search fs-5"></i>
-            </span>
-            <input type="text" class="form-control bg-transparent border-0 shadow-none text-white p-2"
-              [placeholder]="'ItHelpdesk::MyTickets:SearchPlaceholder' | abpLocalization"
-              [(ngModel)]="filters.filterText" (input)="onSearchInput()" (keyup.enter)="performSearch()"
-              (focus)="showSearchSuggestions = true" style="font-size: 0.9rem;" />
-            <button *ngIf="filters.filterText"
-              class="btn btn-link text-white opacity-75 p-0 ms-2 text-decoration-none me-2" type="button"
-              (click)="clearSearch()" [title]="'ItHelpdesk::ClearSearch' | abpLocalization">
-              <i class="fas fa-times"></i>
-            </button>
-          </div>
-
-          <ul *ngIf="showSearchSuggestions && recentSearches.length > 0"
-            class="dropdown-menu show w-100 shadow-lg border-0 mt-2 p-2 rounded-4 position-absolute text-start"
-            style="background: rgba(22, 22, 35, 0.95); backdrop-filter: blur(16px); top: 100%; z-index: 1050; border: 1px solid rgba(255,255,255,0.1) !important; left: 0; right: 0;">
-            <li class="d-flex justify-content-between align-items-center px-3 py-1 mb-1">
-              <span class="small fw-bold" style="color: #c084fc;">
-                <i class="fas fa-history me-1"></i> {{ 'ItHelpdesk::RecentSearches' | abpLocalization }}
-              </span>
-              <button class="btn btn-link text-muted p-0 small text-decoration-none" style="font-size: 0.75rem;"
-                (click)="clearAllSearchHistory($event)">{{ 'ItHelpdesk::ClearAll' | abpLocalization }}</button>
-            </li>
-            <li *ngFor="let item of recentSearches" (click)="selectSearchSuggestion(item)"
-              class="dropdown-item text-light rounded-3 cursor-pointer px-3 py-2 my-1 d-flex justify-content-between align-items-center custom-dropdown-item">
-              <div><i class="fas fa-search text-purple-accent me-2 opacity-75"></i><span>{{ item }}</span></div>
-              <i class="fas fa-times text-muted ms-2 p-1" (click)="removeSearchHistoryItem(item, $event)"
-                [title]="'ItHelpdesk::RemoveItem' | abpLocalization"></i>
-            </li>
-          </ul>
+        <!-- HEADER TRANG -->
+        <div class="d-flex justify-content-between align-items-center mb-4 header-section flex-shrink-0">
+            <h2 class="fw-bold page-title mb-0 d-flex align-items-center gap-2">
+                <i class="fas fa-ticket-alt text-primary opacity-75 fs-4"></i>
+                {{ 'ItHelpdesk::Menu:MyTickets' | abpLocalization }}
+            </h2>
+            <div class="d-flex gap-3">
+                <a routerLink="/tickets/create"
+                    class="btn btn-cyber-primary rounded-pill px-4 fw-bold text-white d-flex align-items-center gap-2 shadow-sm text-nowrap">
+                    <i class="fas fa-plus"></i> {{ 'ItHelpdesk::MyTickets:CreateNew' | abpLocalization }}
+                </a>
+            </div>
         </div>
 
-        <div class="col-xl-7 col-lg-7 d-flex flex-wrap justify-content-lg-end align-items-center gap-3">
-          <!-- Dropdown Trạng thái -->
-          <div class="position-relative status-dropdown-wrapper" style="min-width: 240px; z-index: 998;">
-            <button type="button"
-              class="btn w-100 d-flex justify-content-between align-items-center rounded-pill px-4 py-2 text-white shadow-none custom-select-btn"
-              style="background: rgba(15, 23, 42, 0.9); border: 2px solid rgba(255, 255, 255, 0.2); backdrop-filter: blur(12px);"
-              (click)="showStatusDropdown = !showStatusDropdown; $event.stopPropagation()">
-              <span class="fw-medium text-truncate">{{ getStatusLabel(filters.status) }}</span>
-              <i class="fas fa-chevron-down ms-2 small transition-transform"
-                [ngClass]="{'rotate-180': showStatusDropdown}"></i>
-            </button>
-            <!-- Menu trạng thái thân thiện -->
-            <ul *ngIf="showStatusDropdown"
-              class="dropdown-menu show w-100 shadow-lg border-0 mt-2 p-2 rounded-4 position-absolute text-start custom-dropdown-list"
-              style="background: rgba(22, 22, 35, 0.95); backdrop-filter: blur(16px); top: 100%; z-index: 1050; border: 1px solid rgba(255,255,255,0.1) !important;">
-              <li *ngFor="let status of userFriendlyStatuses" (click)="selectStatus(status.value)"
-                class="dropdown-item text-light rounded-3 cursor-pointer px-3 py-2 my-1 d-flex align-items-center">
-                <i class="fas fa-circle-notch me-2 opacity-50 small"></i>
-                <!-- status.label đã chứa giá trị localization ở TS nên dùng pipe -->
-                <span>{{ status.label | abpLocalization }}</span>
-              </li>
-            </ul>
-          </div>
-          <div class="text-muted small px-2">
-            {{ 'ItHelpdesk::MyTickets:TotalCountLabel' | abpLocalization }}: <span class="fw-bold"
-              style="color: #c084fc;">{{ data.totalCount }}</span> {{ 'ItHelpdesk::MyTickets:TotalCountSuffix' |
-            abpLocalization }}
-          </div>
+        <!-- CONTROL PANEL -->
+        <div class="control-panel-card mb-4 filter-top-layer flex-shrink-0 p-4 rounded-4">
+            <div class="row g-3 align-items-center">
+                <!-- Ô TÌM KIẾM -->
+                <div class="col-12 col-md-6">
+                    <div class="position-relative search-wrapper w-100">
+                        <div class="clean-search-box shadow-sm w-100">
+                            <i class="fas fa-search text-info search-icon"></i>
+                            <input type="text"
+                                class="form-control bg-transparent text-white border-0 shadow-none search-input"
+                                [placeholder]="'ItHelpdesk::MyTickets:SearchPlaceholder' | abpLocalization"
+                                [(ngModel)]="filters.filterText" (input)="onSearchInput()"
+                                (keyup.enter)="performSearch()" (focus)="onSearchFocus()" />
+                            <button *ngIf="filters.filterText" class="btn-clear-search text-secondary"
+                                (click)="clearSearch()" [title]="'ItHelpdesk::ClearSearch' | abpLocalization">
+                                <i class="fas fa-times-circle"></i>
+                            </button>
+                        </div>
+                        <div *ngIf="showSearchSuggestions && recentSearches.length > 0"
+                            class="clean-dropdown position-absolute w-100 mt-2 p-2">
+                            <div
+                                class="text-info small fw-bold px-3 py-2 mb-1 border-bottom border-secondary border-opacity-25 d-flex justify-content-between align-items-center">
+                                <span><i class="fas fa-history me-1"></i> {{ 'ItHelpdesk::RecentSearches' |
+                                    abpLocalization }}</span>
+                                <button
+                                    class="btn btn-link text-slate-400 hover-text-danger p-0 small text-decoration-none"
+                                    style="font-size: 0.75rem;" (click)="clearAllSearchHistory($event)">{{
+                                    'ItHelpdesk::ClearAll' | abpLocalization }}</button>
+                            </div>
+                            <div *ngFor="let item of recentSearches" (click)="selectSearchSuggestion(item)"
+                                class="custom-dropdown-item px-3 py-2 mt-1 d-flex justify-content-between align-items-center text-slate-300">
+                                <div><i class="fas fa-search small opacity-50 me-2"></i> <span>{{ item }}</span></div>
+                                <i class="fas fa-times text-slate-500 hover-text-danger p-1"
+                                    (click)="removeSearchHistoryItem(item, $event)"
+                                    [title]="'ItHelpdesk::RemoveItem' | abpLocalization"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DROPDOWN TRẠNG THÁI & TỔNG SỐ LƯỢNG -->
+                <div class="col-12 col-md-6 d-flex flex-wrap justify-content-md-end align-items-center gap-3">
+                    <div class="position-relative status-dropdown-wrapper w-100" style="max-width: 300px;">
+                        <button
+                            class="btn clean-select-btn w-100 d-flex justify-content-between align-items-center shadow-sm px-4"
+                            (click)="toggleStatusDropdown($event)">
+                            <span class="text-truncate fw-medium text-info"><i
+                                    class="fas fa-filter me-2 opacity-75 text-slate-400"></i>{{
+                                getStatusLabel(filters.status) }}</span>
+                            <i class="fas fa-chevron-down ms-2 small transition-transform text-slate-400"
+                                [ngClass]="{'rotate-180': showStatusDropdown}"></i>
+                        </button>
+                        <div *ngIf="showStatusDropdown" class="clean-dropdown position-absolute w-100 p-2">
+                            <div *ngFor="let status of userFriendlyStatuses" (click)="selectStatus(status.value)"
+                                class="custom-dropdown-item px-3 py-2 text-slate-300 my-1"
+                                [ngClass]="{'text-info fw-bold border-bottom border-secondary border-opacity-25 pb-2 mb-2': status.value === null}">
+                                {{ status.label | abpLocalization }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="text-slate-400 small px-2 text-nowrap d-none d-xl-block">
+                        {{ 'ItHelpdesk::MyTickets:TotalCountLabel' | abpLocalization }}: <span
+                            class="fw-bold text-white fs-6 ms-1">{{ data.totalCount }}</span>
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
+
+        <!-- BẢNG DỮ LIỆU -->
+        <div class="data-table-card premium-glass-card table-bottom-layer position-relative">
+            <div *ngIf="list.isLoading$ | async"
+                class="position-absolute top-50 start-50 translate-middle text-center z-index-50 w-100 h-100 d-flex flex-column justify-content-center align-items-center"
+                style="background: rgba(15, 23, 42, 0.5); backdrop-filter: blur(4px);">
+                <div class="spinner-border text-primary mb-2"></div>
+                <div class="text-secondary fw-medium fs-5 mt-2">{{ 'ItHelpdesk::Queue:SyncingData' | abpLocalization
+                    }}...</div>
+            </div>
+
+            <ngx-datatable [rows]="data.items" [count]="data.totalCount" [externalPaging]="true"
+                [limit]="filters.maxResultCount" [offset]="filters.skipCount / filters.maxResultCount"
+                (page)="onPageChange($event)" default [columnMode]="'standard'" [scrollbarH]="true" [scrollbarV]="false"
+                [rowHeight]="95" [headerHeight]="55" [footerHeight]="65"
+                [messages]="{ emptyMessage: ('ItHelpdesk::NoData' | abpLocalization), totalMessage: ('ItHelpdesk::MyTickets:TotalCountSuffix' | abpLocalization) }"
+                class="clean-datatable w-100 h-100">
+
+                <!-- CỘT MÃ VÉ -->
+                <ngx-datatable-column [name]="'ItHelpdesk::Queue:ColumnTicketNo' | abpLocalization" prop="ticketNo"
+                    [width]="220" headerClass="align-center-col" cellClass="align-center-col">
+                    <ng-template let-row="row" ngx-datatable-cell-template>
+                        <div class="w-100 d-flex justify-content-center">
+                            <a [routerLink]="['/tickets/detail', row.ticketNo]"
+                                [queryParams]="{ returnUrl: '/tickets/my-tickets' }"
+                                class="badge fixed-width-badge border border-primary text-primary px-3 py-2 d-inline-block text-truncate text-center shadow-sm text-decoration-none">
+                                {{ row.ticketNo }}
+                            </a>
+                        </div>
+                    </ng-template>
+                </ngx-datatable-column>
+
+                <!-- CỘT TIÊU ĐỀ SỰ CỐ -->
+                <ngx-datatable-column prop="title" [width]="500" headerClass="align-left-col"
+                    cellClass="align-left-col">
+
+                    <!-- Tùy chỉnh Header: Thêm ps-3 để thụt lề ngang bằng với nội dung -->
+                    <ng-template ngx-datatable-header-template>
+                        <div class="text-start ps-3 w-100">
+                            {{ 'ItHelpdesk::Queue:ColumnTitle' | abpLocalization }}
+                        </div>
+                    </ng-template>
+
+                    <!-- Nội dung bên dưới (đã có sẵn ps-3) -->
+                    <ng-template let-row="row" ngx-datatable-cell-template>
+                        <div class="w-100 d-flex justify-content-start text-start ps-3">
+                            <a [routerLink]="['/tickets/detail', row.ticketNo]"
+                                [queryParams]="{ returnUrl: '/tickets/my-tickets' }"
+                                class="ticket-title-link fw-semibold text-white text-truncate fs-6"
+                                style="max-width: 450px;" [title]="row.title">
+                                {{ row.title }}
+                            </a>
+                        </div>
+                    </ng-template>
+
+                </ngx-datatable-column>
+
+                <!-- CỘT TRẠNG THÁI -->
+                <ngx-datatable-column [name]="'ItHelpdesk::Queue:ColumnStatus' | abpLocalization" prop="status"
+                    [width]="260" headerClass="align-center-col" cellClass="align-center-col">
+                    <ng-template let-row="row" ngx-datatable-cell-template>
+                        <span class="status-pill text-nowrap shadow-sm" [ngClass]="getStatusClass(row.status)">
+                            <span class="status-dot"></span>
+                            {{ getStatusLabel(row.status) }}
+                        </span>
+                    </ng-template>
+                </ngx-datatable-column>
+
+                <!-- CỘT THỜI GIAN TẠO -->
+                <ngx-datatable-column [name]="'ItHelpdesk::CreationTime' | abpLocalization" prop="creationTime"
+                    [width]="240" headerClass="align-center-col" cellClass="align-center-col">
+                    <ng-template let-row="row" ngx-datatable-cell-template>
+                        <span class="text-slate-300 fw-medium text-nowrap">
+                            <i class="far fa-clock me-2 opacity-50 text-info"></i>{{ row.creationTime | date:'dd/MM/yyyy
+                            HH:mm' }}
+                        </span>
+                    </ng-template>
+                </ngx-datatable-column>
+
+                <!-- CỘT THAO TÁC -->
+                <ngx-datatable-column [name]="'ItHelpdesk::Actions' | abpLocalization" [sortable]="false" [width]="180"
+                    headerClass="align-center-col" cellClass="align-center-col">
+                    <ng-template let-row="row" ngx-datatable-cell-template>
+                        <a [routerLink]="['/tickets/detail', row.ticketNo]"
+                            [queryParams]="{ returnUrl: '/tickets/my-tickets' }"
+                            class="btn btn-cyber-outline rounded-pill px-4 shadow-sm text-nowrap d-inline-flex justify-content-center align-items-center gap-2 btn-glow"
+                            [title]="'ItHelpdesk::Queue:ActionViewBtn' | abpLocalization">
+                            <i class="fas fa-paw bounce-icon-hover"></i> <span>{{ 'ItHelpdesk::Queue:ActionDetail' |
+                                abpLocalization }}</span>
+                        </a>
+                    </ng-template>
+                </ngx-datatable-column>
+            </ngx-datatable>
+        </div>
     </div>
-
-    <!-- KHUNG BẢNG DỮ LIỆU -->
-    <div class="card premium-glass-card border-0 shadow-lg overflow-hidden rounded-4"
-      style="background: rgba(23, 28, 48, 0.85) !important; backdrop-filter: blur(20px);">
-      <div class="card-body p-0">
-        <ngx-datatable [rows]="data.items" [count]="data.totalCount" [externalPaging]="true"
-          [limit]="filters.maxResultCount" [offset]="filters.skipCount / filters.maxResultCount"
-          (page)="onPageChange($event)" default [columnMode]="'force'" [scrollbarH]="true" [rowHeight]="'auto'"
-          [footerHeight]="75" class="admin-datatable w-100">
-
-          <ngx-datatable-column [name]="'ItHelpdesk::TicketNo' | abpLocalization" prop="ticketNo" [minWidth]="260"
-            headerClass="align-left-col" cellClass="align-left-col">
-            <ng-template let-row="row" ngx-datatable-cell-template>
-              <a [routerLink]="['/tickets/detail', row.id]" [queryParams]="{ returnUrl: '/tickets/my-tickets' }"
-                class="fw-bold text-decoration-none w-100 text-truncate text-start"
-                style="color: #a78bfa; letter-spacing: 0.5px;">
-                {{ row.ticketNo }}
-              </a>
-            </ng-template>
-          </ngx-datatable-column>
-
-          <ngx-datatable-column [name]="'ItHelpdesk::TicketSubject' | abpLocalization" prop="title" [minWidth]="400"
-            headerClass="align-left-col" cellClass="align-left-col">
-            <ng-template let-row="row" ngx-datatable-cell-template>
-              <span class="fw-medium text-truncate text-light" title="{{ row.title }}">
-                {{ row.title }}
-              </span>
-            </ng-template>
-          </ngx-datatable-column>
-
-          <ngx-datatable-column [name]="'ItHelpdesk::Status' | abpLocalization" prop="status" [minWidth]="180"
-            headerClass="align-center-col" cellClass="align-center-col">
-            <ng-template let-row="row" ngx-datatable-cell-template>
-              <span class="badge shadow-sm px-3 py-2" [ngClass]="{
-                  'bg-primary': row.status === 0 || row.status === 1,
-                  'bg-warning text-dark': row.status === 2 || row.status === 3 || row.status === 4 || row.status === 5,
-                  'bg-success': row.status === 6,
-                  'bg-secondary': row.status === 7
-                }">
-                {{ getStatusLabel(row.status) }}
-              </span>
-            </ng-template>
-          </ngx-datatable-column>
-
-          <ngx-datatable-column [name]="'ItHelpdesk::CreationTime' | abpLocalization" prop="creationTime"
-            [minWidth]="180" headerClass="align-center-col" cellClass="align-center-col">
-            <ng-template let-row="row" ngx-datatable-cell-template>
-              <span class="text-muted fw-medium" style="font-size: 0.95rem;">{{ row.creationTime | date:'dd/MM/yyyy
-                HH:mm' }}</span>
-            </ng-template>
-          </ngx-datatable-column>
-
-          <ngx-datatable-column [name]="'ItHelpdesk::Actions' | abpLocalization" [sortable]="false" [minWidth]="160"
-            headerClass="align-center-col" cellClass="align-center-col">
-            <ng-template let-row="row" ngx-datatable-cell-template>
-              <a [routerLink]="['/tickets/detail', row.id]" [queryParams]="{ returnUrl: '/tickets/my-tickets' }"
-                class="btn btn-sm cute-outline-btn rounded-pill px-4 py-2 fw-semibold d-inline-flex justify-content-center align-items-center gap-2 shadow-sm"
-                style="min-width: 130px; height: 38px; border: 1px solid #f472b6; color: #f472b6; background: rgba(244, 114, 182, 0.05); transition: all 0.3s ease;">
-                <i class="fas fa-paw"></i> <span>{{ 'ItHelpdesk::Queue:ActionDetail' | abpLocalization }}</span>
-              </a>
-            </ng-template>
-          </ngx-datatable-column>
-
-        </ngx-datatable>
-      </div>
-    </div>
-  </div>
 </div>

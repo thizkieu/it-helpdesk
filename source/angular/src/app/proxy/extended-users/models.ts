@@ -7,6 +7,6 @@ export interface ExtendedUserDto extends IdentityUserDto {
 
 export interface GetExtendedUserListInput extends PagedAndSortedResultRequestDto {
   filter?: string;
-  roleId?: string;
+  role?: string;
   isActive?: boolean;
 }

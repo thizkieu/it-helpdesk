@@ -1,249 +1,307 @@
-<div class="admin-page-container py-3 text-white">
-    <div class="container-fluid" style="max-width: 1400px;">
-        <div class="card card-admin-main shadow-lg border-0 rounded-4 overflow-hidden"
-            style="background: rgba(23, 28, 48, 0.85) !important; backdrop-filter: blur(20px);">
+<div class="page-wrapper py-4 d-flex flex-column h-100">
+    <div class="container-fluid flex-grow-1 d-flex flex-column h-100" style="max-width: 1600px;">
+        
+        <!-- HEADER -->
+        <div class="d-flex justify-content-between align-items-center mb-4 header-section flex-shrink-0">
+            <h2 class="fw-bold page-title mb-0 d-flex align-items-center gap-2">
+                <i class="fas fa-users-cog text-primary opacity-75 fs-4"></i>
+                {{ 'ItHelpdesk::Menu:UserManagement' | abpLocalization }}
+            </h2>
+            <div class="d-flex gap-3">
+               <button class="btn btn-cyber-outline rounded-pill px-4 d-flex align-items-center gap-2" (click)="refreshList()">
+                   <i class="fas fa-sync-alt" [class.fa-spin]="isLoading"></i> 
+                   <span>{{ 'ItHelpdesk::Queue:RefreshQueue' | abpLocalization }}</span>
+               </button>
+               <button class="btn btn-cyber-primary rounded-pill px-4 fw-bold text-white d-flex align-items-center gap-2 shadow-sm text-nowrap" (click)="openCreateModal()">
+                   <i class="fas fa-plus"></i> {{ 'ItHelpdesk::Users:AddNewBtn' | abpLocalization }}
+               </button>
+            </div>
+        </div>
 
-            <!-- HEADER TRANG QUẢN TRỊ -->
-            <div class="card-header border-bottom border-secondary border-opacity-25 py-4 px-4"
-                style="background: transparent;">
-                <div class="row align-items-center justify-content-between g-3">
-                    <div class="col-xl-4 col-lg-4">
-                        <div class="d-flex align-items-center gap-3">
-                            <span class="header-icon-box"
-                                style="background: rgba(192, 132, 252, 0.15); color: #c084fc; padding: 12px; border-radius: 12px;">
-                                <i class="fas fa-user-shield fs-5"></i>
-                            </span>
-                            <div>
-                                <h4 class="card-title fw-bold mb-1 text-white">{{ 'ItHelpdesk::Menu:UserManagement' | abpLocalization }}</h4>
-                                <small class="text-muted fs-7">{{ 'ItHelpdesk::Users:PageSubtitle' | abpLocalization }}</small>
+        <!-- CONTROL PANEL -->
+        <div class="control-panel-card mb-4 filter-top-layer flex-shrink-0 p-4 rounded-4">
+            <div class="row g-3 align-items-center">
+                <!-- TÌM KIẾM -->
+                <div class="col-12 col-md-3">
+                    <div class="position-relative search-wrapper w-100">
+                       <div class="clean-search-box shadow-sm w-100">
+                           <i class="fas fa-search text-info search-icon"></i>
+                           <input type="text" class="form-control border-0 bg-transparent text-white shadow-none search-input"
+                               [placeholder]="'ItHelpdesk::Users:SearchPlaceholder' | abpLocalization"
+                               [(ngModel)]="filters.filter" (input)="onSearchInput()" (keyup.enter)="performSearch()"
+                               (focus)="showSearchSuggestions = true" />
+                           <button *ngIf="filters.filter" class="btn-clear-search text-secondary" (click)="clearSearch()"><i class="fas fa-times-circle"></i></button>
+                       </div>
+                       
+                       <div *ngIf="showSearchSuggestions && recentSearches.length > 0" class="clean-dropdown position-absolute w-100 mt-2 p-2">
+                           <div class="text-info small fw-bold px-3 py-2 mb-1 border-bottom border-secondary border-opacity-25">
+                               <i class="fas fa-history me-1"></i> {{ 'ItHelpdesk::RecentSearches' | abpLocalization }}
+                           </div>
+                           <div *ngFor="let item of recentSearches" (click)="performSearch(item)" class="custom-dropdown-item px-3 py-2 mt-1 d-flex align-items-center gap-3 text-slate-300">
+                               <i class="fas fa-search small opacity-50"></i> <span>{{ item }}</span>
+                           </div>
+                       </div>
+                    </div>
+                </div>
+
+                <!-- LỌC THEO TEAM (MỚI THÊM) -->
+                <div class="col-12 col-md-3">
+                    <div class="position-relative team-dropdown-wrapper w-100">
+                        <button class="btn clean-select-btn w-100 d-flex justify-content-between align-items-center shadow-sm px-4" (click)="toggleTeamDropdown($event)">
+                            <span class="text-truncate fw-medium text-success"><i class="fas fa-users me-2 opacity-75 text-slate-400"></i>{{ getTeamFilterName(filters.teamId) }}</span>
+                            <i class="fas fa-chevron-down ms-2 small transition-transform text-slate-400" [ngClass]="{'rotate-180': showTeamDropdown}"></i>
+                        </button>
+                        <div *ngIf="showTeamDropdown" class="clean-dropdown position-absolute w-100 p-2">
+                            <div class="custom-dropdown-item px-3 py-2 text-success fw-bold mb-1 border-bottom border-secondary border-opacity-25" (click)="selectTeamFilter(null)">
+                                 {{ 'ItHelpdesk::Users:FilterAllTeams' | abpLocalization }}
+                            </div>
+                            <div *ngFor="let t of teams" class="custom-dropdown-item px-3 py-2 text-slate-300" (click)="selectTeamFilter(t.id)">
+                                 {{ t.displayName }}
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    <!-- BỘ LỌC VÀ THANH TÌM KIẾM -->
-                    <div class="col-xl-8 col-lg-8 d-flex flex-wrap justify-content-lg-end align-items-center gap-3">
-                        
-                        <!-- Bộ lọc Vai Trò -->
-                        <select class="form-select bg-dark text-white border-secondary rounded-pill shadow-none px-3 py-2 text-sm"
-                            style="max-width: 220px;" [(ngModel)]="filters.role" (change)="onFilterChange()">
-                            <option [ngValue]="null">{{ 'ItHelpdesk::Users:FilterAllRoles' | abpLocalization }}</option>
-                            <option *ngFor="let r of roles" [value]="r.id">{{ r.name }}</option>
-                        </select>
-                        
-                        <!-- Nút Thêm mới tài khoản -->
-                        <button class="btn btn-info rounded-pill px-4 text-dark fw-bold shadow-sm d-inline-flex align-items-center"
-                            style="min-height: 40px;" (click)="openCreateModal()">
-                            <i class="fas fa-user-plus me-2"></i> {{ 'ItHelpdesk::Users:AddNewBtn' | abpLocalization }}
+                <!-- LỌC THEO ROLE -->
+                <div class="col-12 col-md-3">
+                    <div class="position-relative role-dropdown-wrapper w-100">
+                        <button class="btn clean-select-btn w-100 d-flex justify-content-between align-items-center shadow-sm px-4" (click)="toggleRoleDropdown($event)">
+                            <span class="text-truncate fw-medium text-warning"><i class="fas fa-user-shield me-2 opacity-75 text-slate-400"></i>{{ getRoleName(filters.role) }}</span>
+                            <i class="fas fa-chevron-down ms-2 small transition-transform text-slate-400" [ngClass]="{'rotate-180': showRoleDropdown}"></i>
                         </button>
+                        <div *ngIf="showRoleDropdown" class="clean-dropdown position-absolute w-100 p-2">
+                            <div class="custom-dropdown-item px-3 py-2 text-warning fw-bold mb-1 border-bottom border-secondary border-opacity-25" (click)="selectRoleFilter(null)">
+                                 {{ 'ItHelpdesk::Users:FilterAllRoles' | abpLocalization }}
+                            </div>
+                            <div *ngFor="let r of roles" class="custom-dropdown-item px-3 py-2 text-slate-300" (click)="selectRoleFilter(r.name)">
+                                 {{ r.name }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-                        <!-- Thanh Tìm Kiếm -->
-                        <div class="position-relative flex-grow-1 flex-lg-grow-0"
-                            style="min-width: 280px; max-width: 380px;">
-                            <div class="input-group align-items-center rounded-pill px-3 py-1 position-relative"
-                                style="background: rgba(15, 23, 42, 0.75); border: 1.5px solid rgba(255, 255, 255, 0.6); box-shadow: 0 0 15px rgba(255, 255, 255, 0.25); backdrop-filter: blur(12px);">
-                                <span class="text-white opacity-75 bg-transparent border-0 pe-2">
-                                    <i class="fas fa-search"></i>
+                <!-- LỌC THEO STATUS -->
+                <div class="col-12 col-md-3 d-flex justify-content-md-end">
+                    <div class="position-relative status-dropdown-wrapper w-100">
+                        <button class="btn clean-select-btn w-100 d-flex justify-content-between align-items-center shadow-sm px-4" (click)="toggleStatusDropdown($event)">
+                            <span class="text-truncate fw-medium text-info"><i class="fas fa-filter me-2 opacity-75 text-slate-400"></i>{{ getStatusName(filters.isActive) }}</span>
+                            <i class="fas fa-chevron-down ms-2 small transition-transform text-slate-400" [ngClass]="{'rotate-180': showStatusDropdown}"></i>
+                        </button>
+                        <div *ngIf="showStatusDropdown" class="clean-dropdown position-absolute w-100 p-2">
+                            <div class="custom-dropdown-item px-3 py-2 text-info fw-bold mb-1 border-bottom border-secondary border-opacity-25" (click)="selectStatusFilter(null)">
+                                 {{ 'ItHelpdesk::AllStatuses' | abpLocalization }}
+                            </div>
+                            <div class="custom-dropdown-item px-3 py-2 text-slate-300" (click)="selectStatusFilter(true)">{{ 'ItHelpdesk::Users:Active' | abpLocalization }}</div>
+                            <div class="custom-dropdown-item px-3 py-2 text-slate-300" (click)="selectStatusFilter(false)">{{ 'ItHelpdesk::Inactive' | abpLocalization }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- BẢNG DỮ LIỆU -->
+        <div class="data-table-card premium-glass-card table-bottom-layer position-relative">
+            
+            <div *ngIf="isLoading" class="position-absolute top-50 start-50 translate-middle text-center z-index-50 w-100 h-100 d-flex flex-column justify-content-center align-items-center" style="background: rgba(15, 23, 42, 0.5); backdrop-filter: blur(4px);">
+               <div class="spinner-border text-info mb-3" style="width: 3.5rem; height: 3.5rem; border-width: 0.25rem;"></div>
+               <div class="text-white fw-bold fs-5 tracking-wide">{{ 'ItHelpdesk::Users:LoadingUsers' | abpLocalization }}</div>
+            </div>
+            
+            <ngx-datatable *ngIf="!isLoading" [rows]="userList.items" [count]="userList.totalCount" [externalPaging]="true"
+                [limit]="filters.maxResultCount" [offset]="filters.skipCount / filters.maxResultCount"
+                (page)="onPageChange($event)" 
+                (activate)="onActivate($event)"
+                default [columnMode]="'standard'" [scrollbarH]="true"
+                [rowHeight]="95" [headerHeight]="55" [footerHeight]="65"
+                [messages]="{ emptyMessage: ('ItHelpdesk::NoData' | abpLocalization), totalMessage: ('ItHelpdesk::TotalRecords' | abpLocalization) }"
+                class="clean-datatable w-100 h-100">
+                
+                <ngx-datatable-column [name]="'ItHelpdesk::Users:Username' | abpLocalization" prop="userName" [width]="260" headerClass="align-center-header" cellClass="align-center-col">
+                    <ng-template let-row="row" ngx-datatable-cell-template>
+                        <div class="d-flex align-items-center justify-content-start gap-3 ps-2 w-100">
+                            <div class="modern-avatar rounded-circle fw-bold shadow-sm flex-shrink-0" [ngClass]="{'avatar-leader': row.displayRoles && row.displayRoles.length > 0 && row.displayRoles[0].isLeader}">
+                                {{ row.userName ? (row.userName.charAt(0) | uppercase) : 'U' }}
+                            </div>
+                            <span class="fw-semibold text-white text-truncate fs-6 text-start text-nowrap" [title]="row.userName">{{ row.userName }}</span>
+                        </div>
+                    </ng-template>
+                </ngx-datatable-column>
+                
+                <ngx-datatable-column [name]="'ItHelpdesk::Users:Email' | abpLocalization" prop="email" [width]="300" headerClass="align-center-header" cellClass="align-center-col">
+                    <ng-template let-row="row" ngx-datatable-cell-template>
+                        <div class="d-flex align-items-center justify-content-start text-slate-300 ps-2 w-100">
+                            <i class="far fa-envelope me-3 opacity-50 text-slate-400 flex-shrink-0"></i>
+                            <span class="text-truncate fs-6 text-start text-nowrap" [title]="row.email">{{ row.email }}</span>
+                        </div>
+                    </ng-template>
+                </ngx-datatable-column>
+                
+                <ngx-datatable-column [name]="'ItHelpdesk::Users:FullNameCol' | abpLocalization" prop="name" [width]="260" headerClass="align-center-header" cellClass="align-center-col">
+                    <ng-template let-row="row" ngx-datatable-cell-template>
+                        <div class="d-flex flex-column align-items-center justify-content-center text-nowrap w-100" style="gap: 4px;">
+                            <span class="fw-bold text-white text-truncate text-center w-100" style="font-size: 0.95rem;" [title]="(row.surname || '') + ' ' + (row.name || '')">
+                                {{ row.surname || '' }} {{ row.name || '' }}
+                            </span>
+                            <div class="phone-pill-box text-truncate d-flex align-items-center justify-content-center px-2.5 py-0.5 shadow-sm">
+                                <i class="fas fa-phone-alt me-2 text-primary opacity-75" style="font-size: 0.65rem;"></i>
+                                <span class="font-monospace text-slate-200" style="font-size: 0.75rem; letter-spacing: 0.3px;">
+                                    {{ row.phoneNumber || ('ItHelpdesk::Users:NotUpdated' | abpLocalization) }}
                                 </span>
-                                <input type="text"
-                                    class="form-control bg-transparent border-0 shadow-none text-white p-0"
-                                    [placeholder]="'ItHelpdesk::Users:SearchPlaceholder' | abpLocalization"
-                                    [(ngModel)]="filters.filter" (keyup.enter)="getUsers()"
-                                    style="font-size: 0.9rem;" />
-                                <button *ngIf="filters.filter"
-                                    class="btn btn-link text-muted p-0 ms-2 text-decoration-none" type="button"
-                                    (click)="filters.filter = ''; getUsers()">
-                                    <i class="fas fa-times"></i>
+                            </div>
+                        </div>
+                    </ng-template>
+                </ngx-datatable-column>
+
+                <!-- CỘT NHÓM HỖ TRỢ ĐƯỢC THÊM MỚI -->
+                <ngx-datatable-column [name]="'ItHelpdesk::Team' | abpLocalization" prop="displayTeam" [width]="280" headerClass="align-center-header" cellClass="align-center-col">
+                    <ng-template let-row="row" ngx-datatable-cell-template>
+                        <div class="w-100 d-flex justify-content-center align-items-center">
+                            <span class="modern-team-badge text-truncate shadow-sm" [title]="row.displayTeam" [ngClass]="row.displayTeam !== '---' ? 'has-team' : 'no-team'">
+                                <i class="fas fa-users me-2 opacity-50"></i> {{ row.displayTeam }}
+                            </span>
+                        </div>
+                    </ng-template>
+                </ngx-datatable-column>
+                
+                <!-- CỘT ROLE CẬP NHẬT GIAO DIỆN SONG NGỮ & NHÓM TRƯỞNG -->
+                <ngx-datatable-column [name]="'ItHelpdesk::Users:Role' | abpLocalization" prop="displayRoles" [width]="280" headerClass="align-center-header" cellClass="align-center-col">
+                    <ng-template let-row="row" ngx-datatable-cell-template>
+                        <div class="w-100 d-flex justify-content-center align-items-center flex-wrap gap-1">
+                            <ng-container *ngIf="row.displayRoles && row.displayRoles.length > 0; else noRole">
+                                <span *ngFor="let role of row.displayRoles" class="modern-role-badge text-truncate shadow-sm" [title]="role.name" [ngClass]="{'role-leader': role.isLeader}">
+                                    <i class="fas fa-star me-1 text-warning" *ngIf="role.isLeader"></i> 
+                                    {{ role.name }}
+                                </span> 
+                            </ng-container>
+                            <ng-template #noRole>
+                                <span class="modern-role-badge text-truncate text-slate-400 shadow-sm" style="color:#94a3b8; border-color:#475569; background:transparent;">{{ 'ItHelpdesk::Users:EndUserRole' | abpLocalization }}</span>
+                            </ng-template>
+                        </div>
+                    </ng-template>
+                </ngx-datatable-column>
+                
+                <ngx-datatable-column [name]="'ItHelpdesk::Status' | abpLocalization" prop="isActive" [width]="200" headerClass="align-center-header" cellClass="align-center-col">
+                    <ng-template let-row="row" ngx-datatable-cell-template>
+                        <span class="status-pill text-nowrap shadow-sm" [ngClass]="row.isActive ? 'active' : 'inactive'">
+                            <span class="status-dot"></span>
+                            {{ row.isActive ? ('ItHelpdesk::Users:Active' | abpLocalization) : ('ItHelpdesk::Users:Locked' | abpLocalization) }}
+                        </span>
+                    </ng-template>
+                </ngx-datatable-column>
+                
+                <ngx-datatable-column [name]="'ItHelpdesk::Actions' | abpLocalization" [sortable]="false" [width]="130" headerClass="align-center-header" cellClass="align-center-col">
+                    <ng-template let-row="row" ngx-datatable-cell-template>
+                        <div class="dropdown" ngbDropdown container="body">
+                            <button class="btn btn-action-dropdown d-flex align-items-center justify-content-center rounded-pill shadow-sm mx-auto" type="button" ngbDropdownToggle>
+                                <i class="fas fa-ellipsis-h text-slate-300"></i>
+                            </button>
+                            <div class="dropdown-menu dropdown-menu-dark shadow-lg border-0 py-2 custom-action-menu" ngbDropdownMenu>
+                                <button class="dropdown-item py-2 text-info fw-medium" (click)="openEditModal(row)">
+                                    <i class="fas fa-edit me-2"></i> {{ 'ItHelpdesk::Users:TooltipEdit' | abpLocalization }}
+                                </button>
+                                <button class="dropdown-item py-2 fw-medium" [ngClass]="row.isActive ? 'text-warning' : 'text-success'" (click)="toggleUserStatus(row)">
+                                    <i class="fas me-2" [ngClass]="row.isActive ? 'fa-lock' : 'fa-lock-open'"></i>
+                                    {{ row.isActive ? ('ItHelpdesk::Users:TooltipLock' | abpLocalization) : ('ItHelpdesk::Users:TooltipUnlock' | abpLocalization) }}
+                                </button>
+                                <div class="dropdown-divider border-secondary border-opacity-25"></div>
+                                <button class="dropdown-item py-2 text-danger fw-medium" (click)="deleteUser(row)">
+                                    <i class="fas fa-trash-alt me-2"></i> {{ 'ItHelpdesk::Users:TooltipDelete' | abpLocalization }}
                                 </button>
                             </div>
                         </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- NỘI DUNG BẢNG QUẢN TRỊ -->
-            <div class="card-body p-0" style="background: transparent;">
-
-                <div *ngIf="isLoading" class="p-5 text-center">
-                    <div class="spinner-border text-info" role="status"></div>
-                    <p class="text-muted mt-2">{{ 'ItHelpdesk::Users:LoadingUsers' | abpLocalization }}</p>
-                </div>
-
-                <div class="table-responsive" *ngIf="!isLoading">
-                    <ngx-datatable [rows]="userList.items" [count]="userList.totalCount" [externalPaging]="true"
-                        [limit]="filters.maxResultCount" [offset]="filters.skipCount / filters.maxResultCount"
-                        (page)="onPageChange($event)" default [columnMode]="'standard'" [scrollbarH]="true"
-                        [rowHeight]="'auto'" [footerHeight]="80" class="admin-datatable w-100">
-
-                        <!-- CỘT TÀI KHOẢN -->
-                        <ngx-datatable-column [name]="'ItHelpdesk::Users:Username' | abpLocalization" prop="userName" [width]="220" headerClass="align-left-col" cellClass="align-left-col">
-                            <ng-template let-row="row" ngx-datatable-cell-template>
-                                <div class="d-flex align-items-center gap-3 w-100 ps-2">
-                                    <div class="service-avatar-square flex-shrink-0"
-                                        style="width: 38px; height: 38px; background: rgba(192, 132, 252, 0.2); color: #c084fc; display: flex; align-items: center; justify-content: center; border-radius: 12px; font-weight: bold;">
-                                        {{ row.userName ? (row.userName.charAt(0) | uppercase) : 'U' }}
-                                    </div>
-                                    <span class="fw-bold fs-6 text-white text-truncate">{{ row.userName }}</span>
-                                </div>
-                            </ng-template>
-                        </ngx-datatable-column>
-
-                        <!-- CỘT EMAIL -->
-                        <ngx-datatable-column [name]="'ItHelpdesk::Users:Email' | abpLocalization" prop="email" [width]="260" headerClass="align-left-col" cellClass="align-left-col">
-                            <ng-template let-row="row" ngx-datatable-cell-template>
-                                <span class="text-light fs-6 text-truncate w-100" title="{{ row.email }}">{{ row.email }}</span>
-                            </ng-template>
-                        </ngx-datatable-column>
-
-                        <!-- CỘT HỌ TÊN & SỐ ĐIỆN THOẠI -->
-                        <ngx-datatable-column [name]="'ItHelpdesk::Users:FullName' | abpLocalization" prop="name" [width]="240" headerClass="align-left-col" cellClass="align-left-col">
-                            <ng-template let-row="row" ngx-datatable-cell-template>
-                                <div>
-                                    <div class="fw-medium text-white text-truncate">{{ row.name || '' }} {{ row.surname || '' }}</div>
-                                    <small class="text-muted"><i class="fas fa-phone-alt me-1"></i> {{ row.phoneNumber || ('ItHelpdesk::Users:NotUpdated' | abpLocalization) }}</small>
-                                </div>
-                            </ng-template>
-                        </ngx-datatable-column>
-
-                        <!-- CỘT VAI TRÒ -->
-                        <ngx-datatable-column [name]="'ItHelpdesk::Users:Role' | abpLocalization" prop="roleNames" [width]="220" headerClass="align-left-col" cellClass="align-left-col">
-                            <ng-template let-row="row" ngx-datatable-cell-template>
-                                <div class="d-flex flex-wrap gap-1">
-                                    <ng-container *ngIf="row.roleNames && row.roleNames.length > 0; else noRole">
-                                        <span *ngFor="let role of row.roleNames" 
-                                            class="badge bg-purple-soft text-pink border border-pink border-opacity-25 px-2 py-1 shadow-sm">
-                                            {{ role }}
-                                        </span>
-                                    </ng-container>
-                                    <ng-template #noRole>
-                                        <span class="text-muted small fst-italic">{{ 'ItHelpdesk::Users:NoRoleAssigned' | abpLocalization }}</span>
-                                    </ng-template>
-                                </div>
-                            </ng-template>
-                        </ngx-datatable-column>
-
-                        <!-- CỘT TRẠNG THÁI -->
-                        <ngx-datatable-column [name]="'ItHelpdesk::Status' | abpLocalization" prop="isActive" [width]="160" headerClass="align-center-col" cellClass="align-center-col">
-                            <ng-template let-row="row" ngx-datatable-cell-template>
-                                <span class="badge rounded-pill py-2 px-3 fw-semibold shadow-sm"
-                                    [ngStyle]="{'background': row.isActive ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)', 'color': row.isActive ? '#34d399' : '#f87171', 'border': row.isActive ? '1px solid #10b981' : '1px solid #ef4444'}"
-                                    style="min-width: 100px;">
-                                    {{ row.isActive ? ('ItHelpdesk::Users:Active' | abpLocalization) : ('ItHelpdesk::Users:Locked' | abpLocalization) }}
-                                </span>
-                            </ng-template>
-                        </ngx-datatable-column>
-
-                        <!-- CỘT THAO TÁC -->
-                        <ngx-datatable-column [name]="'ItHelpdesk::Actions' | abpLocalization" [sortable]="false" [width]="180" headerClass="align-center-col" cellClass="align-center-col">
-                            <ng-template let-row="row" ngx-datatable-cell-template>
-                                <div class="d-flex gap-2 justify-content-center w-100">
-                                    <button class="btn btn-sm btn-outline-info rounded-circle d-flex align-items-center justify-content-center transition-all hover-elevate" 
-                                        style="width: 36px; height: 36px;" (click)="openEditModal(row)" [title]="'ItHelpdesk::Users:TooltipEdit' | abpLocalization">
-                                        <i class="fas fa-pen"></i>
-                                    </button>
-                                    <button class="btn btn-sm rounded-circle d-flex align-items-center justify-content-center transition-all hover-elevate"
-                                        style="width: 36px; height: 36px;"
-                                        [ngClass]="row.isActive ? 'btn-outline-warning text-warning' : 'btn-outline-success text-success'"
-                                        (click)="toggleUserStatus(row)" [title]="row.isActive ? ('ItHelpdesk::Users:TooltipLock' | abpLocalization) : ('ItHelpdesk::Users:TooltipUnlock' | abpLocalization)">
-                                        <i class="fas" [ngClass]="row.isActive ? 'fa-lock' : 'fa-lock-open'"></i>
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-danger rounded-circle d-flex align-items-center justify-content-center transition-all hover-elevate" 
-                                        style="width: 36px; height: 36px;" (click)="deleteUser(row)" [title]="'ItHelpdesk::Users:TooltipDelete' | abpLocalization">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </div>
-                            </ng-template>
-                        </ngx-datatable-column>
-
-                    </ngx-datatable>
-                </div>
-            </div>
+                    </ng-template>
+                </ngx-datatable-column>
+            </ngx-datatable>
         </div>
     </div>
 </div>
 
 <!-- MODAL THÊM / SỬA NGƯỜI DÙNG -->
-<div *ngIf="isUserModalOpen" class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.7); backdrop-filter: blur(6px);">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content border-secondary border-opacity-25 text-white shadow-2xl rounded-4 overflow-hidden"
-            style="background: rgba(23, 28, 48, 0.95) !important;">
-            <div class="modal-header border-bottom border-secondary border-opacity-25 px-4 py-3">
-                <h5 class="modal-title fw-bold text-info">
-                    <i class="fas fa-user-cog me-2"></i> {{ isEditing ? ('ItHelpdesk::Users:ModalEditTitle' | abpLocalization) : ('ItHelpdesk::Users:ModalCreateTitle' | abpLocalization) }}
+<div *ngIf="isUserModalOpen" class="modal fade show d-block custom-modal-overlay" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg custom-modal-dialog">
+        <div class="modal-content border-0 text-white shadow-2xl rounded-4 bg-zinc-900 overflow-hidden glass-modal">
+            <div class="modal-header border-bottom px-4 py-3" style="border-color: rgba(255,255,255,0.06) !important;">
+                <h5 class="modal-title fw-bold text-white d-flex align-items-center gap-2">
+                   <div class="rounded-circle d-flex align-items-center justify-content-center" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; width: 32px; height: 32px; font-size: 0.9rem;">
+                       <i class="fas" [ngClass]="isEditing ? 'fa-user-edit' : 'fa-user-plus'"></i>
+                   </div>
+                   {{ isEditing ? ('ItHelpdesk::Users:ModalEditTitle' | abpLocalization) : ('ItHelpdesk::Users:ModalCreateTitle' | abpLocalization) }}
                 </h5>
-                <button type="button" class="btn-close btn-close-white" (click)="closeUserModal()"></button>
+                <button type="button" class="btn text-slate-400 p-0 shadow-none border-0 hover-text-white" (click)="closeUserModal()"><i class="fas fa-times fs-5"></i></button>
             </div>
             
-            <div class="modal-body p-4 modal-body-scroll custom-scrollbar">
-                <div class="row g-4">
-                    
-                    <!-- Cột Thông tin cá nhân -->
-                    <div class="col-lg-6 border-end border-secondary border-opacity-25">
-                        <h6 class="text-pink fw-bold mb-3"><i class="fas fa-id-card me-2"></i>{{ 'ItHelpdesk::Users:BasicInfo' | abpLocalization }}</h6>
-                        
-                        <div class="mb-3">
-                            <label class="form-label text-light fw-bold small text-uppercase">{{ 'ItHelpdesk::Users:ModalUsernameLabel' | abpLocalization }} <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control bg-dark text-white border-secondary rounded-pill shadow-none px-3 py-2" [(ngModel)]="userForm.userName" [placeholder]="'ItHelpdesk::Users:ModalUsernamePlaceholder' | abpLocalization" [disabled]="isEditing">
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label text-light fw-bold small text-uppercase">{{ 'ItHelpdesk::Users:ModalEmailLabel' | abpLocalization }} <span class="text-danger">*</span></label>
-                            <input type="email" class="form-control bg-dark text-white border-secondary rounded-pill shadow-none px-3 py-2" [(ngModel)]="userForm.email" [placeholder]="'ItHelpdesk::Users:ModalEmailPlaceholder' | abpLocalization">
-                        </div>
-                        <div class="row g-2 mb-3">
-                            <div class="col-6">
-                                <label class="form-label text-light fw-bold small text-uppercase">{{ 'ItHelpdesk::Users:ModalNameLabel' | abpLocalization }}</label>
-                                <input type="text" class="form-control bg-dark text-white border-secondary rounded-pill shadow-none px-3 py-2" [(ngModel)]="userForm.name" [placeholder]="'ItHelpdesk::Users:ModalNamePlaceholder' | abpLocalization">
-                            </div>
-                            <div class="col-6">
-                                <label class="form-label text-light fw-bold small text-uppercase">{{ 'ItHelpdesk::Users:ModalSurnameLabel' | abpLocalization }}</label>
-                                <input type="text" class="form-control bg-dark text-white border-secondary rounded-pill shadow-none px-3 py-2" [(ngModel)]="userForm.surname" [placeholder]="'ItHelpdesk::Users:ModalSurnamePlaceholder' | abpLocalization">
-                            </div>
-                        </div>
-                        <div class="mb-3" *ngIf="!isEditing">
-                            <label class="form-label text-light fw-bold small text-uppercase">{{ 'ItHelpdesk::Users:ModalPasswordLabel' | abpLocalization }} <span class="text-danger">*</span></label>
-                            <input type="password" class="form-control bg-dark text-white border-secondary rounded-pill shadow-none px-3 py-2" [(ngModel)]="userForm.password" [placeholder]="'ItHelpdesk::Users:ModalPasswordPlaceholder' | abpLocalization">
-                        </div>
-                        <div class="mb-2">
-                            <label class="form-label text-light fw-bold small text-uppercase">{{ 'ItHelpdesk::Users:ModalPhoneLabel' | abpLocalization }}</label>
-                            <input type="text" class="form-control bg-dark text-white border-secondary rounded-pill shadow-none px-3 py-2" [(ngModel)]="userForm.phoneNumber" [placeholder]="'ItHelpdesk::Users:ModalPhonePlaceholder' | abpLocalization">
-                        </div>
-                    </div>
+            <div class="modal-body p-0 custom-scrollbar" style="max-height: 75vh; overflow-y: auto;">
+               <div class="row g-0 h-100">
+                   <div class="col-lg-6 p-4 border-end" style="border-color: rgba(255,255,255,0.06) !important; background: #09090b;">
+                       <h6 class="text-primary fw-bold mb-4 fs-7 text-uppercase" style="letter-spacing: 0.05em;">{{ 'ItHelpdesk::Users:BasicInfo' | abpLocalization }}</h6>
+                       
+                       <div class="form-group mb-4">
+                           <label class="fw-medium mb-2 text-slate-300 fs-7">{{ 'ItHelpdesk::Users:ModalUsernameLabel' | abpLocalization }} <span class="text-danger">*</span></label>
+                           <input type="text" class="form-control custom-modal-input shadow-none" [(ngModel)]="userForm.userName" [placeholder]="'ItHelpdesk::Users:ModalUsernamePlaceholder' | abpLocalization" [disabled]="isEditing">
+                       </div>
+                       
+                       <div class="form-group mb-4">
+                           <label class="fw-medium mb-2 text-slate-300 fs-7">{{ 'ItHelpdesk::Users:ModalEmailLabel' | abpLocalization }} <span class="text-danger">*</span></label>
+                           <input type="email" class="form-control custom-modal-input shadow-none" [(ngModel)]="userForm.email" [placeholder]="'ItHelpdesk::Users:ModalEmailPlaceholder' | abpLocalization">
+                       </div>
+                       
+                       <div class="row g-3 mb-4">
+                           <div class="col-6">
+                                <label class="fw-medium mb-2 text-slate-300 fs-7">{{ 'ItHelpdesk::Users:ModalNameLabel' | abpLocalization }}</label>
+                                <input type="text" class="form-control custom-modal-input shadow-none" [(ngModel)]="userForm.name" [placeholder]="'ItHelpdesk::Users:ModalNamePlaceholder' | abpLocalization">
+                           </div>
+                           <div class="col-6">
+                                <label class="fw-medium mb-2 text-slate-300 fs-7">{{ 'ItHelpdesk::Users:ModalSurnameLabel' | abpLocalization }}</label>
+                                <input type="text" class="form-control custom-modal-input shadow-none" [(ngModel)]="userForm.surname" [placeholder]="'ItHelpdesk::Users:ModalSurnamePlaceholder' | abpLocalization">
+                           </div>
+                       </div>
 
-                    <!-- Cột Phân quyền -->
-                    <div class="col-lg-6">
-                        <h6 class="text-info fw-bold mb-3"><i class="fas fa-user-shield me-2"></i>{{ 'ItHelpdesk::Users:RoleAssignment' | abpLocalization }}</h6>
-                        
-                        <div class="d-flex flex-wrap gap-3 p-3 rounded-4 custom-scrollbar" 
-                             style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255,255,255,0.05); max-height: 350px; overflow-y: auto;">
-                            
-                            <div class="w-100 text-muted small fst-italic mb-2" *ngIf="roles.length === 0">
-                                {{ 'ItHelpdesk::Users:LoadingRoles' | abpLocalization }}
-                            </div>
-
-                            <div class="form-check custom-checkbox w-100 d-flex align-items-center p-2 rounded-3 hover-shadow transition-all" 
-                                *ngFor="let role of roles"
-                                style="background: rgba(255,255,255,0.05); margin-bottom: 4px;">
-                                <input class="form-check-input cursor-pointer shadow-none mt-0 me-3" type="checkbox"
-                                    [id]="'role_' + role.name"
-                                    [checked]="hasRole(role.name)"
-                                    (change)="toggleRole(role.name)"
-                                    style="width: 1.2rem; height: 1.2rem;">
-                                <label class="form-check-label text-light cursor-pointer w-100 mb-0 d-flex flex-column" [for]="'role_' + role.name">
-                                    <span class="fw-bold">{{ role.name }}</span>
-                                    <span class="text-muted small" *ngIf="role.isDefault">{{ 'ItHelpdesk::Users:DefaultRole' | abpLocalization }}</span>
-                                    <span class="text-warning small" *ngIf="role.isStatic">{{ 'ItHelpdesk::Users:StaticRole' | abpLocalization }}</span>
+                       <!-- CẬP NHẬT: GẮN NGƯỜI DÙNG VÀO PHÒNG BAN NGAY KHI TẠO/SỬA -->
+                       <div class="form-group mb-4">
+                           <label class="fw-medium mb-2 text-slate-300 fs-7">{{ 'ItHelpdesk::Users:SelectTeam' | abpLocalization }}</label>
+                           <select class="form-select custom-modal-input shadow-none" [(ngModel)]="userForm.teamId">
+                               <option [ngValue]="null">-- {{ 'ItHelpdesk::Users:UnassignedTeam' | abpLocalization }} --</option>
+                               <option *ngFor="let t of teams" [value]="t.id">{{ t.displayName }}</option>
+                           </select>
+                       </div>
+                       
+                       <div class="form-group mb-4" *ngIf="!isEditing">
+                           <label class="fw-medium mb-2 text-slate-300 fs-7">{{ 'ItHelpdesk::Users:ModalPasswordLabel' | abpLocalization }} <span class="text-danger">*</span></label>
+                           <input type="password" class="form-control custom-modal-input shadow-none" [(ngModel)]="userForm.password" [placeholder]="'ItHelpdesk::Users:ModalPasswordPlaceholder' | abpLocalization">
+                       </div>
+                       
+                       <div class="form-group">
+                           <label class="fw-medium mb-2 text-slate-300 fs-7">{{ 'ItHelpdesk::Users:ModalPhoneLabel' | abpLocalization }}</label>
+                           <input type="text" class="form-control custom-modal-input shadow-none" [(ngModel)]="userForm.phoneNumber" [placeholder]="'ItHelpdesk::Users:ModalPhonePlaceholder' | abpLocalization">
+                       </div>
+                   </div>
+                   
+                   <div class="col-lg-6 p-4" style="background: #111113;">
+                       <h6 class="text-primary fw-bold mb-4 fs-7 text-uppercase" style="letter-spacing: 0.05em;">{{ 'ItHelpdesk::Users:RoleAssignment' | abpLocalization }}</h6>
+                       
+                       <div class="role-list-wrapper">
+                           <div class="text-slate-500 fs-7 fst-italic py-4 text-center" *ngIf="roles.length === 0">
+                                <i class="fas fa-spinner fa-spin me-2"></i> {{ 'ItHelpdesk::Users:LoadingRoles' | abpLocalization }}
+                           </div>
+                           <div class="modern-checkbox-card" *ngFor="let role of roles">
+                                <input class="form-check-input shadow-none cursor-pointer" type="checkbox" [id]="'role_' + role.name" [checked]="hasRole(role.name)" (change)="toggleRole(role.name)">
+                                <label class="form-check-label d-flex flex-column w-100 cursor-pointer" [for]="'role_' + role.name">
+                                    <span class="fw-medium text-slate-200">{{ role.name }}</span>
+                                    <span class="text-slate-500 fs-8 mt-1" *ngIf="role.isDefault">{{ 'ItHelpdesk::Users:DefaultRole' | abpLocalization }}</span>
+                                    <span class="text-warning opacity-75 fs-8 mt-1" *ngIf="role.isStatic">{{ 'ItHelpdesk::Users:StaticRole' | abpLocalization }}</span>
                                 </label>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
+                           </div>
+                       </div>
+                   </div>
+               </div>
             </div>
-            <div class="modal-footer border-top border-secondary border-opacity-25 px-4 py-3">
-                <button type="button" class="btn btn-outline-light rounded-pill px-4" (click)="closeUserModal()" [disabled]="isSubmitting">{{ 'ItHelpdesk::Cancel' | abpLocalization }}</button>
-                <button type="button" class="btn btn-info rounded-pill px-5 text-dark fw-bold hover-elevate" (click)="saveUser()" [disabled]="isSubmitting">
-                    <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm me-2"></span>
-                    <i *ngIf="!isSubmitting" class="fas fa-save me-1"></i> {{ 'ItHelpdesk::Users:ModalSaveBtn' | abpLocalization }}
-                </button>
+            
+            <div class="modal-footer border-top px-4 py-3" style="border-color: rgba(255,255,255,0.06) !important; background: #09090b;">
+               <button type="button" class="btn text-slate-400 hover-text-white px-4 bg-transparent" (click)="closeUserModal()" [disabled]="isSubmitting">{{ 'ItHelpdesk::Cancel' | abpLocalization }}</button>
+               <button type="button" class="btn btn-primary rounded-pill text-white fw-semibold px-5 shadow-sm btn-glow" (click)="saveUser()" [disabled]="isSubmitting">
+                   <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm me-2"></span>
+                   <i *ngIf="!isSubmitting" class="fas fa-save me-2"></i> {{ 'ItHelpdesk::Users:ModalSaveBtn' | abpLocalization }}
+               </button>
             </div>
         </div>
     </div>

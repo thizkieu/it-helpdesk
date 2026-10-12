@@ -1,10 +1,8 @@
 /* You can add global styles to this file, and also import other style files */
 
-
 /* =========================================================
    1. GLOBAL VARIABLES & LOGO CONFIGURATION
    ========================================================= */
-
 :root {
   --lpx-theme-light-bg: url('assets/images/login/login-bg-img-light.svg');
   --lpx-theme-dim-bg: url('assets/images/login/login-bg-img-dim.svg');
@@ -13,35 +11,27 @@
   /* =======================================================
      ITHELPDESK LOGO
      ======================================================= */
-
   --lpx-logo-icon: url('assets/images/logo/ithelpdesk-logo.png');
   --lpx-logo-url: var(--lpx-logo-icon);
   --lpx-logo: var(--lpx-logo-icon);
 }
 
-
 /* =========================================================
    ABP LOGO
    ========================================================= */
-
 .abp-logo {
   background-image: var(--lpx-logo) !important;
-
   background-repeat: no-repeat !important;
   background-position: center !important;
   background-size: contain !important;
-
   width: 230px !important;
   height: 65px !important;
-
   display: block;
 }
-
 
 /* =========================================================
    ABP GETTING STARTED
    ========================================================= */
-
 .abp-support {
   width: 178px;
   height: 30px;
@@ -66,662 +56,346 @@
   background-image: url('assets/images/getting-started/x.svg');
 }
 
-
 /* =========================================================
    REQUIRED FIELD
    ========================================================= */
-
 .required {
   color: #ef4444;
   font-weight: bold;
 }
 
-
 /* =========================================================
    2. PREMIUM UI - GIAO DIỆN CHUNG
    ========================================================= */
-
-
-/* Card & Modal */
-
 .card,
 .modal-content {
   border-radius: 16px !important;
-
-  box-shadow:
-    0 12px 40px rgba(0, 0, 0, 0.05) !important;
-
-  border:
-    1px solid rgba(226, 232, 240, 0.8) !important;
-
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.05) !important;
+  border: 1px solid rgba(226, 232, 240, 0.8) !important;
   background: #ffffff;
 }
 
-
 .card-header {
   background: transparent !important;
-
-  border-bottom:
-    1px dashed #e2e8f0 !important;
+  border-bottom: 1px dashed #e2e8f0 !important;
 }
 
-
-/* =========================================================
-   PRIMARY BUTTON
-   ========================================================= */
-
 .btn-primary {
-  background:
-    linear-gradient(135deg,
-      #4f46e5 0%,
-      #7c3aed 100%) !important;
-
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%) !important;
   border: none !important;
-
   font-weight: 600;
-
   border-radius: 8px;
-
-  transition:
-    all 0.3s ease !important;
+  transition: all 0.3s ease !important;
 }
 
 .btn-primary:hover {
   transform: translateY(-2px);
-
-  box-shadow:
-    0 8px 20px rgba(124, 58, 237, 0.4) !important;
+  box-shadow: 0 8px 20px rgba(124, 58, 237, 0.4) !important;
 }
-
-
-/* =========================================================
-   MINIMAL ACTION BUTTON
-   ========================================================= */
 
 .btn-light.dropdown-toggle {
   background: #f8fafc;
-
-  border:
-    1px solid #e2e8f0;
-
+  border: 1px solid #e2e8f0;
   border-radius: 8px;
-
   font-weight: 500;
-
-  transition:
-    all 0.2s;
+  transition: all 0.2s;
 }
 
 .btn-light.dropdown-toggle:hover {
   background: #f1f5f9;
-
   border-color: #cbd5e1;
 }
-
 
 /* =========================================================
    DATATABLE
    ========================================================= */
-
 .ngx-datatable.bootstrap .datatable-body-row {
-  border-bottom:
-    1px solid #f1f5f9;
-
-  transition:
-    background-color 0.2s ease;
+  border-bottom: 1px solid #f1f5f9;
+  transition: background-color 0.2s ease;
 }
 
 .ngx-datatable.bootstrap .datatable-body-row:hover {
-  background-color:
-    #f8fafc !important;
+  background-color: #f8fafc !important;
 }
-
 
 /* =========================================================
    3. SEARCH & FILTER
    ========================================================= */
-
 .abp-search-panel {
   background: #fff;
-
   padding: 8px 12px;
-
   border-radius: 8px;
-
-  border:
-    1px solid #e2e8f0;
+  border: 1px solid #e2e8f0;
 }
-
 
 .abp-search-input {
   height: 38px;
-
   padding-left: 36px;
-
   font-size: 14px;
-
   border-radius: 8px;
 }
 
-
 .abp-search-icon {
   position: absolute;
-
   left: 14px;
   top: 50%;
-
-  transform:
-    translateY(-50%);
-
+  transform: translateY(-50%);
   font-size: 14px;
-
   color: #94a3b8;
 }
 
-
 .abp-filter-advanced {
   max-height: 0;
-
   opacity: 0;
-
   overflow: hidden;
-
   margin-top: 4px;
-
-  transition:
-    max-height 0.25s ease,
-    opacity 0.2s ease,
-    transform 0.25s ease;
+  transition: max-height 0.25s ease, opacity 0.2s ease, transform 0.25s ease;
 }
-
 
 .abp-filter-advanced.show {
   max-height: 140px;
-
   opacity: 1;
-
   overflow: visible;
 }
 
-
 .form-label {
   font-size: 13px;
-
   font-weight: 600;
-
   color: #475569;
 }
 
-
 .btn-sm {
   height: 36px;
-
-  padding:
-    0 14px;
-
+  padding: 0 14px;
   font-size: 13px;
-
   border-radius: 6px;
 }
-
 
 .abp-filter-advanced .form-control,
 .abp-filter-advanced .form-select {
   height: 36px;
-
   font-size: 13px;
-
   border-radius: 8px;
 }
-
 
 .abp-filter-advanced .form-label {
   margin-bottom: 4px;
 }
 
-
 /* =========================================================
    4. MODAL & AVATAR
    ========================================================= */
-
 .custom-width-modal .modal-dialog {
   max-width: 95vw !important;
 }
 
-
 .avatar-initials {
   display: inline-flex;
-
   align-items: center;
-
   justify-content: center;
-
   width: 36px;
   height: 36px;
-
   border-radius: 10px;
-
   background: #e0e7ff;
-
   color: #4f46e5;
-
   font-weight: 700;
-
   font-size: 14px;
-
   margin-right: 12px;
 }
-
 
 /* =========================================================
    5. ITHELPDESK LOGIN - ROBOT
    ========================================================= */
-
-
-/*
-   Container bên trái của màn hình Login
-*/
-
 .auth-illustration {
   text-align: center;
-
   flex: 1;
-
   position: relative;
-
   z-index: 2;
 }
 
-
-/*
-   Robot wrapper
-*/
-
 .robot-wrapper {
   position: relative;
-
   display: inline-block;
-
   margin-bottom: 15px;
 }
 
-
-/*
-   Robot ItHelpdesk
-*/
-
 .robot-img {
   width: 360px;
-
   max-width: 100%;
-
   height: auto;
-
   display: block;
-
   object-fit: contain;
-
-  filter:
-    drop-shadow(0 15px 25px rgba(70, 110, 200, 0.15));
-
-  transition:
-    transform 0.3s ease;
+  filter: drop-shadow(0 15px 25px rgba(70, 110, 200, 0.15));
+  transition: transform 0.3s ease;
 }
-
-
-/*
-   Hiệu ứng nhẹ khi rê chuột
-*/
 
 .robot-img:hover {
-  transform:
-    translateY(-5px);
+  transform: translateY(-5px);
 }
-
-
-/*
-   Badge CHÀO MỪNG
-*/
 
 .welcome-badge {
   position: absolute;
-
   top: 0;
-
   left: 18%;
-
   z-index: 5;
-
-  background:
-    linear-gradient(135deg,
-      #dce9ff,
-      #eef5ff);
-
+  background: linear-gradient(135deg, #dce9ff, #eef5ff);
   color: #1854b8;
-
-  padding:
-    7px 16px;
-
+  padding: 7px 16px;
   border-radius: 14px;
-
   font-size: 13px;
-
   font-weight: 700;
-
   white-space: nowrap;
-
-  box-shadow:
-    0 6px 18px rgba(60, 100, 180, 0.12);
-
-  border:
-    1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 6px 18px rgba(60, 100, 180, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.8);
 }
-
-
-/*
-   Text bên dưới robot
-*/
 
 .auth-greeting {
   margin-top: 5px;
-
   font-size: 28px;
-
   line-height: 1.35;
-
   font-weight: 800;
-
   color: #14213d;
-
   text-align: center;
 }
-
 
 /* =========================================================
    6. ITHELPDESK LOGIN - GLASS CARD
    ========================================================= */
-
 .auth-glass-card {
-  background:
-    rgba(255, 255, 255, 0.72);
-
-  backdrop-filter:
-    blur(18px);
-
-  -webkit-backdrop-filter:
-    blur(18px);
-
-  border:
-    1px solid rgba(255, 255, 255, 0.85);
-
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid rgba(255, 255, 255, 0.85);
   border-radius: 24px;
-
   padding: 40px;
-
   width: 100%;
-
   max-width: 420px;
-
-  box-shadow:
-    0 25px 60px rgba(50, 80, 150, 0.12);
-
+  box-shadow: 0 25px 60px rgba(50, 80, 150, 0.12);
   position: relative;
-
   z-index: 3;
 }
-
 
 /* =========================================================
    7. ITHELPDESK INPUT
    ========================================================= */
-
 .custom-input {
   width: 100%;
-
-  background:
-    rgba(241, 245, 249, 0.85);
-
-  border:
-    1px solid transparent;
-
+  background: rgba(241, 245, 249, 0.85);
+  border: 1px solid transparent;
   border-radius: 12px;
-
-  padding:
-    12px 16px 12px 40px;
-
+  padding: 12px 16px 12px 40px;
   font-size: 14px;
-
   color: #334155;
-
-  transition:
-    all 0.2s ease;
-
+  transition: all 0.2s ease;
   outline: none;
 }
-
 
 .custom-input::placeholder {
   color: #94a3b8;
 }
 
-
 .custom-input:focus {
   background: #ffffff;
-
-  border-color:
-    #6366f1;
-
+  border-color: #6366f1;
   outline: none;
-
-  box-shadow:
-    0 0 0 4px rgba(99, 102, 241, 0.1);
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
 }
-
-
-/* =========================================================
-   INPUT ICON
-   ========================================================= */
 
 .input-icon {
   position: absolute;
-
   left: 14px;
-
   top: 50%;
-
-  transform:
-    translateY(-50%);
-
+  transform: translateY(-50%);
   color: #94a3b8;
-
   z-index: 2;
 }
 
-
-/* =========================================================
-   FORGOT PASSWORD
-   ========================================================= */
-
 .forgot-pwd {
   font-size: 12px;
-
   color: #64748b;
-
   text-decoration: none;
-
-  transition:
-    color 0.2s ease;
+  transition: color 0.2s ease;
 }
-
 
 .forgot-pwd:hover {
   color: #4f46e5;
-
   text-decoration: underline;
 }
 
-
-/* =========================================================
-   LOGIN BUTTON
-   ========================================================= */
-
 .btn-login {
-  background:
-    linear-gradient(135deg,
-      #86a8ff 0%,
-      #668ef2 45%,
-      #7187e8 100%);
-
+  background: linear-gradient(135deg, #86a8ff 0%, #668ef2 45%, #7187e8 100%);
   color: white;
-
   border: none;
-
   border-radius: 20px;
-
   padding: 12px;
-
   font-weight: 700;
-
   letter-spacing: 0.5px;
-
-  transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
-
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
   width: 100%;
-
   margin-top: 10px;
-
   cursor: pointer;
 }
 
-
 .btn-login:hover {
-  transform:
-    translateY(-2px);
-
-  box-shadow:
-    0 8px 20px rgba(79, 70, 229, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(79, 70, 229, 0.3);
 }
-
 
 .btn-login:active {
-  transform:
-    translateY(0);
+  transform: translateY(0);
 }
-
 
 /* =========================================================
    8. LOGIN RESPONSIVE
    ========================================================= */
-
 @media (max-width: 991px) {
-
-  .auth-glass-card {
-    max-width: 400px;
-
-    padding: 32px;
-  }
-
-  .robot-img {
-    width: 300px;
-  }
-
-  .auth-greeting {
-    font-size: 24px;
-  }
+  .auth-glass-card { max-width: 400px; padding: 32px; }
+  .robot-img { width: 300px; }
+  .auth-greeting { font-size: 24px; }
 }
-
 
 @media (max-width: 767px) {
-
-  .auth-illustration {
-    display: none !important;
-  }
-
-  .auth-glass-card {
-    width: calc(100% - 30px);
-
-    max-width: 430px;
-
-    margin: 20px auto;
-
-    padding: 30px 24px;
-
-    border-radius: 22px;
-  }
-
-  .abp-logo {
-    width: 210px !important;
-
-    height: 58px !important;
-  }
+  .auth-illustration { display: none !important; }
+  .auth-glass-card { width: calc(100% - 30px); max-width: 430px; margin: 20px auto; padding: 30px 24px; border-radius: 22px; }
+  .abp-logo { width: 210px !important; height: 58px !important; }
 }
-
 
 /* =========================================================
    9. EXTRA LOGIN ANIMATION
    ========================================================= */
-
 @keyframes ithelpdeskFloat {
-
-  0%,
-  100% {
-    transform:
-      translateY(0);
-  }
-
-  50% {
-    transform:
-      translateY(-7px);
-  }
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-7px); }
 }
 
-
 .robot-wrapper .robot-img {
-  animation:
-    ithelpdeskFloat 4s ease-in-out infinite;
+  animation: ithelpdeskFloat 4s ease-in-out infinite;
 }
 
 /* =========================================================
    10. GIAO DIỆN DARK MODE MỜ ẢO & CÓ CHIỀU SÂU CHO HỆ THỐNG
    ========================================================= */
-
 body,
 .lpx-wrapper,
 .lpx-content-container {
   background: radial-gradient(circle at 20% 20%, #1e1b4b 0%, #090d16 60%, #04060b 100%) !important;
 }
 
-/* Tạo khoảng cách lề (padding) cho vùng chứa nội dung để lộ ra bo góc đẹp mắt */
 .lpx-content {
   background: transparent !important;
   padding: 24px !important;
 }
 
-/* Thêm hiệu ứng ánh sáng trang trí phía sau (Glow effects) để bớt đơn điệu */
 .lpx-content::before {
-  content: '';
-  position: fixed;
-  top: 10%;
-  left: 15%;
-  width: 400px;
-  height: 400px;
+  content: ''; position: fixed; top: 10%; left: 15%; width: 400px; height: 400px;
   background: radial-gradient(circle, rgba(192, 132, 252, 0.08) 0%, transparent 70%);
-  z-index: 0;
-  pointer-events: none;
+  z-index: 0; pointer-events: none;
 }
 
 .lpx-content::after {
-  content: '';
-  position: fixed;
-  bottom: 10%;
-  right: 15%;
-  width: 450px;
-  height: 450px;
+  content: ''; position: fixed; bottom: 10%; right: 15%; width: 450px; height: 450px;
   background: radial-gradient(circle, rgba(236, 72, 153, 0.07) 0%, transparent 70%);
-  z-index: 0;
-  pointer-events: none;
+  z-index: 0; pointer-events: none;
 }
 
 /* =========================================================
@@ -734,18 +408,14 @@ abp-current-user,
 .lpx-user-profile {
   display: flex !important;
   align-items: center !important;
-
-  /* Tìm mọi thẻ chứa chữ hoặc span ngay cạnh ảnh và ép dịch sang trái để kéo sát lại */
   span, a, div {
-    margin-left: -5px !important; /* Kéo chữ xích lại gần ảnh, bạn có thể chỉnh từ -8px đến -15px tùy ý */
+    margin-left: -5px !important; 
   }
 }
 
 /* =========================================================
    12. ANIMATION CHO CHUÔNG THÔNG BÁO (PULSE RED)
    ========================================================= */
-
-/* 1. Hiệu ứng rung chuông (Lắc qua lại) */
 @keyframes bellRing {
   0% { transform: rotate(0); }
   10% { transform: rotate(20deg); }
@@ -762,7 +432,6 @@ abp-current-user,
   display: inline-block;
 }
 
-/* 2. Hiệu ứng nhịp đập cho chấm đỏ (Pulse) */
 @keyframes redPulse {
   0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.6); }
   70% { transform: scale(1); box-shadow: 0 0 0 5px rgba(239, 68, 68, 0); }
@@ -773,18 +442,16 @@ abp-current-user,
   animation: redPulse 2s infinite;
 }
 
-/* 3. HIỆU ỨNG PHÁT SÁNG KHI RÊ CHUỘT (HOVER GLOW - Tông Tím/Hồng hiện đại) */
 .bell-hover-glow {
   transition: all 0.25s ease-in-out;
 }
 
 .bell-hover-glow:hover {
-  color: #c084fc !important; /* Màu tím sáng/hồng nhạt ăn rơ với background glow */
-  filter: drop-shadow(0 0 10px rgba(192, 132, 252, 0.8)); /* Hiệu ứng tỏa sáng rực rỡ */
-  transform: scale(1.1); /* Phóng to nhẹ khi rê vào */
+  color: #c084fc !important; 
+  filter: drop-shadow(0 0 10px rgba(192, 132, 252, 0.8)); 
+  transform: scale(1.1); 
 }
 
-/* Hiệu ứng chuông reo thông báo cấp độ cao */
 @keyframes bellRingAnimation {
   0% { transform: rotate(0); }
   15% { transform: rotate(15deg); }
@@ -801,7 +468,6 @@ abp-current-user,
   filter: drop-shadow(0 0 8px rgba(244, 114, 182, 0.8));
 }
 
-/* Hiệu ứng chấm đỏ nhấp nháy (Pulse) */
 @keyframes pulseBadge {
   0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
   70% { transform: scale(1.1); box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
@@ -810,4 +476,93 @@ abp-current-user,
 
 .pulse-animation {
   animation: pulseBadge 1.5s infinite;
+}
+
+
+/* =========================================================================
+   13. TIÊU DIỆT TẬN GỐC MÀU HỒNG - ĐỒNG BỘ MENU XANH CYAN KÈM HIỆU ỨNG LẤP LÁNH
+   ========================================================================= */
+:root {
+  --lpx-primary: #0ea5e9 !important;
+  --lpx-brand: #0ea5e9 !important;
+}
+
+/* Ép toàn bộ icon và chữ trong Sidebar về màu xám thanh lịch */
+.lpx-sidebar-container .lpx-nav-menu .lpx-nav-item .lpx-nav-link i,
+.lpx-sidebar-container .lpx-nav-menu .lpx-nav-item .lpx-nav-link .lpx-menu-item-icon,
+.lpx-sidebar-container .lpx-nav-menu .lpx-nav-item .lpx-nav-link .lpx-menu-item-text,
+.lpx-sidebar-container .lpx-nav-menu .lpx-nav-item .lpx-nav-link .lpx-menu-item-icon * {
+    color: #94a3b8 !important;
+    background-color: transparent !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* Tùy chỉnh icon Chevron-right (Mũi tên) cho nhỏ và tinh tế hơn */
+.lpx-sidebar-container .lpx-menu-item-icon i.fa-chevron-right {
+    font-size: 11px !important;
+    opacity: 0.8 !important;
+    margin-right: 8px !important;
+}
+
+/* Chuẩn bị Container cho hiệu ứng quét ánh sáng */
+.lpx-sidebar-container .lpx-nav-menu .lpx-nav-item > .lpx-nav-link {
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease !important;
+}
+
+/* -------------------------------------------------------------
+   HIỆU ỨNG ÁNH SÁNG LƯỚT NGANG KHI HOVER (CYBER SWEEP EFFECT) 
+   ------------------------------------------------------------- */
+.lpx-sidebar-container .lpx-nav-menu .lpx-nav-item > .lpx-nav-link::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 60%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(14, 165, 233, 0.25), transparent);
+    transition: left 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 0;
+    pointer-events: none;
+}
+
+.lpx-sidebar-container .lpx-nav-menu .lpx-nav-item > .lpx-nav-link:hover::before {
+    left: 120%;
+}
+
+/* -------------------------------------------------------------
+   HIỆU ỨNG NEON GLOW CHỮ VÀ ICON KHI RÊ CHUỘT (HOVER LẤP LÁNH)
+   ------------------------------------------------------------- */
+.lpx-sidebar-container .lpx-nav-menu .lpx-nav-item > .lpx-nav-link:hover,
+.lpx-sidebar-container .lpx-nav-menu .lpx-nav-item > .lpx-nav-link:hover i,
+.lpx-sidebar-container .lpx-nav-menu .lpx-nav-item > .lpx-nav-link:hover .lpx-menu-item-icon,
+.lpx-sidebar-container .lpx-nav-menu .lpx-nav-item > .lpx-nav-link:hover .lpx-menu-item-text {
+    color: #38bdf8 !important; /* Xanh Cyan sáng lên */
+    text-shadow: 0 0 10px rgba(56, 189, 248, 0.8), 0 0 20px rgba(56, 189, 248, 0.4) !important;
+    z-index: 1;
+    position: relative;
+}
+
+/* Hiệu ứng viền trái sáng rực lên khi Hover */
+.lpx-sidebar-container .lpx-nav-menu .lpx-nav-item > .lpx-nav-link:hover {
+    border-left: 3px solid #38bdf8 !important;
+    box-shadow: inset 5px 0 15px rgba(56, 189, 248, 0.15) !important;
+}
+
+/* -------------------------------------------------------------
+   TRẠNG THÁI ACTIVE (ĐANG CHỌN) - GIỮ MÀU XANH CYAN ỔN ĐỊNH
+   ------------------------------------------------------------- */
+.lpx-sidebar-container .lpx-nav-menu .lpx-nav-item.selected > .lpx-nav-link,
+.lpx-sidebar-container .lpx-nav-menu .lpx-nav-item.selected > .lpx-nav-link i,
+.lpx-sidebar-container .lpx-nav-menu .lpx-nav-item.selected > .lpx-nav-link .lpx-menu-item-icon,
+.lpx-sidebar-container .lpx-nav-menu .lpx-nav-item.selected > .lpx-nav-link .lpx-menu-item-text {
+    color: #0ea5e9 !important;
+    border-color: #0ea5e9 !important;
+    text-shadow: 0 0 8px rgba(14, 165, 233, 0.5) !important; /* Giữ Glow nhẹ */
+}
+
+.lpx-sidebar-container .lpx-nav-menu .lpx-nav-item.selected > .lpx-nav-link {
+    border-left: 3px solid #0ea5e9 !important;
+    background: rgba(14, 165, 233, 0.08) !important;
 }

@@ -1,157 +1,236 @@
-<div class="ticket-page-wrapper py-4 text-white" *ngIf="!isLoading">
+<div class="ticket-page-wrapper py-4 text-white position-relative" *ngIf="!isLoading">
     <div class="container-fluid" style="max-width: 1400px;">
-
+        
         <!-- HEADER TRANG -->
-        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
-            <div>
-                <span class="badge rounded-pill mb-2 px-3 py-2 text-info bg-info bg-opacity-10 border border-info border-opacity-25 fw-semibold">
-                    <i class="fas fa-book-reader me-1"></i> {{ 'ItHelpdesk::KB:HeaderBadge' | abpLocalization }}
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3 animate-fade-in-up">
+            <div class="position-relative">
+                <span class="badge magical-badge rounded-pill mb-2 px-4 py-2 position-relative">
+                    <i class="fas fa-book-reader me-1 float-animation"></i> {{ 'ItHelpdesk::KB:HeaderBadge' | abpLocalization }}
+                    <i class="fas fa-star blink-star star-top-right"></i>
                 </span>
-                <h2 class="fw-bold page-title mb-0 text-white">{{ 'ItHelpdesk::KB:Title' | abpLocalization }}</h2>
+                <h2 class="fw-bold page-title mb-0 text-white ls-wide">{{ 'ItHelpdesk::KB:Title' | abpLocalization }}</h2>
             </div>
+            
             <div class="d-flex gap-3">
                 <!-- Nút Thêm mới dành cho Admin -->
-                <button *ngIf="isAdmin" class="btn btn-info rounded-pill px-4 text-dark fw-bold shadow-sm" (click)="openCreateModal()">
-                    <i class="fas fa-plus me-2"></i> {{ 'ItHelpdesk::KB:NewArticleBtn' | abpLocalization }}
+                <button *ngIf="isAdmin" class="btn magical-btn-submit rounded-pill px-4 text-white fw-bold shadow-lg border-0"
+                    (click)="openCreateModal()">
+                    <span class="position-relative z-index-2"><i class="fas fa-plus me-2"></i> {{ 'ItHelpdesk::KB:NewArticleBtn' | abpLocalization }}</span>
                 </button>
-                <a routerLink="/tickets/it-queue" class="btn btn-outline-light rounded-pill px-4 fw-semibold" style="border-color: rgba(255,255,255,0.2);">
+                
+                <!-- Nút Quay lại cho Admin -->
+                <a *ngIf="isAdmin" routerLink="/tickets/it-queue"
+                    class="btn btn-outline-secondary text-slate-300 hover-text-white rounded-pill px-4 fw-semibold transition-all hover-elevate"
+                    style="border-color: rgba(255,255,255,0.2);">
                     <i class="fas fa-arrow-left me-2"></i> {{ 'ItHelpdesk::KB:BackToQueueBtn' | abpLocalization }}
+                </a>
+                
+                <!-- Nút Quay lại cho User -->
+                <a *ngIf="!isAdmin" routerLink="/tickets/my-tickets"
+                    class="btn btn-outline-secondary text-slate-300 hover-text-white rounded-pill px-4 fw-semibold transition-all hover-elevate"
+                    style="border-color: rgba(255,255,255,0.2);">
+                    <i class="fas fa-arrow-left me-2"></i> {{ 'ItHelpdesk::KB:BackToMyTicketsBtn' | abpLocalization }}
                 </a>
             </div>
         </div>
 
-        <!-- THANH TÌM KIẾM (Floating Dropdown không che nội dung) -->
-        <div class="card border-0 shadow-lg mb-4 p-4 position-relative search-wrapper rounded-4"
-            style="background: rgba(23, 28, 48, 0.9) !important; backdrop-filter: blur(20px);">
-
-            <div class="input-group align-items-center rounded-pill px-3 py-1 position-relative"
-                style="background: rgba(15, 23, 42, 0.9); border: 2px solid rgba(255,255,255,0.2);">
-
-                <span class="text-white opacity-75 bg-transparent border-0 pe-2 ps-2">
+        <!-- THANH TÌM KIẾM -->
+        <div class="card premium-glass-card border-0 shadow-2xl mb-4 p-4 position-relative search-wrapper rounded-4 animate-fade-in-up delay-1">
+            <div class="input-group align-items-center rounded-pill px-3 py-1 position-relative custom-search-box">
+                <span class="text-magical opacity-90 bg-transparent border-0 pe-2 ps-2">
                     <i class="fas fa-search"></i>
                 </span>
-
                 <input type="text" class="form-control bg-transparent border-0 shadow-none text-white p-2"
                     [(ngModel)]="searchText" (input)="onSearchInput()" (keyup.enter)="performSearch()"
-                    (focus)="showSearchSuggestions = true" [placeholder]="'ItHelpdesk::KB:SearchPlaceholder' | abpLocalization">
-
-                <button *ngIf="searchText" class="btn btn-link text-white opacity-75 p-0 ms-2 text-decoration-none me-2"
+                    (focus)="showSearchSuggestions = true"
+                    [placeholder]="'ItHelpdesk::KB:SearchPlaceholder' | abpLocalization">
+                <button *ngIf="searchText" class="btn btn-link text-slate-400 hover-text-white opacity-75 p-0 ms-2 text-decoration-none me-2 transition-all"
                     type="button" (click)="clearSearch()">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
-
+            
             <!-- DROPDOWN LỊCH SỬ -->
             <ul *ngIf="showSearchSuggestions && recentSearches.length > 0"
-                class="dropdown-menu show shadow-lg border-0 mt-2 p-2 rounded-4 position-absolute text-start w-100"
-                style="background: rgba(22, 22, 35, 0.98); backdrop-filter: blur(16px); top: 100%; left: 0; right: 0; z-index: 1050; width: calc(100% - 3rem) !important; margin-left: 1.5rem; border: 1px solid rgba(255,255,255,0.1) !important;">
-
+                class="dropdown-menu show shadow-2xl border-0 mt-2 p-2 rounded-4 position-absolute text-start w-100 magical-dropdown"
+                style="top: 100%; left: 0; right: 0; z-index: 1050; width: calc(100% - 3rem) !important; margin-left: 1.5rem;">
                 <li class="d-flex justify-content-between align-items-center px-3 py-1 mb-1">
-                    <span class="text-info small fw-bold">
+                    <span class="text-magical small fw-bold">
                         <i class="fas fa-history me-1"></i> {{ 'ItHelpdesk::RecentSearches' | abpLocalization }}
                     </span>
-                    <button class="btn btn-link text-muted p-0 small text-decoration-none" style="font-size: 0.75rem;"
+                    <button class="btn btn-link text-slate-400 hover-text-white p-0 small text-decoration-none transition-all" style="font-size: 0.75rem;"
                         (click)="clearAllSearchHistory($event)">
                         {{ 'ItHelpdesk::ClearAll' | abpLocalization }}
                     </button>
                 </li>
-
                 <li *ngFor="let item of recentSearches" (click)="selectSearchSuggestion(item)"
                     class="dropdown-item text-light rounded-3 cursor-pointer px-3 py-2 my-1 d-flex justify-content-between align-items-center custom-dropdown-item">
                     <div>
-                        <i class="fas fa-search text-info me-2 opacity-75"></i> <span>{{ item }}</span>
+                        <i class="fas fa-search text-cyan me-2 opacity-75"></i> <span>{{ item }}</span>
                     </div>
-                    <i class="fas fa-times text-muted hover-danger ms-2 p-1" (click)="removeSearchHistoryItem(item, $event)"></i>
+                    <i class="fas fa-times text-slate-500 hover-text-white ms-2 p-1 transition-all"
+                        (click)="removeSearchHistoryItem(item, $event)"></i>
                 </li>
             </ul>
         </div>
 
         <!-- DANH SÁCH BÀI VIẾT KNOWLEDGE BASE -->
         <div class="row g-4" *ngIf="filteredFaqList.length > 0">
-            <div class="col-md-6" *ngFor="let item of filteredFaqList">
-                <div class="card border-0 shadow-lg p-4 h-100 kb-card rounded-4 position-relative"
-                    style="cursor: pointer; background: rgba(30, 41, 59, 0.7) !important; border: 1px solid rgba(255,255,255,0.08) !important;"
+            <div class="col-md-6 animate-fade-in-up delay-2" *ngFor="let item of filteredFaqList">
+                <div class="card premium-glass-card border-0 shadow-lg p-4 h-100 kb-card position-relative overflow-hidden cursor-pointer"
                     (click)="openArticle(item)">
                     
-                    <!-- Nút Bookmark & Thao tác Admin góc phải -->
-                    <div class="position-absolute top-0 end-0 mt-3 me-3 d-flex gap-2" style="z-index: 10;">
-                        <button class="btn btn-sm btn-dark bg-opacity-50 text-warning rounded-circle shadow-sm" style="width: 32px; height: 32px;"
-                            (click)="toggleBookmark(item, $event)" [title]="isBookmarked(item) ? ('ItHelpdesk::KB:TooltipBookmarkRemove' | abpLocalization) : ('ItHelpdesk::KB:TooltipBookmarkAdd' | abpLocalization)">
-                            <i class="fas" [ngClass]="isBookmarked(item) ? 'fa-bookmark' : 'fa-bookmark'"></i>
+                    <!-- Nút Bookmark & Thao tác Admin -->
+                    <div class="position-absolute top-0 end-0 mt-3 me-3 d-flex gap-2 position-relative z-index-2">
+                        <button class="btn btn-sm text-warning rounded-circle shadow-sm d-flex justify-content-center align-items-center p-0 hover-elevate transition-all"
+                            style="width: 32px; height: 32px; background: rgba(0,0,0,0.4);" (click)="toggleBookmark(item, $event)"
+                            [title]="isBookmarked(item) ? ('ItHelpdesk::KB:TooltipBookmarkRemove' | abpLocalization) : ('ItHelpdesk::KB:TooltipBookmarkAdd' | abpLocalization)">
+                            <i class="fas fa-bookmark"></i>
                         </button>
-                        <button *ngIf="isAdmin" class="btn btn-sm btn-dark bg-opacity-50 text-info rounded-circle shadow-sm" style="width: 32px; height: 32px;"
-                            (click)="openEditModal(item, $event)" [title]="'ItHelpdesk::KB:TooltipEdit' | abpLocalization">
+                        
+                        <button *ngIf="isAdmin" class="btn btn-sm text-cyan rounded-circle shadow-sm d-flex justify-content-center align-items-center p-0 hover-elevate transition-all"
+                            style="width: 32px; height: 32px; background: rgba(0,0,0,0.4);" (click)="openEditModal(item, $event)"
+                            [title]="'ItHelpdesk::KB:TooltipEdit' | abpLocalization">
                             <i class="fas fa-pen"></i>
                         </button>
-                        <button *ngIf="isAdmin" class="btn btn-sm btn-dark bg-opacity-50 text-danger rounded-circle shadow-sm" style="width: 32px; height: 32px;"
-                            (click)="deleteArticle(item, $event)" [title]="'ItHelpdesk::KB:TooltipDelete' | abpLocalization">
+                        
+                        <button *ngIf="isAdmin" class="btn btn-sm text-danger rounded-circle shadow-sm d-flex justify-content-center align-items-center p-0 hover-elevate transition-all hover-bg-danger"
+                            style="width: 32px; height: 32px; background: rgba(0,0,0,0.4);" (click)="deleteArticle(item, $event)"
+                            [title]="'ItHelpdesk::KB:TooltipDelete' | abpLocalization">
                             <i class="fas fa-trash"></i>
                         </button>
                     </div>
-
-                    <div class="d-flex align-items-start mb-3 pe-5">
-                        <div class="avatar rounded-3 d-flex justify-content-center align-items-center me-3 flex-shrink-0 shadow-sm"
-                            style="width: 44px; height: 44px; background: rgba(56, 189, 248, 0.15); color: #38bdf8;">
-                            <i class="fas {{ item.icon || 'fa-book' }}"></i>
+                    
+                    <div class="d-flex align-items-start mb-3 pe-5 position-relative z-index-2">
+                        <div class="avatar rounded-4 d-flex justify-content-center align-items-center me-3 flex-shrink-0 shadow-sm"
+                            style="width: 46px; height: 46px; background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3);">
+                            <i [class]="'fas fa-lg ' + (item.icon || 'fa-book')"></i>
                         </div>
                         <div>
-                            <span class="badge bg-secondary bg-opacity-25 text-info mb-1 px-2 py-1 rounded">
-                                {{ item.category }}
+                            <!-- Hiển thị Category thông minh -->
+                            <span class="badge bg-dark bg-opacity-50 border border-magical border-opacity-25 text-magical mb-2 px-3 py-1.5 rounded-pill shadow-sm">
+                                {{ item.category?.includes('Docs') || item.category?.includes('Internet') ||
+                                item.category?.includes('Permissions') || item.category?.includes('Management') ||
+                                item.category?.includes('Devices') || item.category?.includes('Peripherals')
+                                ? ('ItHelpdesk::KB:Cat:' + item.category | abpLocalization)
+                                : item.category }}
                             </span>
-                            <h5 class="fw-bold text-white mb-0 card-title-hover">{{ item.question }}</h5>
+                            <h5 class="fw-bold text-white mb-0 card-title-hover transition-all">{{ item.question }}</h5>
                         </div>
                     </div>
-                    <p class="text-light opacity-75 mb-0 ps-5"
+                    <p class="text-slate-300 opacity-90 mb-0 ps-5 position-relative z-index-2"
                         style="line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
-                        {{ getPlainText(item.fullContent || item.answer) }}
+                        {{ getPlainText(item.answer) }}
                     </p>
                 </div>
             </div>
         </div>
 
         <!-- TRẠNG THÁI KHÔNG TÌM THẤY -->
-        <div class="text-center py-5" *ngIf="filteredFaqList.length === 0">
-            <i class="fas fa-search fa-3x mb-3 text-secondary opacity-50"></i>
-            <p class="text-light opacity-50 mb-0">{{ 'ItHelpdesk::KB:NoResults' | abpLocalization }}</p>
+        <div class="text-center py-5 position-relative overflow-hidden" *ngIf="filteredFaqList.length === 0">
+            <i class="fas fa-star blink-star star-1 text-cyan"></i>
+            <i class="fas fa-star blink-star star-2 text-magical"></i>
+            <i class="fas fa-search fa-3x mb-3 text-slate-500 opacity-50 float-animation"></i>
+            <p class="text-slate-400 mb-0">{{ 'ItHelpdesk::KB:NoResults' | abpLocalization }}</p>
         </div>
     </div>
 </div>
 
-<!-- MODAL THÊM / SỬA CẨM NANG DÀNH CHO ADMIN -->
-<div *ngIf="isModalOpen" class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.7); backdrop-filter: blur(6px);">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content border-secondary border-opacity-25 text-white shadow-2xl rounded-4 overflow-hidden"
-            style="background: rgba(23, 28, 48, 0.95) !important;">
-            <div class="modal-header border-bottom border-secondary border-opacity-25 px-4 py-3">
-                <h5 class="modal-title fw-bold text-info">
-                    <i class="fas fa-book-medical me-2"></i> {{ isEditing ? ('ItHelpdesk::KB:ModalEditTitle' | abpLocalization) : ('ItHelpdesk::KB:ModalCreateTitle' | abpLocalization) }}
+<!-- MODAL THÊM / SỬA CẨM NANG SONG NGỮ DÀNH CHO ADMIN -->
+<div *ngIf="isModalOpen && isAdmin" class="modal fade show d-block custom-modal-overlay" tabindex="-1"
+    style="background: rgba(10, 15, 30, 0.85); backdrop-filter: blur(8px);">
+    <div class="modal-dialog modal-dialog-centered modal-lg custom-modal-dialog">
+        <div class="modal-content premium-glass-card border-0 text-white shadow-2xl rounded-4 overflow-hidden">
+            <div class="modal-header border-bottom border-secondary border-opacity-25 px-4 py-4">
+                <h5 class="modal-title fw-bold text-cyan mb-0">
+                    <i class="fas fa-book-medical text-magical me-2"></i> {{ isEditing ? ('ItHelpdesk::KB:ModalEditTitle' | abpLocalization) : ('ItHelpdesk::KB:ModalCreateTitle' | abpLocalization) }}
                 </h5>
                 <button type="button" class="btn-close btn-close-white" (click)="closeModal()"></button>
             </div>
+            
             <div class="modal-body p-4">
-                <div class="row g-3 mb-3">
+                <div class="row g-3 mb-4">
                     <div class="col-md-6">
-                        <label class="form-label text-light fw-bold small text-uppercase">{{ 'ItHelpdesk::KB:ModalCategoryLabel' | abpLocalization }}</label>
-                        <input type="text" class="form-control bg-dark text-white border-secondary rounded-pill shadow-none px-3 py-2" [(ngModel)]="modalData.category" [placeholder]="'ItHelpdesk::KB:ModalCategoryPlaceholder' | abpLocalization">
+                        <label class="form-label text-slate-400 fw-bold small text-uppercase mb-2">{{ 'ItHelpdesk::KB:ModalCategoryLabel' | abpLocalization }}</label>
+                        <input type="text"
+                            class="form-control custom-dark-input rounded-pill shadow-none px-4 py-2"
+                            [(ngModel)]="modalData.category"
+                            [placeholder]="'ItHelpdesk::KB:ModalCategoryPlaceholder' | abpLocalization">
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label text-light fw-bold small text-uppercase">{{ 'ItHelpdesk::KB:ModalIconLabel' | abpLocalization }}</label>
-                        <input type="text" class="form-control bg-dark text-white border-secondary rounded-pill shadow-none px-3 py-2" [(ngModel)]="modalData.icon" [placeholder]="'ItHelpdesk::KB:ModalIconPlaceholder' | abpLocalization">
+                        <label class="form-label text-slate-400 fw-bold small text-uppercase mb-2">{{ 'ItHelpdesk::KB:ModalIconLabel' | abpLocalization }}</label>
+                        <input type="text"
+                            class="form-control custom-dark-input rounded-pill shadow-none px-4 py-2"
+                            [(ngModel)]="modalData.icon"
+                            [placeholder]="'ItHelpdesk::KB:ModalIconPlaceholder' | abpLocalization">
                     </div>
                 </div>
-                <div class="mb-3">
-                    <label class="form-label text-light fw-bold small text-uppercase">{{ 'ItHelpdesk::KB:ModalTitleLabel' | abpLocalization }} <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control bg-dark text-white border-secondary rounded-pill shadow-none px-3 py-2" [(ngModel)]="modalData.question" [placeholder]="'ItHelpdesk::KB:ModalTitlePlaceholder' | abpLocalization">
+
+                <!-- TABS LỰA CHỌN NGÔN NGỮ KHI NHẬP LIỆU -->
+                <ul class="nav nav-tabs custom-tabs mb-4">
+                    <li class="nav-item">
+                        <a class="nav-link cursor-pointer text-light" [class.active]="langTab === 'vi'"
+                            (click)="langTab = 'vi'">
+                            {{ 'ItHelpdesk::KB:LangTabVi' | abpLocalization }}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link cursor-pointer text-light" [class.active]="langTab === 'en'"
+                            (click)="langTab = 'en'">
+                            {{ 'ItHelpdesk::KB:LangTabEn' | abpLocalization }}
+                        </a>
+                    </li>
+                </ul>
+
+                <!-- TAB TIẾNG VIỆT -->
+                <div *ngIf="langTab === 'vi'" class="animate-fade-in-up">
+                    <div class="mb-3">
+                        <label class="form-label text-slate-400 fw-bold small text-uppercase mb-2">
+                            {{ 'ItHelpdesk::KB:ModalTitleLabel' | abpLocalization }} {{ 'ItHelpdesk::KB:TagVN' | abpLocalization }} <span class="text-danger">*</span>
+                        </label>
+                        <input type="text"
+                            class="form-control custom-dark-input rounded-pill shadow-none px-4 py-2"
+                            [(ngModel)]="modalData.question_Vi"
+                            [placeholder]="'ItHelpdesk::KB:PlaceholderTitleVi' | abpLocalization">
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label text-slate-400 fw-bold small text-uppercase mb-2">
+                            {{ 'ItHelpdesk::KB:ModalContentLabel' | abpLocalization }} {{ 'ItHelpdesk::KB:TagVN' | abpLocalization }} <span class="text-danger">*</span>
+                        </label>
+                        <textarea class="form-control custom-dark-input rounded-4 shadow-none p-4"
+                            rows="6" [(ngModel)]="modalData.answer_Vi"
+                            [placeholder]="'ItHelpdesk::KB:PlaceholderContentVi' | abpLocalization"></textarea>
+                    </div>
                 </div>
-                <div class="mb-2">
-                    <label class="form-label text-light fw-bold small text-uppercase">{{ 'ItHelpdesk::KB:ModalContentLabel' | abpLocalization }} <span class="text-danger">*</span></label>
-                    <textarea class="form-control bg-dark text-white border-secondary rounded-4 shadow-none p-3" rows="7" [(ngModel)]="modalData.fullContent" [placeholder]="'ItHelpdesk::KB:ModalContentPlaceholder' | abpLocalization"></textarea>
+
+                <!-- TAB TIẾNG ANH -->
+                <div *ngIf="langTab === 'en'" class="animate-fade-in-up">
+                    <div class="mb-3">
+                        <label class="form-label text-slate-400 fw-bold small text-uppercase mb-2">
+                            {{ 'ItHelpdesk::KB:ModalTitleLabel' | abpLocalization }} {{ 'ItHelpdesk::KB:TagEN' | abpLocalization }}
+                        </label>
+                        <input type="text"
+                            class="form-control custom-dark-input rounded-pill shadow-none px-4 py-2"
+                            [(ngModel)]="modalData.question_En"
+                            [placeholder]="'ItHelpdesk::KB:PlaceholderTitleEn' | abpLocalization">
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label text-slate-400 fw-bold small text-uppercase mb-2">
+                            {{ 'ItHelpdesk::KB:ModalContentLabel' | abpLocalization }} {{ 'ItHelpdesk::KB:TagEN' | abpLocalization }}
+                        </label>
+                        <textarea class="form-control custom-dark-input rounded-4 shadow-none p-4"
+                            rows="6" [(ngModel)]="modalData.answer_En"
+                            [placeholder]="'ItHelpdesk::KB:PlaceholderContentEn' | abpLocalization"></textarea>
+                    </div>
                 </div>
             </div>
-            <div class="modal-footer border-top border-secondary border-opacity-25 px-4 py-3">
-                <button type="button" class="btn btn-outline-light rounded-pill px-4" (click)="closeModal()">{{ 'ItHelpdesk::Cancel' | abpLocalization }}</button>
-                <button type="button" class="btn btn-info rounded-pill px-4 text-dark fw-bold" (click)="saveArticle()">
-                    <i class="fas fa-save me-1"></i> {{ 'ItHelpdesk::KB:ModalSaveBtn' | abpLocalization }}
+            
+            <div class="modal-footer border-top border-secondary border-opacity-25 px-4 py-3 gap-2">
+                <button type="button" class="btn btn-outline-secondary text-slate-300 hover-text-white rounded-pill px-4" (click)="closeModal()">
+                    {{ 'ItHelpdesk::Cancel' | abpLocalization }}
+                </button>
+                <button type="button" class="btn magical-btn-submit border-0 rounded-pill px-5 text-white fw-bold shadow-lg" (click)="saveArticle()">
+                    <span class="position-relative z-index-2"><i class="fas fa-save me-1"></i> {{ 'ItHelpdesk::KB:ModalSaveBtn' | abpLocalization }}</span>
                 </button>
             </div>
         </div>
@@ -160,7 +239,7 @@
 
 <!-- LOADING STATE -->
 <div class="text-center py-5 min-vh-100 d-flex justify-content-center align-items-center text-white" *ngIf="isLoading">
-    <div class="spinner-border text-info" role="status" style="width: 3rem; height: 3rem;">
-        <span class="visually-hidden">Loading...</span>
+    <div class="spinner-border text-cyan" role="status" style="width: 3.5rem; height: 3.5rem; border-width: 0.35em;">
+        <span class="visually-hidden">{{ 'ItHelpdesk::KB:LoadingText' | abpLocalization }}</span>
     </div>
 </div>

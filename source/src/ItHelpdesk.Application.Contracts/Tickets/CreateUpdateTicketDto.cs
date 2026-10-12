@@ -20,5 +20,7 @@ namespace ItHelpdesk.Tickets
 
         [Required]
         public long ServiceId { get; set; }
+
+        public long? ParentTicketId { get; set; }
     }
 }

@@ -1,227 +1,193 @@
-/* =========================================================
-   TÙY CHỈNH THANH CUỘN (SCROLLBAR) NHƯ ỨNG DỤNG DESKTOP
-   ========================================================= */
-.custom-scrollbar {
-    &::-webkit-scrollbar {
-        width: 8px;
-        height: 8px;
+:host {
+    display: block; width: 100%; min-height: 100vh;
+    background-color: #0f172a !important; 
+    color: #f4f4f5;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+.page-wrapper { background: transparent; min-height: calc(100vh - 80px); }
+.page-title { font-size: 1.4rem; letter-spacing: -0.02em; color: #fafafa; }
+.text-primary { color: #38bdf8 !important; }
+.cursor-pointer { cursor: pointer; }
+.hover-text-danger:hover { color: #ef4444 !important; }
+.hover-text-white:hover { color: #ffffff !important; }
+.fs-7 { font-size: 0.85rem; }
+.fs-8 { font-size: 0.75rem; }
+.font-monospace { font-family: 'SFMono-Regular', Consolas, Menlo, monospace !important; }
+
+/* Buttons */
+.btn-cyber-primary {
+    background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%) !important;
+    border: none !important; color: #ffffff !important; transition: all 0.3s ease;
+    &:hover { box-shadow: 0 4px 15px rgba(2, 132, 199, 0.4) !important; transform: translateY(-2px); }
+}
+.btn-cyber-outline {
+    background: rgba(56, 189, 248, 0.05) !important;
+    border: 1px solid rgba(56, 189, 248, 0.4) !important;
+    color: #38bdf8 !important; transition: all 0.3s ease;
+    &:hover { background: rgba(56, 189, 248, 0.15) !important; border-color: #38bdf8 !important; color: #ffffff !important; box-shadow: 0 4px 12px rgba(56, 189, 248, 0.2) !important; transform: translateY(-2px); }
+}
+
+/* Control Panel & Cards */
+.control-panel-card { background-color: rgba(15, 23, 42, 0.7); border: 1px solid rgba(255, 255, 255, 0.3) !important; }
+.data-table-card { background-color: rgba(15, 23, 42, 0.7) !important; border: 1px solid rgba(255, 255, 255, 0.3) !important; display: flex; flex-direction: column; width: 100%; flex-grow: 1; min-height: 500px; margin-bottom: 2rem; border-radius: 20px; overflow: hidden; }
+.premium-glass-card { background: rgba(15, 23, 42, 0.6) !important; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.3) !important; border-radius: 20px !important; }
+
+/* Search Box & Dropdown Button */
+.clean-search-box {
+    display: flex !important; align-items: center !important; height: 44px; 
+    background: rgba(15, 23, 42, 0.6) !important; border: 1px solid rgba(255, 255, 255, 0.15) !important; box-shadow: none !important; 
+    transition: all 0.3s ease; padding-left: 1rem; padding-right: 40px; border-radius: 50rem !important;
+    &:focus-within, &:hover { background: rgba(15, 23, 42, 0.9) !important; border-color: #38bdf8 !important; box-shadow: 0 0 12px rgba(56, 189, 248, 0.3) !important; }
+    .search-icon { display: flex; align-items: center; justify-content: center; }
+    .search-input { height: 100%; width: 100%; margin: 0; padding: 0 0 0 12px; font-size: 0.95rem; }
+    .btn-clear-search {
+        position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: transparent; border: none; 
+        padding: 0; display: flex; align-items: center; justify-content: center; border-radius: 50%; width: 28px; height: 28px; z-index: 10;
+        &:hover { color: #ef4444 !important; text-shadow: 0 0 8px rgba(239, 68, 68, 0.6); }
     }
+}
+.clean-select-btn {
+    background: rgba(15, 23, 42, 0.6) !important; border: 1px solid rgba(255, 255, 255, 0.15) !important; box-shadow: none !important; color: #f8fafc !important;
+    transition: all 0.3s ease; border-radius: 50rem !important; height: 44px;
+    &:hover, &:focus { border-color: #38bdf8 !important; background: rgba(15, 23, 42, 0.9) !important; box-shadow: 0 0 12px rgba(56, 189, 248, 0.3) !important; }
+}
+.transition-transform { transition: transform 0.2s ease; }
+.rotate-180 { transform: rotate(180deg); }
+.clean-dropdown {
+    background-color: #18181b !important; border: 1px solid rgba(255,255,255,0.2) !important; z-index: 1050; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border-radius: 12px !important; margin-top: 8px !important;
+    .custom-dropdown-item { font-size: 0.9rem; transition: all 0.2s; border-radius: 6px; cursor: pointer; &:hover { background: rgba(56, 189, 248, 0.1) !important; color: #ffffff !important; } }
+}
+.filter-top-layer { z-index: 50 !important; position: relative; overflow: visible !important; }
+.table-bottom-layer { z-index: 10 !important; position: relative; }
+.z-index-50 { z-index: 50; }
 
-    &::-webkit-scrollbar-track {
-        background: rgba(0, 0, 0, 0.15);
-        border-radius: 10px;
-    }
-
-    &::-webkit-scrollbar-thumb {
-        background: rgba(192, 132, 252, 0.4);
-        border-radius: 10px;
-        border: 2px solid transparent;
-        background-clip: padding-box;
-
-        &:hover {
-            background-color: rgba(192, 132, 252, 0.8);
+/* ---------------------------------------------------
+   DATATABLE CSS
+--------------------------------------------------- */
+::ng-deep {
+    .clean-datatable {
+        background: transparent !important; color: #d4d4d8 !important; box-shadow: none !important;
+        width: 100% !important; height: 100% !important; color-scheme: dark; display: flex !important; flex-direction: column !important;
+        
+        .datatable-header {
+            flex: 0 0 55px !important; height: 55px !important; background: #0f172a !important; border-bottom: 2px solid #38bdf8 !important; width: 100%; z-index: 2;
+            
+            .datatable-header-cell {
+                color: #38bdf8 !important; font-weight: 600 !important; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; padding: 16px 0 !important; 
+                &:hover { background-color: transparent !important; }
+            }
         }
-    }
-}
+        
+        .align-center-header { 
+            display: flex !important; justify-content: center !important; text-align: center !important; 
+            .datatable-header-cell-template-wrap { display: flex; justify-content: center; width: 100%; } 
+        }
 
-.modal-body-scroll {
-    max-height: calc(100vh - 200px);
-    overflow-y: auto;
-    overflow-x: hidden;
-}
+        /* Thêm class mới để căn trái Header */
+        .align-left-header { 
+            display: flex !important; justify-content: flex-start !important; text-align: left !important; padding-left: 1.5rem !important;
+            .datatable-header-cell-template-wrap { display: flex; justify-content: flex-start; width: 100%; } 
+        }
 
-/* Thiết lập không gian cho trang quản trị */
-.admin-page-container {
-    padding-bottom: 2rem;
+        .align-center-col { 
+            display: flex !important; justify-content: center !important; align-items: center !important;
+            .datatable-body-cell-template-wrap { display: flex; justify-content: center; align-items: center; width: 100%; height: 100%; padding: 0 !important; }
+        }
 
-    .card-admin-main {
-        background: rgba(23, 28, 48, 0.85);
-        backdrop-filter: blur(20px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-    }
-
-    ::ng-deep {
-        .ngx-datatable.admin-datatable {
-            background: transparent !important;
-
-            /* HEADER: Giãn lề, chữ trắng sáng rõ nét */
-            .datatable-header {
-                background: rgba(15, 23, 42, 0.6) !important;
-                min-height: 60px !important;
-                height: auto !important;
-                border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
-
-                .datatable-header-cell {
-                    min-height: 60px !important;
-                    height: auto !important;
-                    padding: 14px 20px !important;
-                    display: flex !important;
-                    align-items: center !important;
-                    color: #ffffff !important;
-                    font-weight: 700 !important;
-                    font-size: 1rem !important;
-                    letter-spacing: 0.5px;
-                }
-            }
-
-            .datatable-row-wrapper {
-                border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-                transition: background 0.2s ease;
-
-                &:hover {
-                    background: rgba(255, 255, 255, 0.04);
-                }
-            }
-
-            /* THU NHỎ CHIỀU CAO VÀ TẠO KHOẢNG HỞ CHỐNG DÍNH CHÙM */
-            .datatable-body-cell {
-                padding: 12px 16px !important;
-                color: #ffffff !important;
-                display: flex !important;
-                align-items: center !important;
-                font-size: 0.95rem;
-            }
-
-            .admin-status-badge {
-                margin: 2px 0;
-                font-size: 0.85rem !important;
-            }
-
-            /* CĂN CHỈNH LỀ TRÁI VÀ GIỮA CHUẨN XÁC */
-            .align-center-col {
-                justify-content: center !important;
-                text-align: center !important;
-
-                .datatable-header-cell-template-wrap,
-                .datatable-body-cell-label {
-                    display: flex !important;
-                    justify-content: center !important;
-                    align-items: center !important;
-                    width: 100%;
-                }
-            }
-
-            .align-left-col {
-                justify-content: flex-start !important;
-                text-align: left !important;
-
-                .datatable-header-cell-template-wrap,
-                .datatable-body-cell-label {
-                    display: flex !important;
-                    justify-content: flex-start !important;
-                    align-items: center !important;
-                    width: 100%;
-                }
-            }
-
-            /* SCROLLBAR MỎNG NHẸ DÀNH CHO BẢNG */
-            .datatable-body {
-                background: transparent !important;
-
-                &::-webkit-scrollbar {
-                    height: 8px !important;
-                    width: 8px !important;
-                }
-
-                &::-webkit-scrollbar-track {
-                    background: rgba(15, 23, 42, 0.4) !important;
-                    border-radius: 4px;
-                }
-
-                &::-webkit-scrollbar-thumb {
-                    background: rgba(192, 132, 252, 0.5) !important;
-                    border-radius: 4px;
-                }
-
-                &::-webkit-scrollbar-thumb:hover {
-                    background: rgba(192, 132, 252, 0.9) !important;
-                }
-            }
-
-            /* =========================================================
-               FOOTER & THANH PHÂN TRANG (PAGINATION) SÁNG SỦA
-               ========================================================= */
-            .datatable-footer {
-                background: rgba(15, 23, 42, 0.85) !important;
-                border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
-                padding: 0 28px !important;
-                height: 80px !important;
-                color: #cbd5e1 !important;
-                display: flex !important;
-                align-items: center !important;
-                justify-content: space-between !important;
-
-                .page-count {
-                    font-size: 1rem !important;
-                    font-weight: 500 !important;
-                    color: #94a3b8 !important;
-                }
-
-                .datatable-pager {
-                    display: flex !important;
-                    align-items: center !important;
-
-                    .pager {
-                        display: flex !important;
-                        gap: 10px !important;
-                        margin: 0 !important;
-                        padding: 0 !important;
-                        list-style: none !important;
-
-                        li {
-                            a {
-                                display: flex !important;
-                                align-items: center !important;
-                                justify-content: center !important;
-                                min-width: 40px !important;
-                                height: 40px !important;
-                                border-radius: 12px !important;
-                                background: rgba(255, 255, 255, 0.12) !important;
-                                color: #ffffff !important;
-                                font-weight: 700 !important;
-                                font-size: 0.95rem !important;
-                                text-decoration: none !important;
-                                transition: all 0.3s ease !important;
-                                border: 1px solid rgba(255, 255, 255, 0.2) !important;
-
-                                i {
-                                    font-size: 0.9rem !important;
-                                    color: #ffffff !important;
-                                }
-
-                                &:hover {
-                                    background: rgba(192, 132, 252, 0.3) !important;
-                                    color: #c084fc !important;
-                                    border-color: rgba(192, 132, 252, 0.6) !important;
-                                    transform: translateY(-2px);
-                                }
-                            }
-
-                            /* TRANG ĐANG CHỌN (ACTIVE) RỰC RỠ BẰNG GRADIENT */
-                            &.active a {
-                                background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%) !important;
-                                color: #ffffff !important;
-                                box-shadow: 0 4px 15px rgba(236, 72, 153, 0.6) !important;
-                                border-color: transparent !important;
-                                transform: scale(1.08);
-                            }
-
-                            &.disabled a {
-                                opacity: 0.3 !important;
-                                cursor: not-allowed !important;
-                                background: transparent !important;
-                                border-color: rgba(255, 255, 255, 0.05) !important;
-                                color: #64748b !important;
-
-                                &:hover {
-                                    transform: none !important;
-                                    background: transparent !important;
-                                }
-                            }
-                        }
-                    }
-                }
+        /* Thêm class mới để căn trái Nội dung Cell */
+        .align-left-col { 
+            display: flex !important; justify-content: flex-start !important; align-items: center !important;
+            .datatable-body-cell-template-wrap { display: flex; justify-content: flex-start; align-items: center; width: 100%; height: 100%; padding: 0 !important; }
+        }
+        
+        datatable-body, .datatable-body {
+            flex: 1 1 auto !important; height: auto !important; min-height: 400px; width: 100%; overflow-y: auto !important; overflow-x: auto !important; background-color: transparent !important;
+            
+            &::-webkit-scrollbar { width: 10px; height: 10px; }
+            &::-webkit-scrollbar-track { background: #0f172a !important; } 
+            &::-webkit-scrollbar-thumb { background: #334155 !important; border-radius: 4px; border: 2px solid #0f172a; }
+            &::-webkit-scrollbar-thumb:hover { background: #475569 !important; }
+            &::-webkit-scrollbar-corner { background: #0f172a !important; } 
+            
+            .datatable-row-wrapper { border-bottom: none !important; transition: background-color 0.2s ease; }
+            .datatable-body-row { 
+                height: 95px !important; width: 100%; 
+                border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important; 
+                cursor: pointer; 
+                transition: background-color 0.2s ease, box-shadow 0.2s ease;
+                
+                &:hover { 
+                    background-color: rgba(56, 189, 248, 0.08) !important; 
+                    box-shadow: inset 4px 0 0 #38bdf8, inset 0 0 20px rgba(56, 189, 248, 0.1) !important; 
+                } 
+            } 
+            .datatable-body-cell { display: flex !important; align-items: center !important; padding: 0 !important; }
+        }
+        
+        .datatable-footer {
+            flex: 0 0 65px !important; height: 65px !important; background-color: rgba(0,0,0,0.2) !important; border-top: 1px solid rgba(255,255,255,0.1) !important; padding: 0 24px !important; color: #71717a !important; width: 100%; z-index: 3;
+            .page-count { font-size: 0.85rem !important; }
+            .datatable-pager .pager {
+                display: flex !important; gap: 4px !important; margin: 0 !important; align-items: center;
+                li a { display: flex !important; align-items: center !important; justify-content: center !important; min-width: 32px !important; height: 32px !important; border-radius: 6px !important; background: transparent !important; color: #71717a !important; border: 1px solid transparent !important; transition: all 0.3s ease; &:hover { background: rgba(255,255,255,0.1) !important; color: #fff !important; } }
+                li.active a { background: #38bdf8 !important; color: #09090b !important; font-weight: 700; box-shadow: 0 0 15px #38bdf8, 0 0 30px rgba(56, 189, 248, 0.8); }
+                li.disabled a { opacity: 0.3 !important; cursor: not-allowed; }
             }
         }
     }
 }
+.text-nowrap { white-space: nowrap !important; }
+
+/* ---------------------------------------------------
+   TINH CHỈNH FORM DÁNG & BADGES
+--------------------------------------------------- */
+.content-wrapper-fixed { width: 220px; max-width: 100%; }
+.phone-pill-box {
+    display: inline-flex; align-items: center; justify-content: center;
+    background: rgba(15, 23, 42, 0.5); border: 1px solid rgba(255, 255, 255, 0.15); 
+    border-radius: 50px; padding: 3px 12px; width: fit-content; max-width: 100%; margin-top: 2px;
+    &:hover { background: rgba(56, 189, 248, 0.1); border-color: rgba(56, 189, 248, 0.4); }
+}
+.modern-role-badge {
+    background: rgba(14, 165, 233, 0.1); border: 1px solid rgba(14, 165, 233, 0.3); color: #38bdf8; 
+    padding: 6px 14px; border-radius: 50px; font-size: 0.75rem; font-weight: 600; max-width: 100%; 
+    display: inline-flex; align-items: center; justify-content: center; white-space: nowrap; box-shadow: inset 0 0 8px rgba(14, 165, 233, 0.15);
+    
+    /* STYLE CHO NHÓM TRƯỞNG LẤP LÁNH */
+    &.role-leader {
+        background: rgba(245, 158, 11, 0.15); border-color: rgba(245, 158, 11, 0.6); color: #fbbf24;
+        box-shadow: inset 0 0 10px rgba(245, 158, 11, 0.3), 0 0 15px rgba(245, 158, 11, 0.2);
+    }
+}
+.modern-team-badge {
+    background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); color: #34d399; 
+    padding: 6px 14px; border-radius: 6px; font-size: 0.8rem; font-weight: 600; width: 220px; 
+    display: inline-flex; align-items: center; justify-content: flex-start; white-space: nowrap; box-shadow: inset 0 0 8px rgba(16, 185, 129, 0.15);
+    &.no-team { background: transparent; border-style: dashed; border-color: #475569; color: #94a3b8; justify-content: center; }
+}
+.status-pill {
+    width: 135px; padding: 6px 0; border-radius: 50px; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.03em;
+    display: inline-flex; align-items: center; justify-content: center; border: 1px solid transparent; text-transform: uppercase; white-space: nowrap;
+}
+.status-pill .status-dot { width: 5px; height: 5px; border-radius: 50%; margin-right: 6px; box-shadow: 0 0 8px currentColor; flex-shrink: 0; }
+.status-pill.active { color: #34d399; background: rgba(52, 211, 153, 0.1); border-color: rgba(52, 211, 153, 0.4); } 
+.status-pill.active .status-dot { background-color: #34d399; }
+.status-pill.inactive { color: #f87171; background: rgba(248, 113, 113, 0.1); border-color: rgba(248, 113, 113, 0.4); } 
+.status-pill.inactive .status-dot { background-color: #f87171; }
+.modern-avatar { 
+    width: 42px; height: 42px; background: linear-gradient(135deg, #0ea5e9, #3b82f6); color: white; 
+    display: flex; align-items: center; justify-content: center; font-size: 1.1rem; border-radius: 50%; box-shadow: 0 4px 10px rgba(14, 165, 233, 0.25); border: 2px solid transparent; 
+    &.avatar-leader { border-color: #fbbf24; box-shadow: 0 0 15px rgba(245, 158, 11, 0.5); }
+}
+.btn-action-dropdown { background-color: transparent; border: 1px solid rgba(255,255,255,0.2); height: 34px; width: 44px; color: #a1a1aa; transition: all 0.2s ease; &:hover, &:focus { background-color: rgba(255,255,255,0.05); border-color: #38bdf8; color: #fff; box-shadow: 0 4px 10px rgba(56, 189, 248, 0.2); } }
+.custom-action-menu { background: rgba(24, 24, 27, 0.98) !important; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.2) !important; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.6); min-width: 160px; .dropdown-item { font-size: 0.85rem; padding: 8px 16px; transition: all 0.2s; &:hover { background: rgba(255,255,255,0.05); padding-left: 20px !important; color: #fff; } } }
+
+/* Modals Full */
+.bg-zinc-900 { background-color: #18181b !important; }
+.custom-modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(9, 9, 11, 0.85); backdrop-filter: blur(8px); z-index: 1060; display: flex; justify-content: center; align-items: center; .custom-modal-dialog { width: 100%; max-width: 800px; animation: modalFadeIn 0.3s ease-out forwards; } }
+@keyframes modalFadeIn { from { opacity: 0; transform: translateY(-20px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+.glass-modal { border: 1px solid rgba(255,255,255,0.15) !important; }
+.custom-modal-input { background-color: rgba(255,255,255,0.03) !important; border: 1px solid rgba(255,255,255,0.15) !important; color: #f4f4f5 !important; padding: 0.75rem 1rem !important; border-radius: 8px !important; font-size: 0.9rem; transition: all 0.2s; &:focus { border-color: #38bdf8 !important; background-color: rgba(0,0,0,0.2) !important; box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2) !important; } &::placeholder { color: #71717a !important; } &:disabled { opacity: 0.5; } }
+.btn-glow { box-shadow: 0 0 12px rgba(56, 189, 248, 0.3); transition: all 0.3s; &:hover { box-shadow: 0 0 20px rgba(56, 189, 248, 0.5); transform: translateY(-1px); } }
+.modern-checkbox-card { position: relative; padding: 0.75rem 1rem; margin-bottom: 0.5rem; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 8px; display: flex; align-items: flex-start; gap: 12px; transition: all 0.2s; &:hover { background: rgba(255,255,255,0.04); border-color: rgba(56, 189, 248, 0.3); } .form-check-input { margin-top: 0.2rem; width: 1.15rem; height: 1.15rem; background-color: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); &:checked { background-color: #38bdf8; border-color: #38bdf8; } &:focus { box-shadow: none; border-color: #38bdf8; } } }
+.custom-scrollbar::-webkit-scrollbar { width: 6px; } .custom-scrollbar::-webkit-scrollbar-track { background: transparent; } .custom-scrollbar::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 10px; } .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #52525b; }

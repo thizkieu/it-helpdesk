@@ -1,258 +1,297 @@
-<div class="ticket-page-wrapper py-4 text-white">
-    <div class="container-fluid" style="max-width: 1550px;">
-
+<div class="ticket-page-wrapper py-4 text-white w-100 overflow-hidden print-wrapper">
+    <div class="container-fluid" style="max-width: 1600px;" *ngIf="!isLoading">
+        
         <!-- HEADER -->
-        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-3 no-print">
             <div>
-                <span class="badge rounded-pill mb-2 px-3 py-2 text-info bg-info bg-opacity-10 border border-info border-opacity-25 fw-semibold" style="letter-spacing: 0.5px;">
+                <span class="badge rounded-pill mb-2 px-3 py-2 text-info bg-info bg-opacity-10 border border-info border-opacity-25 fw-semibold tracking-wide">
                     <i class="fas fa-chart-pie me-2"></i> {{ 'ItHelpdesk::Dashboard:ControlCenterBadge' | abpLocalization }}
                 </span>
-                <h2 class="fw-bold page-title mb-0 text-white">{{ 'ItHelpdesk::Dashboard:PageTitle' | abpLocalization }}</h2>
+                <h2 class="fw-bold page-title mb-0 text-white text-wrap">{{ 'ItHelpdesk::Dashboard:PageTitle' | abpLocalization }}</h2>
             </div>
-            <div class="d-flex gap-3 flex-wrap">
-                <a routerLink="/tickets/it-queue" class="btn btn-outline-light rounded-pill px-4 d-inline-flex align-items-center justify-content-center shadow-sm transition-all" style="min-height: 42px; border-color: rgba(255,255,255,0.2);">
-                    <i class="fas fa-tasks me-2 text-info"></i> {{ 'ItHelpdesk::Dashboard:ViewTicketQueue' | abpLocalization }}
+            <div>
+                <a routerLink="/tickets/it-queue" class="btn btn-outline-info rounded-pill px-4 fw-bold shadow-sm transition-all hover-elevate">
+                    <i class="fas fa-tasks me-2"></i> {{ 'ItHelpdesk::Dashboard:ViewTicketQueue' | abpLocalization }}
                 </a>
             </div>
         </div>
 
-        <!-- ========================================== -->
-        <!-- THANH BỘ LỌC ĐIỀU KIỆN (ADVANCED FILTERS)   -->
-        <!-- ========================================== -->
-        <div class="card border border-secondary border-opacity-25 text-light rounded-4 mb-4 p-4 shadow-lg"
-            style="background: rgba(23, 28, 48, 0.9); backdrop-filter: blur(20px);">
-            <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom border-secondary border-opacity-25">
-                <h5 class="fw-bold text-pink mb-0"><i class="fas fa-filter me-2"></i> {{ 'ItHelpdesk::Dashboard:FilterTitle' | abpLocalization }}</h5>
-                <span class="text-muted small">{{ 'ItHelpdesk::Dashboard:FilterSubtitle' | abpLocalization }}</span>
+        <!-- BỘ LỌC ĐIỀU KIỆN -->
+        <div class="card premium-glass-card border-0 text-light rounded-4 mb-4 p-3 p-md-4 shadow-lg position-relative overflow-hidden w-100 no-print">
+            <div *ngIf="isFiltered" class="position-absolute top-0 end-0 bg-info bg-opacity-25 text-info px-3 py-1 rounded-bottom-start small fw-bold shadow-sm" style="backdrop-filter: blur(5px);">
+                <i class="fas fa-filter me-1"></i> {{ 'ItHelpdesk::Dashboard:FilterApplied' | abpLocalization }}
             </div>
-
-            <div class="row g-3 align-items-end">
-                <!-- Từ ngày -->
-                <div class="col-xl-2 col-md-4">
-                    <label class="form-label text-muted small text-uppercase fw-semibold">{{ 'ItHelpdesk::Dashboard:StartDate' | abpLocalization }}</label>
-                    <input type="date" class="form-control bg-dark text-white border-secondary rounded-pill shadow-none px-3 py-2" [(ngModel)]="filterParams.startDate">
+            <div class="row g-3 align-items-end position-relative z-1">
+                <div class="col-12 col-xl-4">
+                    <div class="d-flex justify-content-between align-items-center mb-2" style="height: 24px;">
+                        <label class="form-label text-slate-400 tracking-wide small text-uppercase fw-semibold mb-0">{{ 'ItHelpdesk::Dashboard:TimeRange' | abpLocalization }}</label>
+                        <div class="d-flex gap-2">
+                            <span class="badge smart-date-btn" (click)="selectDateRange('today')">{{ 'ItHelpdesk::Dashboard:Today' | abpLocalization }}</span>
+                            <span class="badge smart-date-btn" (click)="selectDateRange('7days')">{{ 'ItHelpdesk::Dashboard:7Days' | abpLocalization }}</span>
+                            <span class="badge smart-date-btn" (click)="selectDateRange('30days')">{{ 'ItHelpdesk::Dashboard:30Days' | abpLocalization }}</span>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <input type="date" class="form-control cyber-input w-100 cyber-date" [(ngModel)]="filterParams.startDate">
+                        <input type="date" class="form-control cyber-input w-100 cyber-date" [(ngModel)]="filterParams.endDate">
+                    </div>
                 </div>
-                <!-- Đến ngày -->
-                <div class="col-xl-2 col-md-4">
-                    <label class="form-label text-muted small text-uppercase fw-semibold">{{ 'ItHelpdesk::Dashboard:EndDate' | abpLocalization }}</label>
-                    <input type="date" class="form-control bg-dark text-white border-secondary rounded-pill shadow-none px-3 py-2" [(ngModel)]="filterParams.endDate">
-                </div>
-                <!-- Người xử lý (KTV) -->
-                <div class="col-xl-3 col-md-4">
-                    <label class="form-label text-muted small text-uppercase fw-semibold">{{ 'ItHelpdesk::Dashboard:Technician' | abpLocalization }}</label>
-                    <select class="form-select bg-dark text-white border-secondary rounded-pill shadow-none px-3 py-2" [(ngModel)]="filterParams.assigneeId">
-                        <option value="">{{ 'ItHelpdesk::Dashboard:AllTechnicians' | abpLocalization }}</option>
-                        <option *ngFor="let tech of technicians" [value]="tech.id">{{ tech.surname }} {{ tech.name }}</option>
+                <div class="col-12 col-md-6 col-xl-3">
+                    <div class="d-flex align-items-center mb-2" style="height: 24px;">
+                        <label class="form-label text-slate-400 tracking-wide small text-uppercase fw-semibold mb-0">{{ 'ItHelpdesk::Dashboard:Technician' | abpLocalization }}</label>
+                    </div>
+                    <select class="form-select cyber-input w-100" [(ngModel)]="filterParams.assigneeId">
+                        <option [ngValue]="null">{{ 'ItHelpdesk::Dashboard:AllTechnicians' | abpLocalization }}</option>
+                        <option *ngFor="let tech of technicians" [value]="tech.id">{{ tech.fullName }}</option>
                     </select>
                 </div>
-                <!-- Trạng thái -->
-                <div class="col-xl-3 col-md-6">
-                    <label class="form-label text-muted small text-uppercase fw-semibold">{{ 'ItHelpdesk::Dashboard:TicketStatus' | abpLocalization }}</label>
-                    <select class="form-select bg-dark text-white border-secondary rounded-pill shadow-none px-3 py-2" [(ngModel)]="filterParams.status">
-                        <option [ngValue]="null">{{ 'ItHelpdesk::Dashboard:AllStatuses' | abpLocalization }}</option>
+                <div class="col-12 col-md-6 col-xl-3">
+                    <div class="d-flex align-items-center mb-2" style="height: 24px;">
+                        <label class="form-label text-slate-400 tracking-wide small text-uppercase fw-semibold mb-0">{{ 'ItHelpdesk::Dashboard:TicketStatus' | abpLocalization }}</label>
+                    </div>
+                    <select class="form-select cyber-input w-100" [(ngModel)]="filterParams.status">
+                        <option [ngValue]="null">{{ 'ItHelpdesk::Dashboard:StatusAllOption' | abpLocalization }}</option>
                         <option [ngValue]="0">{{ 'ItHelpdesk::Dashboard:StatusNewOption' | abpLocalization }}</option>
                         <option [ngValue]="2">{{ 'ItHelpdesk::Dashboard:StatusInProgressOption' | abpLocalization }}</option>
                         <option [ngValue]="6">{{ 'ItHelpdesk::Dashboard:StatusCompletedOption' | abpLocalization }}</option>
                         <option [ngValue]="7">{{ 'ItHelpdesk::Dashboard:StatusClosedOption' | abpLocalization }}</option>
                     </select>
                 </div>
-                <!-- Nút thao tác lọc -->
-                <div class="col-xl-2 col-md-6 d-flex gap-2">
-                    <button class="btn btn-info rounded-pill w-100 fw-bold text-dark py-2 shadow-sm" (click)="onApplyFilter()">
+                <div class="col-12 col-xl-2 d-flex gap-2">
+                    <button class="btn btn-info cyber-btn w-100 fw-bold text-dark shadow-sm hover-elevate" (click)="onApplyFilter()">
                         <i class="fas fa-search me-1"></i> {{ 'ItHelpdesk::Dashboard:FilterBtn' | abpLocalization }}
                     </button>
-                    <button class="btn btn-outline-secondary rounded-pill py-2 px-3" (click)="onResetFilter()" [title]="'ItHelpdesk::Dashboard:ResetFilterTooltip' | abpLocalization">
+                    <button class="btn btn-outline-secondary cyber-btn flex-shrink-0" (click)="onResetFilter()" [title]="'ItHelpdesk::Dashboard:ResetFilterTooltip' | abpLocalization">
                         <i class="fas fa-undo"></i>
                     </button>
                 </div>
             </div>
         </div>
 
-        <!-- --- KHU VỰC KHUYẾN NGHỊ VẬN HÀNH --- -->
-        <div class="card border border-info border-opacity-25 text-light rounded-4 mb-4 p-4 shadow-lg"
-            style="background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(15px);">
-            <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
-                <div class="d-flex align-items-start align-items-md-center gap-3">
-                    <div class="rounded-3 bg-info bg-opacity-15 text-info d-flex align-items-center justify-content-center flex-shrink-0"
-                        style="width: 48px; height: 48px; font-size: 1.2rem;">
-                        <i class="fas fa-shield-alt"></i>
+        <!-- THẺ KPI TỔNG QUAN -->
+        <div class="row g-3 g-md-4 mb-4">
+            <div class="col-12 col-sm-6 col-xl-4"><div class="card premium-glass-card p-4 h-100 border-start border-4 border-info cursor-pointer hover-elevate print-card" (click)="navigateToQueue('all')"><div class="d-flex justify-content-between mb-2"><span class="text-slate-400 small fw-bold tracking-wide">{{ 'ItHelpdesk::Dashboard:TotalTickets' | abpLocalization }}</span><i class="fas fa-ticket-alt text-info fs-4"></i></div><h2 class="fw-bold mb-0 neon-text-info">{{ stats.totalTickets }}</h2></div></div>
+            <div class="col-12 col-sm-6 col-xl-4"><div class="card premium-glass-card p-4 h-100 border-start border-4 border-primary cursor-pointer hover-elevate print-card" (click)="navigateToQueue('new')"><div class="d-flex justify-content-between mb-2"><span class="text-slate-400 small fw-bold tracking-wide">{{ 'ItHelpdesk::Dashboard:NewTickets' | abpLocalization }}</span><i class="fas fa-inbox text-primary fs-4"></i></div><h2 class="fw-bold mb-0 text-white">{{ stats.newTickets }}</h2></div></div>
+            <div class="col-12 col-sm-6 col-xl-4"><div class="card premium-glass-card p-4 h-100 border-start border-4 border-warning cursor-pointer hover-elevate print-card" (click)="navigateToQueue('unassigned')"><div class="d-flex justify-content-between mb-2"><span class="text-slate-400 small fw-bold tracking-wide">{{ 'ItHelpdesk::Dashboard:UnassignedTickets' | abpLocalization }}</span><i class="fas fa-user-clock text-warning fs-4"></i></div><h2 class="fw-bold neon-text-warning mb-0">{{ stats.unassignedTickets }}</h2></div></div>
+            <div class="col-12 col-sm-6 col-xl-4"><div class="card premium-glass-card p-4 h-100 border-start border-4 border-success cursor-pointer hover-elevate print-card" (click)="navigateToQueue('resolved')"><div class="d-flex justify-content-between mb-2"><span class="text-slate-400 small fw-bold tracking-wide">{{ 'ItHelpdesk::Dashboard:ResolvedTickets' | abpLocalization }}</span><i class="fas fa-check-circle text-success fs-4"></i></div><h2 class="fw-bold neon-text-success mb-0">{{ stats.resolvedTickets }}</h2></div></div>
+            <div class="col-12 col-sm-6 col-xl-4"><div class="card premium-glass-card p-4 h-100 border-start border-4 border-danger cursor-pointer hover-elevate print-card" (click)="navigateToQueue('overdue')"><div class="d-flex justify-content-between mb-2"><span class="text-slate-400 small fw-bold tracking-wide">{{ 'ItHelpdesk::Dashboard:OverdueTickets' | abpLocalization }}</span><i class="fas fa-radiation text-danger fs-4"></i></div><h2 class="fw-bold neon-text-danger mb-0">{{ stats.overdueTickets }}</h2></div></div>
+            <div class="col-12 col-sm-6 col-xl-4"><div class="card premium-glass-card p-4 h-100 border-start border-4 border-purple cursor-pointer hover-elevate print-card"><div class="d-flex justify-content-between mb-2"><span class="text-slate-400 small fw-bold tracking-wide">{{ 'ItHelpdesk::Dashboard:SlaComplianceRate' | abpLocalization }}</span><i class="fas fa-chart-line text-purple fs-4" style="color: #c084fc;"></i></div><h2 class="fw-bold mb-0 text-white">{{ stats.slaComplianceRate }}%</h2></div></div>
+        </div>
+
+        <!-- BIỂU ĐỒ TRÒN & ĐỒNG HỒ SLA -->
+        <div class="row g-4 mb-4 align-items-stretch">
+            
+            <!-- CỘT TRÁI: BIỂU ĐỒ TRÒN PHÂN PHỐI TRẠNG THÁI -->
+            <div class="col-12 col-lg-6 d-flex flex-column page-break-inside-avoid">
+                <div class="card premium-glass-card p-4 h-100 w-100 d-flex flex-column">
+                    <div class="d-flex justify-content-between align-items-center mb-3 flex-shrink-0" style="height: 32px;">
+                        <h5 class="fw-bold text-white mb-0 tracking-wide"><i class="fas fa-chart-pie text-info me-2"></i> {{ 'ItHelpdesk::Dashboard:ChartStatusDistribution' | abpLocalization }}</h5>
                     </div>
-                    <div>
-                        <h6 class="fw-bold text-info mb-1">{{ 'ItHelpdesk::Dashboard:RecommendationTitle' | abpLocalization }}</h6>
-                        <p class="mb-0 text-muted small">
-                            <span *ngIf="stats.unassignedTickets > 0" class="text-warning fw-medium">
-                                {{ 'ItHelpdesk::Dashboard:UnassignedWarning' | abpLocalization: stats.unassignedTickets }}
+                    
+                    <div class="w-100 d-flex justify-content-center align-items-center flex-shrink-0" style="height: 300px; overflow: hidden;">
+                        <ngx-charts-pie-chart [results]="ticketStatusData" [customColors]="getCustomChartColor" [doughnut]="true" [arcWidth]="0.35" [labels]="true" [legend]="false"></ngx-charts-pie-chart>
+                    </div>
+                    
+                    <div class="w-100 mt-4 bg-dark bg-opacity-50 p-3 rounded-3 border border-secondary border-opacity-25 shadow-sm print-bg-light flex-shrink-0 d-flex align-items-center justify-content-center" style="min-height: 105px;">
+                        <div class="custom-legend-grid w-100">
+                            <div class="d-flex align-items-center" *ngFor="let item of ticketStatusData; let i = index">
+                                <span class="color-box flex-shrink-0 me-2" [style.background-color]="getCustomChartColor(item.name)"></span>
+                                <span class="text-light small fw-medium text-nowrap">{{ item.name }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex flex-column flex-grow-1 mt-4">
+                        <div class="p-3 w-100 rounded-3 bg-dark border-start border-info border-3 shadow-sm text-light small lh-base print-bg-light flex-grow-1 d-flex flex-column justify-content-center">
+                            <h6 class="fw-bold text-info mb-2"><i class="fas fa-robot me-1"></i> {{ 'ItHelpdesk::Dashboard:AutoAnalysis' | abpLocalization }}</h6>
+                            <span [innerHTML]="getChartInsight()"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- CỘT PHẢI: ĐỒNG HỒ HIỆU SUẤT SLA -->
+            <div class="col-12 col-lg-6 d-flex flex-column page-break-inside-avoid">
+                <div class="card premium-glass-card p-4 h-100 w-100 d-flex flex-column position-relative">
+                    <div class="d-flex justify-content-between align-items-center mb-3 flex-shrink-0" style="height: 32px;">
+                        <h5 class="fw-bold text-white mb-0 tracking-wide"><i class="fas fa-tachometer-alt text-success me-2"></i> {{ 'ItHelpdesk::Dashboard:SlaCompletionRate' | abpLocalization }}</h5>
+                        <button class="btn btn-sm btn-outline-info rounded-pill px-3 fw-medium no-print" (click)="toggleSlaExplanation()"><i class="fas fa-calculator me-1"></i> {{ 'ItHelpdesk::Dashboard:Algorithm' | abpLocalization }}</button>
+                    </div>
+                    
+                    <div class="w-100 d-flex justify-content-center align-items-center flex-shrink-0" style="height: 300px; overflow: hidden;">
+                        <ngx-charts-gauge [results]="slaGaugeData" [scheme]="colorSchemeSla" [min]="0" [max]="100" [angleSpan]="240" [startAngle]="-120" [showAxis]="true" [valueFormatting]="gaugeValueFormatting" class="custom-gauge w-100 h-100"></ngx-charts-gauge>
+                    </div>
+                    
+                    <div class="w-100 mt-4 p-3 rounded-3 bg-dark border-start border-3 shadow-sm text-light small text-wrap lh-base print-bg-light flex-shrink-0 d-flex flex-column justify-content-center" [ngClass]="getSlaStatusClass().replace('text-', 'border-')" style="min-height: 105px;">
+                        <div class="d-flex align-items-center mb-2 border-bottom border-secondary border-opacity-50 pb-2">
+                            <span class="fs-6 fw-bold text-uppercase d-flex align-items-center gap-2">
+                                <i class="fas fa-heartbeat flex-shrink-0" [ngClass]="getSlaStatusClass()"></i>
+                                <span [ngClass]="getSlaStatusClass()">{{ 'ItHelpdesk::Dashboard:SlaResult' | abpLocalization }} {{ stats.slaComplianceRate }}%</span>
                             </span>
-                            <span *ngIf="stats.overdueTickets > 0" class="text-danger fw-medium ms-2">
-                                {{ 'ItHelpdesk::Dashboard:OverdueWarning' | abpLocalization: stats.overdueTickets }}
-                            </span>
-                            <span *ngIf="stats.unassignedTickets === 0 && stats.overdueTickets === 0"
-                                class="text-success fw-medium">{{ 'ItHelpdesk::Dashboard:SystemStable' | abpLocalization }}</span>
-                        </p>
-                    </div>
-                </div>
-                <div>
-                    <button class="btn btn-sm btn-info rounded-pill px-4 py-2 text-dark fw-bold text-nowrap shadow-sm"
-                        (click)="navigateToQueue('unassigned')">
-                        {{ 'ItHelpdesk::Dashboard:ProcessNow' | abpLocalization }} <i class="fas fa-chevron-right ms-1" style="font-size: 0.75rem;"></i>
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- KPI CARDS ROW -->
-        <div class="row g-4 mb-4">
-            <div class="col-xl-4 col-md-6">
-                <div class="card border-0 shadow-lg p-4 h-100 cursor-pointer transition-all rounded-4"
-                    style="background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(255,255,255,0.08) !important;"
-                    (click)="navigateToQueue('all')">
-                    <div class="d-flex align-items-center">
-                        <div class="avatar bg-primary bg-opacity-15 text-primary rounded-3 d-flex justify-content-center align-items-center me-3 flex-shrink-0"
-                            style="width: 50px; height: 50px; font-size: 1.3rem;">
-                            <i class="fas fa-layer-group"></i>
                         </div>
-                        <div class="overflow-hidden">
-                            <span class="text-muted small text-uppercase fw-semibold text-truncate d-block">{{ 'ItHelpdesk::Dashboard:TotalTickets' | abpLocalization }}</span>
-                            <h3 class="fw-bold text-white mb-0 mt-1 text-truncate">{{ stats.totalTickets }}</h3>
+                        <span [innerHTML]="getSlaInsight()"></span>
+                    </div>
+                    <div class="d-flex flex-column flex-grow-1 mt-4">
+                        <div class="w-100 pt-3 border-top border-secondary border-opacity-25 flex-grow-1 d-flex flex-column justify-content-center" *ngIf="slaExplanationData">
+                            <h6 class="text-slate-400 small fw-bold mb-3 text-uppercase tracking-wide"><i class="fas fa-chart-bar text-info me-2"></i> {{ 'ItHelpdesk::Dashboard:BaseData' | abpLocalization }}</h6>
+                            <div class="row g-2">
+                                <div class="col-6"><div class="p-2 rounded bg-dark bg-opacity-50 border border-secondary border-opacity-25 d-flex justify-content-between align-items-center print-bg-light"><span class="small text-muted">{{ 'ItHelpdesk::Dashboard:Completed' | abpLocalization }}</span><span class="fw-bold text-white fs-6 print-text-dark">{{ slaExplanationData.totalCompletedTickets }}</span></div></div>
+                                <div class="col-6"><div class="p-2 rounded bg-dark bg-opacity-50 border border-secondary border-opacity-25 d-flex justify-content-between align-items-center print-bg-light"><span class="small text-muted">{{ 'ItHelpdesk::Dashboard:OnTime' | abpLocalization }}</span><span class="fw-bold text-success fs-6">{{ slaExplanationData.onTimeCount }}</span></div></div>
+                                <div class="col-6"><div class="p-2 rounded bg-dark bg-opacity-50 border border-secondary border-opacity-25 d-flex justify-content-between align-items-center print-bg-light"><span class="small text-muted">{{ 'ItHelpdesk::Dashboard:Violated' | abpLocalization }}</span><span class="fw-bold text-danger fs-6">{{ slaExplanationData.overdueCount }}</span></div></div>
+                                <div class="col-6"><div class="p-2 rounded bg-dark bg-opacity-50 border border-secondary border-opacity-25 d-flex justify-content-between align-items-center print-bg-light"><span class="small text-muted">{{ 'ItHelpdesk::Dashboard:PenaltyPoint' | abpLocalization }}</span><span class="fw-bold text-warning fs-6">-{{ slaExplanationData.overdueCount * 1.5 }}%</span></div></div>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </div>
-
-            <div class="col-xl-4 col-md-6">
-                <div class="card border-0 shadow-lg p-4 h-100 cursor-pointer transition-all rounded-4"
-                    style="background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(255,255,255,0.08) !important;"
-                    (click)="navigateToQueue('new')">
-                    <div class="d-flex align-items-center">
-                        <div class="avatar bg-info bg-opacity-15 text-info rounded-3 d-flex justify-content-center align-items-center me-3 flex-shrink-0"
-                            style="width: 50px; height: 50px; font-size: 1.3rem;">
-                            <i class="fas fa-inbox"></i>
+                    
+                    <!-- Popover thuật toán -->
+                    <div class="sla-popover-bubble animate-fade-in d-flex flex-column" *ngIf="isSlaExpanded">
+                        <div class="d-flex justify-content-between align-items-center pb-3 border-bottom border-info border-opacity-50 flex-shrink-0">
+                            <h6 class="fw-bold text-info mb-0 d-flex align-items-center tracking-wide"><i class="fas fa-microscope fs-5 me-2"></i> {{ 'ItHelpdesk::Dashboard:AlgorithmDetail' | abpLocalization }}</h6>
+                            <button class="btn-close btn-close-white" style="font-size: 0.75rem;" (click)="toggleSlaExplanation()"></button>
                         </div>
-                        <div class="overflow-hidden">
-                            <span class="text-muted small text-uppercase fw-semibold text-truncate d-block">{{ 'ItHelpdesk::Dashboard:NewTickets' | abpLocalization }}</span>
-                            <h3 class="fw-bold text-white mb-0 mt-1 text-truncate">{{ stats.newTickets }}</h3>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-xl-4 col-md-6">
-                <div class="card border-0 shadow-lg p-4 h-100 cursor-pointer transition-all rounded-4"
-                    style="background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(245, 158, 11, 0.3) !important;"
-                    (click)="navigateToQueue('unassigned')">
-                    <div class="d-flex align-items-center">
-                        <div class="avatar bg-warning bg-opacity-15 text-warning rounded-3 d-flex justify-content-center align-items-center me-3 flex-shrink-0"
-                            style="width: 50px; height: 50px; font-size: 1.3rem;">
-                            <i class="fas fa-user-clock"></i>
-                        </div>
-                        <div class="overflow-hidden">
-                            <span class="text-warning small text-uppercase fw-semibold text-truncate d-block">{{ 'ItHelpdesk::Dashboard:UnassignedTickets' | abpLocalization }}</span>
-                            <h3 class="fw-bold text-warning mb-0 mt-1 text-truncate">{{ stats.unassignedTickets }}</h3>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-xl-4 col-md-6">
-                <div class="card border-0 shadow-lg p-4 h-100 rounded-4"
-                    style="background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(255,255,255,0.08) !important;">
-                    <div class="d-flex align-items-center">
-                        <div class="avatar bg-success bg-opacity-15 text-success rounded-3 d-flex justify-content-center align-items-center me-3 flex-shrink-0"
-                            style="width: 50px; height: 50px; font-size: 1.3rem;">
-                            <i class="fas fa-check-circle"></i>
-                        </div>
-                        <div class="overflow-hidden">
-                            <span class="text-muted small text-uppercase fw-semibold text-truncate d-block">{{ 'ItHelpdesk::Dashboard:ResolvedTickets' | abpLocalization }}</span>
-                            <h3 class="fw-bold text-white mb-0 mt-1 text-truncate">{{ stats.resolvedTickets }}</h3>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-xl-4 col-md-6">
-                <div class="card border-0 shadow-lg p-4 h-100 cursor-pointer transition-all rounded-4"
-                    style="background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(239, 68, 68, 0.3) !important;"
-                    (click)="navigateToQueue('overdue')">
-                    <div class="d-flex align-items-center">
-                        <div class="avatar bg-danger bg-opacity-15 text-danger rounded-3 d-flex justify-content-center align-items-center me-3 flex-shrink-0"
-                            style="width: 50px; height: 50px; font-size: 1.3rem;">
-                            <i class="fas fa-exclamation-circle"></i>
-                        </div>
-                        <div class="overflow-hidden">
-                            <span class="text-danger small text-uppercase fw-semibold text-truncate d-block">{{ 'ItHelpdesk::Dashboard:OverdueTickets' | abpLocalization }}</span>
-                            <h3 class="fw-bold text-danger mb-0 mt-1 text-truncate">{{ stats.overdueTickets }}</h3>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-xl-4 col-md-6">
-                <div class="card border-0 shadow-lg p-4 h-100 rounded-4"
-                    style="background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(255,255,255,0.08) !important;">
-                    <div class="d-flex align-items-center">
-                        <div class="avatar bg-purple bg-opacity-15 text-purple rounded-3 d-flex justify-content-center align-items-center me-3 flex-shrink-0"
-                            style="width: 50px; height: 50px; font-size: 1.3rem; color: #c084fc;">
-                            <i class="fas fa-chart-line"></i>
-                        </div>
-                        <div class="overflow-hidden">
-                            <span class="text-muted small text-uppercase fw-semibold text-truncate d-block">{{ 'ItHelpdesk::Dashboard:SlaComplianceRate' | abpLocalization }}</span>
-                            <h3 class="fw-bold text-white mb-0 mt-1 text-truncate">{{ stats.slaComplianceRate }}%</h3>
+                        <div class="popover-scroll-content pt-3">
+                            <div *ngIf="isLoadingCalc" class="text-center py-4"><div class="spinner-border text-info"></div></div>
+                            <div *ngIf="!isLoadingCalc && slaExplanationData" class="d-flex flex-column gap-3">
+                                <p class="text-slate-400 mb-0" style="font-size: 0.8rem; line-height: 1.5;">{{ 'ItHelpdesk::Dashboard:AlgorithmDesc' | abpLocalization }}</p>
+                                <div class="p-3 rounded-3" style="background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.2);">
+                                    <div class="d-flex justify-content-between align-items-start mb-2"><span class="text-success fw-bold small text-uppercase tracking-wide"><i class="fas fa-check-circle me-1"></i> {{ 'ItHelpdesk::Dashboard:Step1' | abpLocalization }}</span></div>
+                                    <div class="text-slate-300 small mb-2">{{ 'ItHelpdesk::Dashboard:Step1Desc' | abpLocalization }}</div>
+                                    <div class="font-monospace text-white small bg-dark p-2 rounded border border-secondary border-opacity-50 d-flex justify-content-between align-items-center">
+                                        <span>({{ slaExplanationData.onTimeCount }} / {{ slaExplanationData.totalCompletedTickets }}) * 100</span>
+                                        <strong class="fs-6 text-success">= {{ slaExplanationData.rawComplianceRate }}%</strong>
+                                    </div>
+                                </div>
+                                <div class="p-3 rounded-3" style="background: rgba(244, 63, 94, 0.05); border: 1px solid rgba(244, 63, 94, 0.2);">
+                                    <div class="d-flex justify-content-between align-items-start mb-2"><span class="text-danger fw-bold small text-uppercase tracking-wide"><i class="fas fa-exclamation-triangle me-1"></i> {{ 'ItHelpdesk::Dashboard:Step2' | abpLocalization }}</span></div>
+                                    <div class="text-slate-300 small mb-2">{{ 'ItHelpdesk::Dashboard:Step2Desc' | abpLocalization }}</div>
+                                    <div class="font-monospace text-white small bg-dark p-2 rounded border border-secondary border-opacity-50 d-flex justify-content-between align-items-center">
+                                        <span>{{ slaExplanationData.overdueCount }} {{ 'ItHelpdesk::Dashboard:TicketUnit' | abpLocalization }} * 1.5%</span>
+                                        <strong class="fs-6 text-danger">= -{{ slaExplanationData.overdueCount * 1.5 }}%</strong>
+                                    </div>
+                                </div>
+                                <div class="p-3 rounded-3 position-relative overflow-hidden" style="background: linear-gradient(135deg, rgba(56, 189, 248, 0.1) 0%, rgba(2, 132, 199, 0.2) 100%); border: 1px solid rgba(56, 189, 248, 0.4); box-shadow: inset 0 0 10px rgba(56, 189, 248, 0.1);">
+                                    <div class="d-flex justify-content-between align-items-center mb-2"><span class="text-info fw-bold small text-uppercase tracking-wide"><i class="fas fa-flag-checkered me-1"></i> {{ 'ItHelpdesk::Dashboard:Step3' | abpLocalization }}</span></div>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="font-monospace text-slate-300 small lh-lg">{{ slaExplanationData.rawComplianceRate }}% {{ 'ItHelpdesk::Dashboard:Raw' | abpLocalization }} <br> - {{ slaExplanationData.overdueCount * 1.5 }}% {{ 'ItHelpdesk::Dashboard:Penalty' | abpLocalization }}</div>
+                                        <div class="fs-2 fw-bold neon-text-info">{{ slaExplanationData.finalScore }}%</div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- BIỂU ĐỒ (ANALYTICS CHARTS) -->
-        <div class="row g-4 mb-4">
-            <div class="col-lg-8">
-                <div class="card border-0 shadow-lg p-4 h-100 rounded-4"
-                    style="background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(255,255,255,0.08) !important;">
-                    <h5 class="fw-bold text-white mb-2">
-                        <i class="fas fa-chart-bar text-info me-2"></i> {{ 'ItHelpdesk::Dashboard:ChartStatusDistribution' | abpLocalization }}
-                    </h5>
-                    <p class="text-muted small mb-3">{{ 'ItHelpdesk::Dashboard:ChartDescription' | abpLocalization }}</p>
-
-                    <div class="d-flex justify-content-center align-items-center overflow-auto" style="height: 300px;">
-                        <ngx-charts-bar-vertical [results]="ticketStatusData" [scheme]="colorScheme" [gradient]="false"
-                            [xAxis]="true" [yAxis]="true" [legend]="false" [showXAxisLabel]="true"
-                            [showYAxisLabel]="true" [xAxisLabel]="'ItHelpdesk::Dashboard:AxisStatus' | abpLocalization" [yAxisLabel]="'ItHelpdesk::Dashboard:AxisQuantity' | abpLocalization">
-                        </ngx-charts-bar-vertical>
+        <!-- BẢNG ĐÁNH GIÁ NHÂN SỰ KPI -->
+        <div class="card premium-glass-card text-light mb-4 p-3 p-md-4 border-0 w-100 overflow-hidden page-break-before">
+            <div class="d-flex flex-column flex-xl-row justify-content-between align-items-start align-items-xl-center mb-4 border-bottom border-secondary border-opacity-50 pb-3 gap-3">
+                <div class="d-flex flex-column gap-2" style="max-width: 100%;">
+                    <h5 class="fw-bold text-white mb-0 text-wrap tracking-wide">{{ 'ItHelpdesk::Dashboard:KpiTableTitle' | abpLocalization }}</h5>
+                    <div class="text-slate-400 small fw-normal lh-base fs-6 text-wrap print-text-dark" style="white-space: normal;">
+                        {{ 'ItHelpdesk::Dashboard:KpiFormulaDesc' | abpLocalization }}
                     </div>
                 </div>
-            </div>
-
-            <div class="col-lg-4">
-                <div class="card border-0 shadow-lg p-4 h-100 rounded-4 d-flex flex-column justify-content-between"
-                    style="background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(255,255,255,0.08) !important;">
-                    <div>
-                        <h5 class="fw-bold text-white mb-2">
-                            <i class="fas fa-percentage text-info me-2"></i> {{ 'ItHelpdesk::Dashboard:SlaCompletionRate' | abpLocalization }}
-                        </h5>
-                        <p class="text-muted small mb-4">{{ 'ItHelpdesk::Dashboard:SlaChartSubtitle' | abpLocalization }}</p>
-                    </div>
-
-                    <div class="d-flex flex-column justify-content-center align-items-center text-center py-2">
-                        <div class="display-4 fw-bold text-white mb-2">{{ stats.slaComplianceRate }}%</div>
-                        <p class="text-muted small px-3">{{ 'ItHelpdesk::Dashboard:OnTimeCompletionRate' | abpLocalization }}</p>
-                        <div class="progress w-100 rounded-pill bg-dark mb-3" style="height: 8px;">
-                            <div class="progress-bar bg-info" role="progressbar" [style.width.%]="stats.slaComplianceRate"></div>
+                
+                <div class="cyber-toolbar d-flex align-items-center rounded-pill shadow-sm px-2 py-1 border border-info border-opacity-25 bg-dark bg-opacity-50 no-print" style="max-width: fit-content;">
+                    <div class="dropdown" ngbDropdown>
+                        <button class="btn btn-sm btn-action-export rounded-pill d-flex align-items-center gap-2 fw-semibold border-0 text-info" ngbDropdownToggle style="background: transparent;">
+                            <i class="fas fa-file-export"></i> {{ 'ItHelpdesk::Dashboard:ExportReport' | abpLocalization }}
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-dark shadow-lg border-0 py-2 custom-action-menu" ngbDropdownMenu>
+                            <button class="dropdown-item py-2 text-info fw-medium" (click)="exportAsExcel()">
+                                <i class="fas fa-file-excel me-2 text-success"></i> {{ 'ItHelpdesk::Dashboard:ExportExcel' | abpLocalization }}
+                            </button>
+                            <button class="dropdown-item py-2 text-info fw-medium" (click)="exportAsPDF()">
+                                <i class="fas fa-file-pdf me-2 text-danger"></i> {{ 'ItHelpdesk::Dashboard:ExportPDF' | abpLocalization }}
+                            </button>
                         </div>
                     </div>
-
-                    <div class="p-3 rounded-3 bg-dark bg-opacity-50 border border-secondary border-opacity-25 small text-muted">
-                        <i class="fas fa-info-circle text-info me-1"></i> {{ 'ItHelpdesk::Dashboard:SyncNotice' | abpLocalization }}
+                    <div class="toolbar-divider mx-2"></div>
+                    <div class="d-flex align-items-center text-slate-300 small fw-medium">
+                        <i class="far fa-calendar-alt me-2 text-info"></i>
+                        <select class="cyber-select-inline form-select-sm shadow-none" [(ngModel)]="kpiFilter.month" (change)="onKpiFilterChange()">
+                            <option [ngValue]="null">{{ 'ItHelpdesk::Dashboard:AllYear' | abpLocalization }}</option>
+                            <option *ngFor="let m of months" [value]="m">{{ 'ItHelpdesk::Dashboard:MonthPrefix' | abpLocalization }} {{ m }}</option>
+                        </select>
+                        <span class="mx-1 text-slate-500">/</span>
+                        <select class="cyber-select-inline form-select-sm shadow-none" [(ngModel)]="kpiFilter.year" (change)="onKpiFilterChange()">
+                            <option *ngFor="let y of years" [value]="y">{{ y }}</option>
+                        </select>
                     </div>
                 </div>
             </div>
+            
+            <div class="data-table-card premium-glass-card table-bottom-layer position-relative" style="min-height: 400px; border: none !important;">
+                <ngx-datatable [rows]="technicianKPIs" [count]="technicianKPIs.length" [limit]="pageSize" 
+                    [headerHeight]="55" [footerHeight]="65" [rowHeight]="85" [columnMode]="'standard'" [scrollbarH]="true"
+                    [messages]="{ emptyMessage: ('ItHelpdesk::NoData' | abpLocalization), totalMessage: ('ItHelpdesk::Dashboard:ColStaff' | abpLocalization) }"
+                    class="clean-datatable w-100 h-100 print-table">
+                    
+                    <ngx-datatable-column [name]="'ItHelpdesk::Dashboard:ColStaff' | abpLocalization" prop="name" [width]="350" headerClass="align-center-col" cellClass="align-left-col">
+                        <ng-template let-row="row" ngx-datatable-cell-template>
+                            <div class="w-100 d-flex align-items-center ps-4">
+                                <div class="avatar bg-gradient-info text-white rounded-circle me-3 d-flex justify-content-center align-items-center shadow-sm flex-shrink-0" style="width: 40px; height: 40px; background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%);">
+                                    <i class="fas fa-user-tie"></i>
+                                </div>
+                                <div class="d-flex flex-column justify-content-center">
+                                    <span class="text-white fs-6 fw-bold tracking-wide">{{ row.name }}</span>
+                                    <span class="text-slate-400 fw-normal print-text-dark" style="font-size: 0.8rem;">{{ row.roleName }}</span>
+                                </div>
+                            </div>
+                        </ng-template>
+                    </ngx-datatable-column>
+                    
+                    <ngx-datatable-column [name]="'ItHelpdesk::Dashboard:ColTotalTickets' | abpLocalization" prop="totalAssigned" [width]="150" headerClass="align-center-col" cellClass="align-center-col">
+                        <ng-template let-row="row" ngx-datatable-cell-template>
+                            <span class="fs-6 text-white fw-semibold">{{ row.totalAssigned }}</span>
+                        </ng-template>
+                    </ngx-datatable-column>
+                    
+                    <ngx-datatable-column [name]="'ItHelpdesk::Dashboard:ColOnTime' | abpLocalization" prop="onTimeRate" [width]="150" headerClass="align-center-col" cellClass="align-center-col">
+                        <ng-template let-row="row" ngx-datatable-cell-template>
+                            <span class="fw-bold fs-6 neon-text-success">{{ row.onTimeRate }}%</span>
+                        </ng-template>
+                    </ngx-datatable-column>
+                    
+                    <ngx-datatable-column [name]="'ItHelpdesk::Dashboard:ColOverdue' | abpLocalization" prop="overdueRate" [width]="150" headerClass="align-center-col" cellClass="align-center-col">
+                        <ng-template let-row="row" ngx-datatable-cell-template>
+                            <span class="fw-bold fs-6 neon-text-danger">{{ row.overdueRate }}%</span>
+                        </ng-template>
+                    </ngx-datatable-column>
+                    
+                    <ngx-datatable-column [name]="'ItHelpdesk::Dashboard:ColBonus' | abpLocalization" prop="bonusAmount" [width]="150" headerClass="align-center-col" cellClass="align-center-col">
+                        <ng-template let-row="row" ngx-datatable-cell-template>
+                            <span class="fw-bold text-warning">{{ row.bonusAmount > 0 ? '+' : '' }}{{ row.bonusAmount | number }}</span>
+                        </ng-template>
+                    </ngx-datatable-column>
+                    
+                    <ngx-datatable-column [name]="'ItHelpdesk::Dashboard:ColPenalty' | abpLocalization" prop="penaltyAmount" [width]="150" headerClass="align-center-col" cellClass="align-center-col">
+                        <ng-template let-row="row" ngx-datatable-cell-template>
+                            <span class="fw-bold text-danger">{{ row.penaltyAmount > 0 ? '-' : '' }}{{ row.penaltyAmount | number }}</span>
+                        </ng-template>
+                    </ngx-datatable-column>
+                    
+                    <ngx-datatable-column [name]="'ItHelpdesk::Dashboard:ColNetSalary' | abpLocalization" prop="netSalary" [width]="200" headerClass="align-center-col" cellClass="align-center-col bg-active-cell">
+                        <ng-template let-row="row" ngx-datatable-cell-template>
+                            <span class="fw-bold fs-6 neon-text-info">{{ row.netSalary | number }} đ</span>
+                        </ng-template>
+                    </ngx-datatable-column>
+                    
+                    <ngx-datatable-column [name]="'ItHelpdesk::Dashboard:ColAction' | abpLocalization" [sortable]="false" [width]="150" headerClass="align-center-col no-print" cellClass="align-center-col no-print">
+                        <ng-template let-row="row" ngx-datatable-cell-template>
+                            <button class="btn btn-sm btn-outline-info rounded-pill px-4 fw-medium shadow-sm hover-elevate" (click)="navigateToTechDetail(row.id)">{{ 'ItHelpdesk::Dashboard:ActionProfile' | abpLocalization }}</button>
+                        </ng-template>
+                    </ngx-datatable-column>
+                </ngx-datatable>
+            </div>
+            
+            <div class="d-flex align-items-center mt-3 no-print" *ngIf="technicianKPIs.length > 0">
+                <span class="text-slate-400 small fw-medium tracking-wide me-3">{{ 'ItHelpdesk::Dashboard:PaginationShowing' | abpLocalization }}</span>
+                <select class="form-select form-select-sm bg-dark text-white border-secondary rounded-3 shadow-none custom-select-glow py-1 px-3" style="width: 80px;" [(ngModel)]="pageSize">
+                    <option *ngFor="let size of pageSizeOptions" [ngValue]="size">{{ size }}</option>
+                </select>
+            </div>
         </div>
-
-    </div>
-</div>
-
-<!-- Loading state -->
-<div class="text-center py-5 min-vh-100 d-flex justify-content-center align-items-center" *ngIf="isLoading">
-    <div class="spinner-border text-info" role="status" style="width: 3rem; height: 3rem;">
-        <span class="visually-hidden">{{ 'ItHelpdesk::Dashboard:LoadingData' | abpLocalization }}</span>
     </div>
 </div>

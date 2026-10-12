@@ -15,7 +15,7 @@ export class ExtendedUserService {
     this.restService.request<any, PagedResultDto<ExtendedUserDto>>({
       method: 'GET',
       url: '/api/app/extended-user',
-      params: { filter: input.filter, roleId: input.roleId, isActive: input.isActive, sorting: input.sorting, skipCount: input.skipCount, maxResultCount: input.maxResultCount },
+      params: { filter: input.filter, role: input.role, isActive: input.isActive, sorting: input.sorting, skipCount: input.skipCount, maxResultCount: input.maxResultCount },
     },
     { apiName: this.apiName,...config });
 }

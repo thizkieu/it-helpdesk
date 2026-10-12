@@ -9,14 +9,20 @@ namespace ItHelpdesk.Services
         public string Code { get; set; }
 
         [Required]
-        [MaxLength(255)]
-        public string Name { get; set; }
+        [MaxLength(128)]
+        public string Name_Vi { get; set; }
+
+        [MaxLength(128)]
+        public string Name_En { get; set; }
 
         [Required]
         public long CategoryId { get; set; }
 
         [MaxLength(1000)]
-        public string? Description { get; set; }
+        public string? Description_Vi { get; set; }
+
+        [MaxLength(1000)]
+        public string? Description_En { get; set; }
 
         public bool IsActive { get; set; } = true;
     }

@@ -1,266 +1,243 @@
-<div class="admin-page-container">
-    <div class="card card-admin-main shadow-lg border-0 rounded-4">
-
-        <!-- HEADER TRANG QUẢN TRỊ -->
-        <div class="card-header border-bottom py-4 px-4">
-            <div class="row align-items-center justify-content-between g-3">
-                <div class="col-xl-5 col-lg-4">
-                    <div class="d-flex align-items-center gap-3">
-                        <span class="header-icon-box">
-                            <i class="fas fa-flag"></i>
-                        </span>
-                        <div>
-                            <h4 class="card-title fw-bold mb-1 title-gradient">
-                                {{ 'ItHelpdesk::Menu:Priorities' | abpLocalization }}
-                            </h4>
-                            <small class="text-muted-custom fs-7">{{ 'ItHelpdesk::PriorityPageSubtitle' | abpLocalization }}</small>
+<div class="page-wrapper py-4 d-flex flex-column h-100">
+    <div class="container-fluid flex-grow-1 d-flex flex-column h-100" style="max-width: 1600px;">
+        
+        <!-- HEADER -->
+        <div class="d-flex justify-content-between align-items-center mb-4 header-section flex-shrink-0">
+            <h2 class="fw-bold page-title mb-0 d-flex align-items-center gap-2">
+                <i class="fas fa-layer-group text-primary opacity-75 fs-4"></i>
+                {{ 'ItHelpdesk::Menu:Priorities' | abpLocalization }}
+            </h2>
+            <div class="d-flex gap-3">
+                <button class="btn btn-cyber-outline rounded-pill px-4 d-flex align-items-center gap-2" (click)="refreshList()">
+                    <i class="fas fa-sync-alt" [class.fa-spin]="isLoading"></i> 
+                    <span>{{ 'ItHelpdesk::Dashboard:RefreshBtn' | abpLocalization }}</span>
+                </button>
+                <button class="btn btn-cyber-primary rounded-pill px-4 fw-bold text-white d-flex align-items-center gap-2 shadow-sm text-nowrap" (click)="createPriority()">
+                    <i class="fas fa-plus"></i> {{ 'ItHelpdesk::NewPriority' | abpLocalization }}
+                </button>
+            </div>
+        </div>
+        <!-- CONTROL PANEL -->
+        <div class="control-panel-card mb-4 filter-top-layer flex-shrink-0 p-4 rounded-4">
+            <div class="row g-3 align-items-center">
+                
+                <!-- TÌM KIẾM -->
+                <div class="col-12 col-md-6">
+                    <div class="position-relative search-wrapper w-100">
+                        <div class="clean-search-box shadow-sm w-100">
+                            <i class="fas fa-search text-info search-icon"></i>
+                            <input type="text" class="form-control bg-transparent text-white border-0 shadow-none search-input"
+                                [placeholder]="'ItHelpdesk::PrioritySearchPlaceholder' | abpLocalization"
+                                [(ngModel)]="searchFilter" (input)="onSearchInput()" (keyup.enter)="performSearch()"
+                                (focus)="showSearchSuggestions = true" />
+                            <button *ngIf="searchFilter" class="btn-clear-search text-secondary" (click)="clearSearch()"><i class="fas fa-times-circle"></i></button>
+                        </div>
+                        <div *ngIf="showSearchSuggestions && recentSearches.length > 0" class="clean-dropdown position-absolute w-100 mt-2 p-2">
+                            <div class="text-info small fw-bold px-3 py-2 mb-1 border-bottom border-secondary border-opacity-25">
+                                <i class="fas fa-history me-1"></i> {{ 'ItHelpdesk::RecentSearches' | abpLocalization }}
+                            </div>
+                            <div *ngFor="let item of recentSearches" (click)="performSearch(item)" class="custom-dropdown-item px-3 py-2 mt-1 d-flex align-items-center gap-3 text-slate-300">
+                                <i class="fas fa-search small opacity-50"></i> <span>{{ item }}</span>
+                            </div>
                         </div>
                     </div>
                 </div>
-
-                <!-- THANH TÌM KIẾM & NÚT THÊM -->
-                <div class="col-xl-7 col-lg-8 d-flex flex-wrap justify-content-lg-end align-items-center gap-3">
-                    <div class="position-relative flex-grow-1 flex-lg-grow-0"
-                        style="min-width: 320px; max-width: 420px;">
-                        <div class="input-group align-items-center rounded-pill px-3 py-1 position-relative"
-                            style="background: rgba(15, 23, 42, 0.75); border: 1.5px solid rgba(255, 255, 255, 0.6); box-shadow: 0 0 15px rgba(255, 255, 255, 0.25), inset 0 0 10px rgba(255, 255, 255, 0.08); backdrop-filter: blur(12px);">
-                            <span class="text-white opacity-75 bg-transparent border-0 pe-2">
-                                <i class="fas fa-search"></i>
-                            </span>
-                            <input type="text" class="form-control bg-transparent border-0 shadow-none text-white p-0"
-                                [placeholder]="'ItHelpdesk::PrioritySearchPlaceholder' | abpLocalization"
-                                [(ngModel)]="searchFilter" (input)="onSearchInput()" (keyup.enter)="performSearch()"
-                                (focus)="showSearchSuggestions = true" style="font-size: 0.9rem;" />
-                            <button *ngIf="searchFilter" class="btn btn-link text-muted p-0 ms-2 text-decoration-none"
-                                type="button" (click)="clearSearch()" [title]="'ItHelpdesk::ClearSearch' | abpLocalization">
-                                <i class="fas fa-times"></i>
-                            </button>
+                <!-- DROPDOWN TRẠNG THÁI -->
+                <div class="col-12 col-md-6 d-flex justify-content-md-end">
+                    <div class="position-relative status-dropdown-wrapper w-100" style="max-width: 300px;">
+                        <button class="btn clean-select-btn w-100 d-flex justify-content-between align-items-center shadow-sm px-4" (click)="toggleStatusDropdown($event)">
+                            <span class="text-truncate fw-medium text-info"><i class="fas fa-filter me-2 opacity-75 text-slate-400"></i>{{ getStatusName(selectedStatus) }}</span>
+                            <i class="fas fa-chevron-down ms-2 small transition-transform text-slate-400" [ngClass]="{'rotate-180': showStatusDropdown}"></i>
+                        </button>
+                        <div *ngIf="showStatusDropdown" class="clean-dropdown position-absolute w-100 p-2">
+                            <div class="custom-dropdown-item px-3 py-2 text-info fw-bold mb-1 border-bottom border-secondary border-opacity-25" (click)="selectStatusFilter(null)">
+                                {{ 'ItHelpdesk::AllStatuses' | abpLocalization }}
+                            </div>
+                            <div class="custom-dropdown-item px-3 py-2 text-slate-300" (click)="selectStatusFilter(true)">{{ 'ItHelpdesk::Active' | abpLocalization }}</div>
+                            <div class="custom-dropdown-item px-3 py-2 text-slate-300" (click)="selectStatusFilter(false)">{{ 'ItHelpdesk::Inactive' | abpLocalization }}</div>
                         </div>
-
-                        <!-- Dropdown Lịch sử -->
-                        <ul *ngIf="showSearchSuggestions && recentSearches.length > 0"
-                            class="dropdown-menu show w-100 shadow-lg border-0 mt-2 p-2 rounded-4 position-absolute text-start"
-                            style="background: rgba(22, 22, 35, 0.95); backdrop-filter: blur(12px); z-index: 1050; border: 1px solid rgba(255,255,255,0.1) !important;">
-                            <li class="d-flex justify-content-between align-items-center px-3 py-1 mb-1">
-                                <span class="text-pink small fw-bold">
-                                    <i class="fas fa-history me-1"></i> {{ 'ItHelpdesk::RecentSearches' | abpLocalization }}
-                                </span>
-                                <button class="btn btn-link text-muted p-0 small text-decoration-none"
-                                    style="font-size: 0.75rem;" (click)="clearAllSearchHistory($event)">
-                                    {{ 'ItHelpdesk::ClearAll' | abpLocalization }}
-                                </button>
-                            </li>
-                            <li *ngFor="let item of recentSearches" (click)="selectSearchSuggestion(item)"
-                                class="dropdown-item text-light rounded-3 cursor-pointer px-3 py-2 my-1 d-flex justify-content-between align-items-center custom-dropdown-item">
-                                <div>
-                                    <i class="fas fa-search text-purple-accent me-2 opacity-75"></i> {{ item }}
-                                </div>
-                                <i class="fas fa-times text-muted hover-pink ms-2 p-1"
-                                    [title]="'ItHelpdesk::RemoveItem' | abpLocalization"
-                                    (click)="removeSearchHistoryItem(item, $event)"></i>
-                            </li>
-                        </ul>
                     </div>
-
-                    <button *abpPermission="'ItHelpdesk.Priorities.Create'" id="create"
-                        class="btn btn-action-primary rounded-3 px-4 fw-semibold text-nowrap" type="button"
-                        (click)="createPriority()">
-                        <i class="fa fa-plus me-2"></i><span>{{ 'ItHelpdesk::NewPriority' | abpLocalization }}</span>
-                    </button>
                 </div>
             </div>
         </div>
-
-        <!-- THANH TỔNG SỐ BẢN GHI -->
-        <div class="card-body border-bottom toolbar-wrapper py-3 px-4 d-flex justify-content-between align-items-center">
-            <span class="text-muted-custom fs-7"><i class="fas fa-info-circle text-info me-1"></i> {{ 'ItHelpdesk::PriorityOperationHint' | abpLocalization }}</span>
-            <span class="text-muted-custom fs-7">
-                {{ 'ItHelpdesk::TotalPrioritiesRecorded' | abpLocalization }}: <strong class="text-white ms-1">{{ priority.totalCount }}</strong>
-            </span>
-        </div>
-
-        <!-- NỘI DUNG BẢNG QUẢN TRỊ -->
-        <div class="card-body p-0">
-            <style>
-                ::ng-deep .ngx-datatable.admin-datatable .datatable-header .datatable-header-cell {
-                    color: #ffffff !important; font-weight: 700 !important; padding: 16px 20px !important;
-                }
-                ::ng-deep .ngx-datatable.admin-datatable .datatable-body-cell {
-                    padding: 16px 20px !important;
-                }
-                ::ng-deep .ngx-datatable.admin-datatable .align-center-col .datatable-header-cell-template-wrap {
-                    display: flex; justify-content: center; align-items: center; width: 100%;
-                }
-                ::ng-deep .ngx-datatable.admin-datatable .align-center-col {
-                    display: flex !important; justify-content: center !important; align-items: center !important;
-                }
-                ::ng-deep .ngx-datatable.admin-datatable .align-left-col .datatable-header-cell-template-wrap {
-                    display: flex; justify-content: flex-start; align-items: center; width: 100%;
-                }
-                ::ng-deep .ngx-datatable.admin-datatable .align-left-col {
-                    display: flex !important; justify-content: flex-start !important; align-items: center !important; text-align: left !important; overflow: hidden;
-                }
-            </style>
-
-            <ngx-datatable [rows]="priority.items" [count]="priority.totalCount" [list]="list" default
-                [columnMode]="'force'" [scrollbarH]="true" [rowHeight]="'auto'" class="admin-datatable w-100">
-
-                <!-- CỘT THAO TÁC -->
-                <ngx-datatable-column [name]="'ItHelpdesk::Actions' | abpLocalization" [width]="150" [minWidth]="140"
-                    [sortable]="false" headerClass="align-center-col" cellClass="align-center-col">
+        <!-- BẢNG DỮ LIỆU -->
+        <div class="data-table-card premium-glass-card table-bottom-layer position-relative">
+            
+            <div *ngIf="isLoading" class="position-absolute top-50 start-50 translate-middle text-center z-index-50 w-100 h-100 d-flex flex-column justify-content-center align-items-center" style="background: rgba(15, 23, 42, 0.5); backdrop-filter: blur(4px);">
+                <div class="spinner-border text-primary mb-2"></div>
+                <div class="text-secondary fw-medium fs-5 mt-2">{{ 'ItHelpdesk::Dashboard:LoadingData' | abpLocalization }}</div>
+            </div>
+            <ngx-datatable *ngIf="!isLoading" [rows]="priorityList.items" [count]="priorityList.totalCount" [externalPaging]="true"
+                [limit]="maxResultCount" [offset]="skipCount / maxResultCount"
+                (page)="onPageChange($event)" default [columnMode]="'standard'" [scrollbarH]="true" [scrollbarV]="false"
+                [rowHeight]="95" [headerHeight]="55" [footerHeight]="65"
+                [messages]="{ emptyMessage: ('ItHelpdesk::NoData' | abpLocalization), totalMessage: ('ItHelpdesk::Total' | abpLocalization) }"
+                class="clean-datatable w-100 h-100">
+                
+                <!-- ĐÃ SỬA: Tăng width lên 420 cho Mã độ ưu tiên rộng rãi -->
+                <ngx-datatable-column [name]="'ItHelpdesk::PriorityCode' | abpLocalization" prop="code" [width]="420" headerClass="align-center-col" cellClass="align-center-col">
                     <ng-template let-row="row" ngx-datatable-cell-template>
-                        <div ngbDropdown container="body" class="d-inline-block">
-                            <button class="btn btn-sm btn-action-dropdown rounded-3" ngbDropdownToggle>
-                                <i class="fa fa-cog me-1"></i> {{ 'ItHelpdesk::ActionDispatch' | abpLocalization }}
-                            </button>
-                            <div ngbDropdownMenu class="dropdown-menu-admin shadow-lg border">
-                                <button *abpPermission="'ItHelpdesk.Priorities.Edit'" ngbDropdownItem
-                                    (click)="editPriority(row.id)">
-                                    <i class="fas fa-pen-to-square me-2 text-info"></i>{{ 'ItHelpdesk::Edit' | abpLocalization }}
-                                </button>
-                                <button *abpPermission="'ItHelpdesk.Priorities.Delete'" ngbDropdownItem
-                                    (click)="delete(row.id, row.name)">
-                                    <i class="fas fa-trash-can me-2 text-danger"></i>{{ 'ItHelpdesk::DeletePriority' | abpLocalization }}
-                                </button>
+                        <div class="w-100 d-flex justify-content-center">
+                            <span class="badge fixed-width-badge border border-primary text-primary px-3 py-2 d-inline-block text-truncate text-center shadow-sm" [title]="row.code">
+                                {{ row.code }}
+                            </span>
+                        </div>
+                    </ng-template>
+                </ngx-datatable-column>
+                
+                <ngx-datatable-column [name]="'ItHelpdesk::PriorityName' | abpLocalization" prop="displayName" [width]="500" headerClass="align-center-col" cellClass="align-center-col">
+                    <ng-template let-row="row" ngx-datatable-cell-template>
+                        <div class="w-100 d-flex justify-content-center">
+                            <div class="fw-semibold text-white text-truncate text-center fs-6 text-nowrap" [title]="row.displayName">
+                                {{ row.displayName }}
                             </div>
                         </div>
                     </ng-template>
                 </ngx-datatable-column>
-
-                <!-- CỘT MÃ ĐỘ ƯU TIÊN -->
-                <ngx-datatable-column [name]="'ItHelpdesk::PriorityCode' | abpLocalization" prop="code" [width]="220"
-                    [minWidth]="180" headerClass="align-left-col" cellClass="align-left-col">
+                
+                <ngx-datatable-column [name]="'ItHelpdesk::Priority:ColLevel' | abpLocalization" prop="level" [width]="280" headerClass="align-center-col" cellClass="align-center-col">
                     <ng-template let-row="row" ngx-datatable-cell-template>
-                        <div class="d-flex align-items-center gap-3 w-100">
-                            <div class="priority-avatar-square flex-shrink-0">
-                                {{ row.code ? (row.code.charAt(0) | uppercase) : 'P' }}
-                            </div>
-                            <span class="fw-bold font-mono fs-6 text-white text-truncate">{{ row.code }}</span>
+                        <div class="w-100 d-flex justify-content-center">
+                            <span class="badge rounded-pill bg-danger bg-opacity-25 text-danger px-4 py-2 border border-danger border-opacity-50 text-nowrap shadow-sm" style="font-size: 0.85rem;">
+                                Lv.{{ row.level }}
+                            </span>
                         </div>
                     </ng-template>
                 </ngx-datatable-column>
-
-                <!-- CỘT TÊN ĐỘ ƯU TIÊN -->
-                <ngx-datatable-column [name]="'ItHelpdesk::PriorityName' | abpLocalization" prop="name" [width]="300"
-                    [minWidth]="220" headerClass="align-left-col" cellClass="align-left-col">
+                
+                <ngx-datatable-column [name]="'ItHelpdesk::Priority:ColResponse' | abpLocalization" prop="responseMinutes" [width]="350" headerClass="align-center-col" cellClass="align-center-col">
                     <ng-template let-row="row" ngx-datatable-cell-template>
-                        <span class="fw-medium text-light text-truncate w-100">{{ row.name }}</span>
-                    </ng-template>
-                </ngx-datatable-column>
-
-                <!-- CỘT THỐNG KÊ BỔ SUNG -->
-                <ngx-datatable-column [name]="'ItHelpdesk::PriorityWeightStats' | abpLocalization" [width]="200" [minWidth]="160" headerClass="align-center-col" cellClass="align-center-col">
-                    <ng-template let-row="row" ngx-datatable-cell-template>
-                        <span class="badge bg-dark bg-opacity-50 text-warning border border-secondary border-opacity-25 px-3 py-2 rounded-pill">
-                            <i class="fas fa-fire me-1"></i> {{ 'ItHelpdesk::UrgencyLevelBadge' | abpLocalization }}
+                        <span class="text-slate-300 fw-medium text-nowrap">
+                            <i class="far fa-clock me-2 opacity-50 text-info"></i>{{ row.responseMinutes }} {{ 'ItHelpdesk::Priority:Minutes' | abpLocalization }}
                         </span>
                     </ng-template>
                 </ngx-datatable-column>
-
-                <!-- CỘT TRẠNG THÁI -->
-                <ngx-datatable-column [name]="'ItHelpdesk::Status' | abpLocalization" prop="isActive" [width]="160"
-                    [minWidth]="140" headerClass="align-center-col" cellClass="align-center-col">
+                
+                <ngx-datatable-column [name]="'ItHelpdesk::Priority:ColResolution' | abpLocalization" prop="resolutionMinutes" [width]="350" headerClass="align-center-col" cellClass="align-center-col">
                     <ng-template let-row="row" ngx-datatable-cell-template>
-                        <span class="admin-status-badge d-inline-block text-center"
-                            [ngClass]="row.isActive ? 'badge-active' : 'badge-inactive'" style="min-width: 110px;">
+                        <span class="text-slate-300 fw-medium text-nowrap">
+                            <i class="fas fa-check-double me-2 opacity-50 text-success"></i>{{ row.resolutionMinutes }} {{ 'ItHelpdesk::Priority:Minutes' | abpLocalization }}
+                        </span>
+                    </ng-template>
+                </ngx-datatable-column>
+                
+                <ngx-datatable-column [name]="'ItHelpdesk::Status' | abpLocalization" prop="isActive" [width]="280" headerClass="align-center-col" cellClass="align-center-col">
+                    <ng-template let-row="row" ngx-datatable-cell-template>
+                        <span class="status-pill text-nowrap" [ngClass]="row.isActive ? 'active' : 'inactive'">
                             <span class="status-dot"></span>
-                            {{ (row.isActive ? 'ItHelpdesk::Active' : 'ItHelpdesk::Inactive') | abpLocalization }}
+                            {{ row.isActive ? ('ItHelpdesk::Active' | abpLocalization) : ('ItHelpdesk::Inactive' | abpLocalization) }}
                         </span>
                     </ng-template>
                 </ngx-datatable-column>
-
+                
+                <ngx-datatable-column [name]="'ItHelpdesk::Actions' | abpLocalization" [sortable]="false" [width]="250" headerClass="align-center-col" cellClass="align-center-col">
+                    <ng-template let-row="row" ngx-datatable-cell-template>
+                        <div class="dropdown" ngbDropdown container="body">
+                            <button class="btn btn-action-dropdown d-flex align-items-center justify-content-between rounded-pill px-3 shadow-sm mx-auto" type="button" ngbDropdownToggle>
+                                <i class="fas fa-cog text-slate-300"></i>
+                                <i class="fas fa-caret-down text-slate-400 ms-2" style="font-size: 0.7rem;"></i>
+                            </button>
+                            <div class="dropdown-menu dropdown-menu-dark shadow-lg border-0 py-2 custom-action-menu" ngbDropdownMenu>
+                                <button class="dropdown-item py-2 text-info fw-medium" (click)="editPriority(row.id)">
+                                    <i class="fas fa-edit me-2"></i> {{ 'ItHelpdesk::Edit' | abpLocalization }}
+                                </button>
+                                <button class="dropdown-item py-2 fw-medium" [ngClass]="row.isActive ? 'text-warning' : 'text-success'" (click)="toggleStatus(row)">
+                                    <i class="fas me-2" [ngClass]="row.isActive ? 'fa-ban' : 'fa-check'"></i>
+                                    {{ row.isActive ? ('ItHelpdesk::ActionDeactivate' | abpLocalization) : ('ItHelpdesk::ActionActivate' | abpLocalization) }}
+                                </button>
+                                <div class="dropdown-divider border-secondary border-opacity-25"></div>
+                                <button class="dropdown-item py-2 text-danger fw-medium" (click)="delete(row.id, row.displayName)">
+                                    <i class="fas fa-trash-alt me-2"></i> {{ 'ItHelpdesk::Delete' | abpLocalization }}
+                                </button>
+                            </div>
+                        </div>
+                    </ng-template>
+                </ngx-datatable-column>
             </ngx-datatable>
         </div>
     </div>
 </div>
 
-<!-- MODAL CẤU HÌNH ĐỘ ƯU TIÊN -->
-<abp-modal [(visible)]="isModalOpen" class="admin-dark-modal">
-    <ng-template #abpHeader>
-        <div class="d-flex align-items-center gap-2">
-            <i class="fas fs-5" style="color: #6366f1;"
-                [ngClass]="selectedPriority.id ? 'fa-sliders' : 'fa-folder-plus'"></i>
-            <h5 class="modal-title fw-bold mb-0 text-white">
-                {{ (selectedPriority.id ? ('ItHelpdesk::EditPriorityTitle' | abpLocalization) : ('ItHelpdesk::CreatePriorityTitle' | abpLocalization)) }}
-            </h5>
-        </div>
-    </ng-template>
-
-    <ng-template #abpBody>
-        <form id="priority-form" [formGroup]="form" (ngSubmit)="save()" class="admin-form-container">
-            <div class="mb-4">
-                <label for="priority-code" class="form-label font-semibold small mb-2 text-light">
-                    {{ 'ItHelpdesk::PriorityCode' | abpLocalization }} <span class="text-danger">*</span>
-                </label>
-                <input type="text" id="priority-code" class="form-control admin-input" formControlName="code" autofocus
-                    [placeholder]="'ItHelpdesk::PriorityCodePlaceholder' | abpLocalization" />
-            </div>
-
-            <div class="mb-4">
-                <label for="priority-name" class="form-label font-semibold small mb-2 text-light">
-                    {{ 'ItHelpdesk::PriorityName' | abpLocalization }} <span class="text-danger">*</span>
-                </label>
-                <input type="text" id="priority-name" class="form-control admin-input" formControlName="name"
-                    [placeholder]="'ItHelpdesk::PriorityNamePlaceholder' | abpLocalization" />
-            </div>
-
-            <div class="status-toggle-wrapper p-4 rounded-3 d-flex align-items-center justify-content-between mt-2">
-                <div>
-                    <label for="priority-is-active" class="form-label fw-bold mb-1 cursor-pointer text-white">
-                        {{ 'ItHelpdesk::ActivityStatusLabel' | abpLocalization }}
-                    </label>
-                    <div class="text-muted-custom fs-7">{{ 'ItHelpdesk::PriorityStatusDesc' | abpLocalization }}</div>
-                </div>
-                <div class="form-check form-switch m-0">
-                    <input type="checkbox" id="priority-is-active" class="form-check-input admin-switch"
-                        formControlName="isActive" />
-                </div>
-            </div>
-        </form>
-    </ng-template>
-
-    <ng-template #abpFooter>
-        <button type="button" class="btn btn-outline-secondary px-4 rounded-3 text-light border-secondary" abpClose
-            [disabled]="isSubmitting">
-            {{ 'ItHelpdesk::Close' | abpLocalization }}
-        </button>
-        <button form="priority-form" class="btn btn-action-primary px-5 rounded-3 fw-semibold"
-            [disabled]="isSubmitting || form.invalid" (click)="save()">
-            <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm me-2" role="status"
-                aria-hidden="true"></span>
-            <i class="fas fa-check-circle me-2" *ngIf="!isSubmitting"></i> {{ 'ItHelpdesk::ConfirmSave' | abpLocalization }}
-        </button>
-    </ng-template>
-</abp-modal>
-
-<!-- MODAL AN TOÀN RÀNG BUỘC KHI XÓA (RE-MAPPING) -->
-<div *ngIf="isReassignModalOpen" class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.7); backdrop-filter: blur(6px);">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-secondary border-opacity-25 text-white shadow-2xl rounded-4 overflow-hidden"
-            style="background: rgba(23, 28, 48, 0.98) !important;">
-            <div class="modal-header border-bottom border-secondary border-opacity-25 px-4 py-3">
-                <h5 class="modal-title fw-bold text-warning">
-                    <i class="fas fa-exclamation-triangle me-2"></i> {{ 'ItHelpdesk::PriorityConstraintTitle' | abpLocalization }}
+<!-- MODALS THÊM/SỬA ĐỘ ƯU TIÊN -->
+<div *ngIf="isModalOpen" class="modal fade show d-block custom-modal-overlay" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg custom-modal-dialog">
+        <div class="modal-content border-0 text-white shadow-lg rounded-4 bg-slate-800 overflow-hidden glass-modal">
+            <div class="modal-header border-bottom px-4 py-3" style="border-color: rgba(255,255,255,0.08) !important;">
+                <h5 class="modal-title fw-bold text-white d-flex align-items-center gap-2">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center" style="background: rgba(14, 165, 233, 0.15); color: #0ea5e9; width: 32px; height: 32px; font-size: 0.9rem;">
+                        <i class="fas" [ngClass]="selectedPriority.id ? 'fa-edit' : 'fa-plus'"></i>
+                    </div>
+                    {{ selectedPriority.id ? ('ItHelpdesk::EditPriorityTitle' | abpLocalization) : ('ItHelpdesk::CreatePriorityTitle' | abpLocalization) }}
                 </h5>
-                <button type="button" class="btn-close btn-close-white" (click)="isReassignModalOpen = false"></button>
+                <button type="button" class="btn text-slate-400 p-0 shadow-none border-0 hover-text-white" (click)="closeModal()"><i class="fas fa-times fs-5"></i></button>
+            </div>
+            <div class="modal-body p-4 custom-scrollbar" style="max-height: 70vh; overflow-y: auto;">
+                <form *ngIf="form" [formGroup]="form" (ngSubmit)="save()">
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <label class="fw-bold mb-2 text-slate-300 fs-7 text-uppercase">{{ 'ItHelpdesk::PriorityCode' | abpLocalization }} <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control custom-modal-input shadow-none" formControlName="code" [placeholder]="'ItHelpdesk::PriorityCodePlaceholder' | abpLocalization">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="fw-bold mb-2 text-slate-300 fs-7 text-uppercase">{{ 'ItHelpdesk::Level' | abpLocalization }} <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control custom-modal-input shadow-none" formControlName="level" placeholder="VD: 1, 2, 3..." min="1">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="fw-bold mb-2 text-slate-300 fs-7 text-uppercase">{{ 'ItHelpdesk::Priority:NameVi' | abpLocalization }} <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control custom-modal-input shadow-none" formControlName="name_Vi" [placeholder]="'ItHelpdesk::PriorityNamePlaceholder' | abpLocalization">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="fw-bold mb-2 text-slate-300 fs-7 text-uppercase">{{ 'ItHelpdesk::Priority:NameEn' | abpLocalization }}</label>
+                            <input type="text" class="form-control custom-modal-input shadow-none" formControlName="name_En" [placeholder]="'ItHelpdesk::PriorityNamePlaceholder' | abpLocalization">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="fw-bold mb-2 text-slate-300 fs-7 text-uppercase">{{ 'ItHelpdesk::ResponseMinutes' | abpLocalization }} <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control custom-modal-input shadow-none" formControlName="responseMinutes" [placeholder]="'ItHelpdesk::Priority:ResponseMinutesPlaceholder' | abpLocalization" min="0">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="fw-bold mb-2 text-slate-300 fs-7 text-uppercase">{{ 'ItHelpdesk::ResolutionMinutes' | abpLocalization }} <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control custom-modal-input shadow-none" formControlName="resolutionMinutes" [placeholder]="'ItHelpdesk::Priority:ResolutionMinutesPlaceholder' | abpLocalization" min="0">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer border-top px-4 py-3" style="border-color: rgba(255,255,255,0.08) !important;">
+                <button type="button" class="btn text-slate-300 hover-text-white px-4 bg-transparent" (click)="closeModal()">{{ 'ItHelpdesk::CancelBtn' | abpLocalization }}</button>
+                <button type="button" class="btn btn-primary rounded-pill text-white fw-semibold px-5 shadow-sm btn-glow" (click)="save()" [disabled]="form?.invalid || isSubmitting">
+                    <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm me-2"></span>
+                    <i *ngIf="!isSubmitting" class="fas fa-save me-2"></i> {{ 'ItHelpdesk::SaveChangeBtn' | abpLocalization }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL CẢNH BÁO REASSIGN ĐỘ ƯU TIÊN TRƯỚC KHI XÓA -->
+<div *ngIf="isReassignModalOpen" class="modal fade show d-block custom-modal-overlay" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 text-white shadow-lg rounded-4 bg-slate-800 overflow-hidden glass-modal">
+            <div class="modal-header border-bottom px-4 py-3" style="border-color: rgba(239,68,68,0.2) !important;">
+                <h5 class="modal-title fw-bold text-danger d-flex align-items-center gap-2">
+                    <i class="fas fa-exclamation-triangle"></i> {{ 'ItHelpdesk::Priority:ReassignModalTitle' | abpLocalization }}
+                </h5>
+                <button type="button" class="btn text-slate-400 p-0 shadow-none border-0 hover-text-white" (click)="isReassignModalOpen = false"><i class="fas fa-times fs-5"></i></button>
             </div>
             <div class="modal-body p-4">
-                <p class="text-light mb-3">
-                    {{ 'ItHelpdesk::PriorityHasTicketsConstraintDesc' | abpLocalization }}
-                </p>
-                <div class="mb-3">
-                    <label class="form-label text-light fw-bold small text-uppercase">{{ 'ItHelpdesk::SelectReplacementPriorityLabel' | abpLocalization }}</label>
-                    <select class="form-select bg-dark text-white border-secondary rounded-pill shadow-none px-3 py-2" [(ngModel)]="targetReplacementPriorityId">
-                        <option [ngValue]="null">{{ 'ItHelpdesk::SelectDestinationPriority' | abpLocalization }}</option>
-                        <option *ngFor="let p of availableReplacementPriorities" [value]="p.id">{{ p.name }}</option>
+                <div class="alert bg-danger bg-opacity-10 border border-danger border-opacity-25 text-danger rounded-3 p-3 mb-4 fs-7">
+                    {{ 'ItHelpdesk::Priority:ReassignWarning' | abpLocalization: priorityToDelete?.name }}
+                </div>
+                <div class="mb-2">
+                    <label class="fw-bold mb-2 text-slate-300 fs-7 text-uppercase">{{ 'ItHelpdesk::SelectReplacementPriorityLabel' | abpLocalization }} <span class="text-danger">*</span></label>
+                    <select class="form-select custom-modal-input shadow-none cursor-pointer" [(ngModel)]="targetReplacementPriorityId">
+                        <option [ngValue]="null">{{ 'ItHelpdesk::Priority:SelectPlaceholder' | abpLocalization }}</option>
+                        <option *ngFor="let p of availableReplacementPriorities" [value]="p.id">{{ p.displayName }}</option>
                     </select>
                 </div>
             </div>
-            <div class="modal-footer border-top border-secondary border-opacity-25 px-4 py-3">
-                <button type="button" class="btn btn-outline-light rounded-pill px-4" (click)="isReassignModalOpen = false">{{ 'ItHelpdesk::Cancel' | abpLocalization }}</button>
-                <button type="button" class="btn btn-warning rounded-pill px-4 text-dark fw-bold" [disabled]="isSubmitting" (click)="confirmReassignAndDelete()">
-                    <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm me-1"></span>
-                    {{ 'ItHelpdesk::ConfirmReassignAndDelete' | abpLocalization }}
+            <div class="modal-footer border-top px-4 py-3" style="border-color: rgba(255,255,255,0.08) !important;">
+                <button type="button" class="btn text-slate-300 hover-text-white px-4 bg-transparent" (click)="isReassignModalOpen = false">{{ 'ItHelpdesk::CancelBtn' | abpLocalization }}</button>
+                <button type="button" class="btn btn-danger rounded-pill text-white fw-semibold px-4 shadow-sm" (click)="confirmReassignAndDelete()" [disabled]="!targetReplacementPriorityId || isSubmitting">
+                    <i class="fas fa-trash-alt me-2"></i> {{ 'ItHelpdesk::ConfirmReassignAndDelete' | abpLocalization }}
                 </button>
             </div>
         </div>

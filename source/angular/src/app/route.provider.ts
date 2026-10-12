@@ -9,69 +9,83 @@ export const APP_ROUTE_PROVIDER = [
 
 function configureRoutes() {
   const routes = inject(RoutesService);
-
   routes.add([
-    { path: '/', name: '::Menu:Home', iconClass: 'fas fa-home', order: 1, layout: eLayoutType.application },
     {
-      path: '/tickets/create',
-      name: 'Tạo Yêu cầu hỗ trợ',
-      iconClass: 'fas fa-plus-circle',
-      order: 2,
-      layout: eLayoutType.application,
-      requiredPolicy: 'ItHelpdesk.Tickets.Create',
-    },
-    {
-      path: '/tickets/my-tickets',
-      name: '::Menu:MyTickets',
-      iconClass: 'fas fa-ticket-alt',
-      order: 3,
-      layout: eLayoutType.application,
-      requiredPolicy: 'ItHelpdesk.Tickets',
+      path: '/',
+      name: 'ItHelpdesk::Menu:Home',
+      iconClass: 'fas fa-home', 
+      order: 1,
+      layout: eLayoutType.application
     },
     {
       path: '/tickets/dashboard',
-      name: '::Menu:Dashboard',
-      iconClass: 'fas fa-chart-pie',
-      order: 4,
+      name: 'ItHelpdesk::Menu:Dashboard',
+      iconClass: 'fas fa-chart-line', 
+      order: 2,
       layout: eLayoutType.application,
       requiredPolicy: 'ItHelpdesk.Dashboard',
     },
     {
+      path: '/tickets/create',
+      name: 'ItHelpdesk::Menu:Tickets',
+      iconClass: 'fas fa-plus-square', 
+      order: 3,
+      layout: eLayoutType.application,
+      requiredPolicy: 'ItHelpdesk.Tickets.Create',
+    },
+
+    // MŨI TÊN NHỌN 
+    {
+      path: '/tickets/my-tickets',
+      name: 'ItHelpdesk::Menu:MyTickets',
+      iconClass: 'fas fa-chevron-right',
+      order: 4,
+      layout: eLayoutType.application,
+      requiredPolicy: 'ItHelpdesk.Tickets',
+    },
+    {
       path: '/tickets/it-queue',
-      name: 'Hàng đợi Ticket (IT)',
-      iconClass: 'fas fa-list',
+      name: 'ItHelpdesk::Menu:ITQueue',
+      iconClass: 'fas fa-chevron-right',
       order: 5,
       layout: eLayoutType.application,
       requiredPolicy: 'ItHelpdesk.Tickets.Edit',
     },
     {
       path: '/tickets/knowledge-base',
-      name: '::Menu:KnowledgeBase',
-      iconClass: 'fas fa-book',
+      name: 'ItHelpdesk::Menu:KnowledgeBase',
+      iconClass: 'fas fa-chevron-right',
       order: 6,
       layout: eLayoutType.application,
       requiredPolicy: 'ItHelpdesk.KnowledgeBase',
     },
-    // THÊM MỤC THÔNG BÁO VÀO THANH MENU CHÍNH
     {
       path: '/notifications',
-      name: 'Thông báo hệ thống',
-      iconClass: 'fas fa-bell',
+      name: 'ItHelpdesk::Menu:Notifications',
+      iconClass: 'fas fa-chevron-right',
       order: 7,
       layout: eLayoutType.application,
     },
     {
-      path: '/user-management', 
-      name: 'Quản lý người dùng',
-      iconClass: 'fas fa-users-gear',
+      path: '/user-management',
+      name: 'ItHelpdesk::Menu:UserManagement',
+      iconClass: 'fas fa-chevron-right',
       layout: eLayoutType.application,
       order: 8,
-      requiredPolicy: 'ItHelpdesk.UserManagement', 
+      requiredPolicy: 'ItHelpdesk.UserManagement',
     },
     {
+      path: '/my-profile',
+      name: 'ItHelpdesk::Menu:MyProfile',
+      iconClass: 'fas fa-chevron-right',
+      order: 9,
+      layout: eLayoutType.application,
+    },
+    // ---- CÁC DANH MỤC QUẢN TRỊ (ADMIN) ----
+    {
       path: '/language-texts',
-      name: '::Menu:LanguageTexts',
-      iconClass: 'fa fa-language',
+      name: 'ItHelpdesk::Menu:LanguageTexts',
+      iconClass: 'fas fa-chevron-right',
       layout: eLayoutType.application,
       parentName: 'AbpUiNavigation::Menu:Administration',
       requiredPolicy: 'ItHelpdesk.LanguageTexts',
@@ -80,8 +94,8 @@ function configureRoutes() {
     },
     {
       path: '/sys-master-lists',
-      name: '::Menu:SysMasterLists',
-      iconClass: 'fa fa-language',
+      name: 'ItHelpdesk::Menu:SysMasterLists',
+      iconClass: 'fas fa-chevron-right',
       layout: eLayoutType.application,
       parentName: 'AbpUiNavigation::Menu:Administration',
       requiredPolicy: 'ItHelpdesk.SysMasterLists',
@@ -90,8 +104,8 @@ function configureRoutes() {
     },
     {
       path: '/categories',
-      name: '::Menu:Categories',
-      iconClass: 'fas fa-list',
+      name: 'ItHelpdesk::Menu:Categories',
+      iconClass: 'fas fa-chevron-right',
       layout: eLayoutType.application,
       parentName: 'AbpUiNavigation::Menu:Administration',
       requiredPolicy: 'ItHelpdesk.Categories',
@@ -99,8 +113,8 @@ function configureRoutes() {
     },
     {
       path: '/services',
-      name: '::Menu:Services',
-      iconClass: 'fas fa-concierge-bell',
+      name: 'ItHelpdesk::Menu:Services',
+      iconClass: 'fas fa-chevron-right',
       layout: eLayoutType.application,
       parentName: 'AbpUiNavigation::Menu:Administration',
       requiredPolicy: 'ItHelpdesk.Services',
@@ -108,8 +122,8 @@ function configureRoutes() {
     },
     {
       path: '/priorities',
-      name: '::Menu:Priorities',
-      iconClass: 'fas fa-sort-amount-up',
+      name: 'ItHelpdesk::Menu:Priorities',
+      iconClass: 'fas fa-chevron-right',
       layout: eLayoutType.application,
       parentName: 'AbpUiNavigation::Menu:Administration',
       requiredPolicy: 'ItHelpdesk.Priorities',
@@ -117,19 +131,12 @@ function configureRoutes() {
     },
     {
       path: '/teams',
-      name: '::Menu:Teams',
-      iconClass: 'fas fa-users',
+      name: 'ItHelpdesk::Menu:Teams',
+      iconClass: 'fas fa-chevron-right',
       layout: eLayoutType.application,
       parentName: 'AbpUiNavigation::Menu:Administration',
       requiredPolicy: 'ItHelpdesk.Teams',
       order: 105,
-    },
-    {
-      path: '/profile-avatar',
-      name: 'Đổi ảnh đại diện',
-      iconClass: 'fas fa-camera-retro',
-      order: 106,
-      layout: eLayoutType.application,
     }
   ]);
 }

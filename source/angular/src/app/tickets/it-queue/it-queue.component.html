@@ -1,332 +1,251 @@
-<div class="ticket-page-wrapper py-4 text-white">
-    <div class="container-fluid" style="max-width: 1550px;">
-
-        <!-- HEADER TRANG -->
-        <div class="d-flex justify-content-between align-items-center mb-4">
+<div class="page-wrapper py-4 d-flex flex-column h-100">
+    <div class="container-fluid flex-grow-1 d-flex flex-column h-100" style="max-width: 1600px;">
+        
+        <!-- HEADER & TITLE -->
+        <div class="d-flex flex-wrap justify-content-between align-items-end mb-4 gap-3 header-section flex-shrink-0">
             <div>
-                <span
-                    class="badge cute-badge-pill mb-2 px-3 py-2 text-info bg-info bg-opacity-10 border border-info border-opacity-25">
-                    <i class="fas fa-server me-1"></i> {{ 'ItHelpdesk::Queue:HeaderBadge' | abpLocalization }}
-                </span>
-                <h2 class="fw-bold page-title mb-0 text-white">{{ greetingMessage }}</h2>
+                <span class="badge clean-badge mb-2 fw-bold tracking-wide"><i class="fas fa-satellite-dish me-2"></i>{{ 'ItHelpdesk::Queue:HeaderBadge' | abpLocalization }}</span>
+                <h3 class="fw-bold page-title mb-1 ls-wide">{{ greetingMessage }}</h3>
+                <p class="text-slate-400 mb-0 small"><i class="fas fa-info-circle me-1 text-info"></i> {{ 'ItHelpdesk::Queue:SyncingData' | abpLocalization }}</p>
             </div>
-            <div>
-                <button type="button"
-                    class="btn btn-outline-info rounded-pill px-4 text-info border-info shadow-sm bg-transparent"
-                    style="cursor: pointer; position: relative; z-index: 10;" (click)="refreshQueue()">
-                    <i class="fas fa-sync-alt me-1"></i> {{ 'ItHelpdesk::Queue:RefreshQueue' | abpLocalization }}
+            
+            <div class="d-flex align-items-center gap-3 p-2 rounded-pill border border-secondary border-opacity-25 shadow-sm" style="background: rgba(15, 23, 42, 0.6);">
+                <button class="btn btn-sm text-info fw-bold hover-glow px-3" (click)="refreshQueue()" [disabled]="isLoading">
+                    <i class="fas fa-sync-alt me-1" [class.fa-spin]="isLoading"></i> {{ 'ItHelpdesk::Queue:RefreshQueue' | abpLocalization }}
                 </button>
             </div>
         </div>
 
-        <!-- THANH ĐIỀU HƯỚNG TAB & BỘ LỌC NÂNG CAO CHO ADMIN -->
-        <div class="card border-0 shadow-lg mb-4 rounded-4"
-            style="background: rgba(23, 28, 48, 0.85) !important; backdrop-filter: blur(20px);">
-            <div class="card-body p-4">
-                <div class="d-flex flex-column flex-xl-row justify-content-between align-items-xl-center gap-4 mb-3">
-
-                    <!-- TABS ĐIỀU HƯỚNG NGHIỆP VỤ (Đã tích hợp thêm Tab Quá Hạn) -->
-                    <ul class="nav nav-pills custom-pills mb-0 gap-2">
-                        <li class="nav-item">
-                            <a class="nav-link fw-semibold cursor-pointer rounded-pill px-4 text-light"
-                                [class.active]="currentTab === 'all'" (click)="changeTab('all')">
-                                <i class="fas fa-list-ul me-2"></i> {{ 'ItHelpdesk::Queue:TabAll' | abpLocalization }}
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link fw-semibold cursor-pointer rounded-pill px-4 text-light"
-                                [class.active]="currentTab === 'unassigned'" (click)="changeTab('unassigned')">
-                                <i class="fas fa-user-slash me-2"></i> {{ 'ItHelpdesk::Queue:TabUnassigned' |
-                                abpLocalization }}
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link fw-semibold cursor-pointer rounded-pill px-4 text-light"
-                                [class.active]="currentTab === 'mine'" (click)="changeTab('mine')">
-                                <i class="fas fa-user-check me-2"></i> {{ 'ItHelpdesk::Queue:TabMine' | abpLocalization
-                                }}
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link fw-semibold cursor-pointer rounded-pill px-4 text-light"
-                                [class.active]="currentTab === 'inprogress'" (click)="changeTab('inprogress')">
-                                <i class="fas fa-tools me-2"></i> {{ 'ItHelpdesk::Queue:TabPending' | abpLocalization }}
-                            </a>
-                        </li>
-                        <!-- TAB QUÁ HẠN MỚI -->
-                        <li class="nav-item">
-                            <a class="nav-link fw-semibold cursor-pointer rounded-pill px-4 text-danger border border-danger border-opacity-25"
-                                [class.bg-danger]="currentTab === 'overdue'"
-                                [class.text-white]="currentTab === 'overdue'" (click)="changeTab('overdue')"
-                                style="background: rgba(239, 68, 68, 0.1);">
-                                <i class="fas fa-fire me-2"></i> {{ 'ItHelpdesk::Queue:TabOverdue' | abpLocalization }}
-                            </a>
-                        </li>
-                    </ul>
-
-                    <!-- Ô TÌM KIẾM -->
-                    <div class="position-relative search-wrapper flex-grow-1" style="max-width: 400px; z-index: 999;">
-                        <div class="input-group align-items-center rounded-pill px-3 py-1 position-relative"
-                            style="background: rgba(15, 23, 42, 0.9); border: 2px solid rgba(255,255,255,0.2);">
-                            <span class="text-white opacity-75 bg-transparent border-0 pe-2 ps-2">
-                                <i class="fas fa-search"></i>
-                            </span>
-                            <input type="text" class="form-control bg-transparent border-0 shadow-none text-white p-2"
+        <!-- CONTROL PANEL -->
+        <div class="control-panel-card mb-4 filter-top-layer flex-shrink-0 p-4 rounded-4">
+            <div class="mb-3 pb-3 border-bottom border-secondary border-opacity-25 overflow-hidden">
+                <ul class="nav nav-pills custom-pills flex-nowrap overflow-auto hide-scrollbar w-100 mb-0">
+                    <li class="nav-item"><a class="nav-link rounded-pill shadow-sm" [class.active]="currentTab === 'all'" (click)="changeTab('all')"><i class="fas fa-layer-group me-2"></i>{{ 'ItHelpdesk::Queue:TabAll' | abpLocalization }}</a></li>
+                    <li class="nav-item"><a class="nav-link rounded-pill shadow-sm" [class.active]="currentTab === 'unassigned'" (click)="changeTab('unassigned')"><i class="fas fa-user-astronaut me-2"></i>{{ 'ItHelpdesk::Queue:TabUnassigned' | abpLocalization }}</a></li>
+                    <li class="nav-item" *ngIf="!isAdmin"><a class="nav-link rounded-pill shadow-sm" [class.active]="currentTab === 'mine'" (click)="changeTab('mine')"><i class="fas fa-briefcase me-2"></i>{{ 'ItHelpdesk::Queue:TabMine' | abpLocalization }}</a></li>
+                    <li class="nav-item"><a class="nav-link rounded-pill shadow-sm" [class.active]="currentTab === 'inprogress'" (click)="changeTab('inprogress')"><i class="fas fa-tools me-2"></i>{{ 'ItHelpdesk::Queue:TabPending' | abpLocalization }}</a></li>
+                    <li class="nav-item ms-md-auto"><a class="nav-link tab-danger rounded-pill shadow-sm" [class.active-danger]="currentTab === 'overdue'" (click)="changeTab('overdue')"><i class="fas fa-exclamation-triangle me-2"></i>{{ 'ItHelpdesk::Queue:TabOverdue' | abpLocalization }}</a></li>
+                </ul>
+            </div>
+            <div class="row g-3">
+                <div class="col-12 col-md-4">
+                    <div class="position-relative search-wrapper w-100">
+                        <div class="clean-search-box shadow-sm w-100">
+                            <i class="fas fa-search text-info search-icon"></i>
+                            <input type="text" class="form-control bg-transparent text-white border-0 shadow-none search-input"
                                 [placeholder]="'ItHelpdesk::Queue:SearchPlaceholder' | abpLocalization"
                                 [(ngModel)]="searchFilter" (input)="onSearchInput()" (keyup.enter)="performSearch()"
-                                (focus)="showSearchSuggestions = true" style="font-size: 0.95rem;">
-                            <button *ngIf="searchFilter"
-                                class="btn btn-link text-white opacity-75 p-0 ms-2 text-decoration-none me-2"
-                                type="button" (click)="clearSearch()">
-                                <i class="fas fa-times"></i>
-                            </button>
+                                (focus)="showSearchSuggestions = true" />
+                            <button *ngIf="searchFilter" class="btn-clear-search text-secondary" (click)="clearSearch()"><i class="fas fa-times-circle"></i></button>
+                        </div>
+                        <div *ngIf="showSearchSuggestions && recentSearches.length > 0" class="clean-dropdown position-absolute w-100 mt-2 p-2">
+                            <div class="text-info small fw-bold px-3 py-2 mb-1 border-bottom border-secondary border-opacity-25">
+                                <i class="fas fa-history me-1"></i> {{ 'ItHelpdesk::RecentSearches' | abpLocalization }}
+                            </div>
+                            <div *ngFor="let item of recentSearches" (click)="performSearch(item)" class="custom-dropdown-item px-3 py-2 mt-1 d-flex align-items-center gap-3 text-slate-300">
+                                <i class="fas fa-search small opacity-50"></i> <span>{{ item }}</span>
+                            </div>
                         </div>
                     </div>
                 </div>
-
-                <!-- BỘ LỌC MỞ RỘNG DÀNH CHO ADMIN KIỂM TRA -->
-                <div class="row g-3 pt-3 border-top border-secondary border-opacity-25 align-items-center">
-                    <div class="col-md-3">
-                        <select
-                            class="form-select bg-dark text-white border-secondary rounded-pill shadow-none px-3 py-2 text-sm"
-                            [(ngModel)]="advancedFilters.teamId" (change)="onAdvancedFilterChange()">
-                            <option [ngValue]="null">{{ 'ItHelpdesk::Queue:FilterTeamDefault' | abpLocalization }}
-                            </option>
-                            <option *ngFor="let t of teams" [value]="t.id">{{ t.name }}</option>
-                        </select>
+                <div class="col-12 col-md-4">
+                    <div class="position-relative team-dropdown-wrapper w-100">
+                        <button class="btn clean-select-btn w-100 d-flex justify-content-between align-items-center shadow-sm px-4" (click)="toggleTeamDropdown($event)">
+                            <span class="text-truncate fw-medium text-info"><i class="fas fa-users me-2 opacity-75 text-slate-400"></i>{{ getTeamName(advancedFilters.teamId) }}</span>
+                            <i class="fas fa-chevron-down ms-2 small transition-transform text-slate-400" [ngClass]="{'rotate-180': showTeamDropdown}"></i>
+                        </button>
+                        <div *ngIf="showTeamDropdown" class="clean-dropdown position-absolute w-100 p-2">
+                            <div class="custom-dropdown-item px-3 py-2 text-info fw-bold mb-1 border-bottom border-secondary border-opacity-25" (click)="selectTeamFilter(null)">{{ 'ItHelpdesk::Queue:FilterTeamDefault' | abpLocalization }}</div>
+                            <div *ngFor="let t of teams" class="custom-dropdown-item px-3 py-2 text-slate-300" (click)="selectTeamFilter(t.id)">{{ t.name }}</div>
+                        </div>
                     </div>
-                    <div class="col-md-3">
-                        <select
-                            class="form-select bg-dark text-white border-secondary rounded-pill shadow-none px-3 py-2 text-sm"
-                            [(ngModel)]="advancedFilters.priorityId" (change)="onAdvancedFilterChange()">
-                            <option [ngValue]="null">{{ 'ItHelpdesk::Queue:FilterPriorityDefault' | abpLocalization }}
-                            </option>
-                            <option *ngFor="let p of priorities" [value]="p.id">{{ p.name }}</option>
-                        </select>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="form-check form-switch pt-2">
-                            <input class="form-check-input" type="checkbox" id="overdueSwitch"
-                                [(ngModel)]="advancedFilters.overdueOnly" (change)="onAdvancedFilterChange()">
-                            <label class="form-check-label text-danger fw-bold small ms-2" for="overdueSwitch"
-                                style="cursor: pointer;">
-                                <i class="fas fa-fire me-1"></i> {{ 'ItHelpdesk::Queue:OverdueSwitchLabel' |
-                                abpLocalization }}
-                            </label>
+                </div>
+                <div class="col-12 col-md-4">
+                    <div class="position-relative priority-dropdown-wrapper w-100">
+                        <button class="btn clean-select-btn w-100 d-flex justify-content-between align-items-center shadow-sm px-4" (click)="togglePriorityDropdown($event)">
+                            <span class="text-truncate fw-medium text-warning"><i class="fas fa-flag me-2 opacity-75 text-slate-400"></i>{{ getPriorityName(advancedFilters.priorityId) }}</span>
+                            <i class="fas fa-chevron-down ms-2 small transition-transform text-slate-400" [ngClass]="{'rotate-180': showPriorityDropdown}"></i>
+                        </button>
+                        <div *ngIf="showPriorityDropdown" class="clean-dropdown position-absolute w-100 p-2">
+                            <div class="custom-dropdown-item px-3 py-2 text-warning fw-bold mb-1 border-bottom border-secondary border-opacity-25" (click)="selectPriorityFilter(null)">{{ 'ItHelpdesk::Queue:FilterPriorityDefault' | abpLocalization }}</div>
+                            <div *ngFor="let p of priorities" class="custom-dropdown-item px-3 py-2 text-slate-300" (click)="selectPriorityFilter(p.id)">{{ p.name }}</div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- KHUNG BẢNG DỮ LIỆU -->
-        <div class="card border-0 shadow-lg rounded-4 overflow-hidden"
-            style="background: rgba(23, 28, 48, 0.85) !important; backdrop-filter: blur(20px);">
-            <div class="card-body p-0">
+        <!-- BẢNG DỮ LIỆU CĂN LỀ TỰ ĐỘNG, GIÃN CÁCH RỘNG RÃI -->
+        <div class="data-table-card premium-glass-card table-bottom-layer position-relative">
+            
+            <div *ngIf="isLoading" class="position-absolute top-50 start-50 translate-middle text-center z-index-50 w-100 h-100 d-flex flex-column justify-content-center align-items-center" style="background: rgba(15, 23, 42, 0.5); backdrop-filter: blur(4px);">
+               <div class="spinner-border text-info mb-3" style="width: 3.5rem; height: 3.5rem; border-width: 0.25rem;"></div>
+               <div class="text-white fw-bold fs-5 tracking-wide">{{ 'ItHelpdesk::Queue:SyncingData' | abpLocalization }}</div>
+            </div>
 
-                <style>
-                    ::ng-deep .ngx-datatable.admin-datatable .datatable-header .datatable-header-cell {
-                        color: #ffffff !important;
-                        font-weight: 700 !important;
-                        padding: 16px 20px !important;
-                    }
+            <ngx-datatable *ngIf="!isLoading" [rows]="items" [count]="totalCount" [externalPaging]="true"
+                [limit]="maxResultCount" [offset]="skipCount / maxResultCount"
+                (page)="onPageChange($event)" default [columnMode]="'standard'" [scrollbarH]="true" [scrollbarV]="false"
+                [headerHeight]="55" [footerHeight]="65" [rowHeight]="95"
+                [messages]="{ emptyMessage: ('ItHelpdesk::NoData' | abpLocalization), totalMessage: ('ItHelpdesk::TotalRecords' | abpLocalization) }"
+                class="clean-datatable w-100 h-100">
+                
+                <ngx-datatable-column [name]="'ItHelpdesk::Queue:ColumnTicketNo' | abpLocalization" prop="ticketNo" [width]="240" headerClass="align-left-col" cellClass="align-left-col">
+                    <ng-template let-row="row" ngx-datatable-cell-template>
+                        <div class="w-100 d-flex justify-content-start">
+                            <a [routerLink]="['/tickets/detail', row.ticketNo]" [queryParams]="{ returnUrl: '/tickets/it-queue' }" class="fixed-width-link shadow-sm text-decoration-none">
+                                {{ row.ticketNo }}
+                            </a>
+                        </div>
+                    </ng-template>
+                </ngx-datatable-column>
 
-                    ::ng-deep .ngx-datatable.admin-datatable .datatable-body-cell {
-                        padding: 22px 20px !important;
-                    }
-
-                    .equal-badge {
-                        min-width: 170px;
-                        height: 38px;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        font-size: 0.9rem;
-                        padding: 0 16px;
-                    }
-                </style>
-
-                <div *ngIf="isLoading" class="p-5 text-center">
-                    <div class="spinner-border text-info" role="status"></div>
-                    <p class="text-muted mt-2">{{ 'ItHelpdesk::Queue:SyncingData' | abpLocalization }}</p>
-                </div>
-
-                <div class="table-responsive" *ngIf="!isLoading">
-                    <ngx-datatable [rows]="items" [count]="totalCount" [externalPaging]="true" [limit]="maxResultCount"
-                        [offset]="skipCount / maxResultCount" (page)="onPageChange($event)" default
-                        [columnMode]="'force'" [scrollbarH]="true" [rowHeight]="'auto'" [footerHeight]="75"
-                        class="admin-datatable w-100">
-
-                        <!-- MÃ TICKET -->
-                        <ngx-datatable-column [name]="'ItHelpdesk::Queue:ColumnTicketNo' | abpLocalization"
-                            prop="ticketNo" [width]="200" [minWidth]="180" headerClass="align-left-col"
-                            cellClass="align-left-col">
-                            <ng-template let-row="row" ngx-datatable-cell-template>
-                                <a [routerLink]="['/tickets/detail', row.id]"
-                                    [queryParams]="{ returnUrl: '/tickets/it-queue' }"
-                                    class="fw-bold text-decoration-none d-block w-100 text-truncate text-start"
-                                    style="color: #f472b6;">
-                                    {{ row.ticketNo }}
-                                </a>
-                            </ng-template>
-                        </ngx-datatable-column>
-
-                        <!-- TIÊU ĐỀ -->
-                        <ngx-datatable-column [name]="'ItHelpdesk::Queue:ColumnTitle' | abpLocalization" prop="title"
-                            [width]="320" [minWidth]="280" headerClass="align-left-col" cellClass="align-left-col">
-                            <ng-template let-row="row" ngx-datatable-cell-template>
-                                <div class="d-flex align-items-center w-100">
-                                    <span class="fw-medium text-truncate d-inline-block" title="{{ row.title }}"
-                                        [ngClass]="getSlaStatus(row.targetResolutionTime) === 'overdue' ? 'text-danger fw-bold' : 'text-light'"
-                                        style="max-width: calc(100% - 24px);">
-                                        {{ row.title }}
-                                    </span>
-                                </div>
-                            </ng-template>
-                        </ngx-datatable-column>
-
-                        <!-- TRẠNG THÁI -->
-                        <ngx-datatable-column [name]="'ItHelpdesk::Queue:ColumnStatus' | abpLocalization" prop="status"
-                            [width]="220" [minWidth]="180" headerClass="align-center-col" cellClass="align-center-col">
-                            <ng-template let-row="row" ngx-datatable-cell-template>
-                                <span
-                                    class="badge bg-primary bg-opacity-75 rounded-pill text-white shadow-sm equal-badge">
-                                    {{ 'ItHelpdesk::Enum:TicketStatus.' + row.status | abpLocalization }}
+                <ngx-datatable-column [name]="'ItHelpdesk::Queue:ColumnTitle' | abpLocalization" prop="title" [width]="480" headerClass="align-left-col" cellClass="align-left-col">
+                    <ng-template let-row="row" ngx-datatable-cell-template>
+                        <div class="d-flex flex-column w-100 overflow-hidden py-2 pe-3 text-start">
+                            <a [routerLink]="['/tickets/detail', row.ticketNo]" [queryParams]="{ returnUrl: '/tickets/it-queue' }" class="ticket-title-link text-white fw-semibold text-truncate d-block mb-1" [title]="row.title" style="font-size: 0.95rem;">
+                                {{ row.title }}
+                            </a>
+                            <div class="d-flex align-items-center gap-3 text-slate-400 small text-nowrap">
+                                <span><i class="far fa-folder me-1 opacity-50"></i> {{ row.categoryName || '---' }}</span>
+                                <span class="badge border border-secondary border-opacity-50 text-slate-300 rounded-pill px-2 py-0 fw-normal" style="font-size: 0.7rem;">
+                                    <i class="fas fa-layer-group me-1 opacity-50"></i> {{ row.serviceName || '---' }}
                                 </span>
-                            </ng-template>
-                        </ngx-datatable-column>
+                            </div>
+                        </div>
+                    </ng-template>
+                </ngx-datatable-column>
 
-                        <!-- HẠN XỬ LÝ (SLA) -->
-                        <ngx-datatable-column [name]="'ItHelpdesk::Queue:ColumnSla' | abpLocalization"
-                            prop="targetResolutionTime" [width]="260" [minWidth]="220" headerClass="align-center-col"
-                            cellClass="align-center-col">
-                            <ng-template let-row="row" ngx-datatable-cell-template>
-                                <div *ngIf="row.targetResolutionTime"
-                                    class="position-relative d-flex justify-content-center align-items-center w-100">
-                                    <span class="badge rounded-pill equal-badge shadow-sm" [ngClass]="{
-                                        'bg-danger text-white fw-bold': getSlaStatus(row.targetResolutionTime) === 'overdue',
-                                        'bg-warning text-dark fw-bold': getSlaStatus(row.targetResolutionTime) === 'warning',
-                                        'bg-secondary bg-opacity-50 text-light': getSlaStatus(row.targetResolutionTime) === 'normal'
-                                    }">
-                                        <i class="fas me-1"
-                                            [ngClass]="getSlaStatus(row.targetResolutionTime) === 'overdue' ? 'fa-fire' : 'fa-clock'"></i>
-                                        {{ row.targetResolutionTime | date: 'dd/MM/yyyy HH:mm' }}
-                                    </span>
-                                </div>
-                                <span *ngIf="!row.targetResolutionTime" class="text-muted fst-italic">{{
-                                    'ItHelpdesk::Queue:NotSet' | abpLocalization }}</span>
-                            </ng-template>
-                        </ngx-datatable-column>
+                <ngx-datatable-column [name]="'ItHelpdesk::Queue:ColumnPriority' | abpLocalization" prop="priorityName" [width]="240" headerClass="align-center-col" cellClass="align-center-col">
+                    <ng-template let-row="row" ngx-datatable-cell-template>
+                        <span class="priority-pill shadow-sm" [ngClass]="getPriorityClass(row.priorityName)">
+                            <i class="fas fa-flag priority-icon opacity-75"></i> 
+                            {{ row.priorityName || ('ItHelpdesk::PriorityNormal' | abpLocalization) }}
+                        </span>
+                    </ng-template>
+                </ngx-datatable-column>
 
-                        <!-- NGƯỜI XỬ LÝ -->
-                        <ngx-datatable-column [name]="'ItHelpdesk::Queue:ColumnAssignee' | abpLocalization"
-                            prop="assigneeId" [width]="200" [minWidth]="160" headerClass="align-center-col"
-                            cellClass="align-center-col">
-                            <ng-template let-row="row" ngx-datatable-cell-template>
-                                <span class="badge bg-warning bg-opacity-25 text-warning py-2 px-3 rounded-pill"
-                                    *ngIf="!row.assigneeId">
-                                    <i class="fas fa-exclamation-circle me-1"></i> {{
-                                    'ItHelpdesk::Queue:UnassignedBadge' | abpLocalization }}
-                                </span>
-                                <span class="text-info fw-semibold" *ngIf="row.assigneeId">
-                                    <i class="fas fa-user-shield me-1"></i> {{ 'ItHelpdesk::Queue:AssignedBadge' |
-                                    abpLocalization }}
-                                </span>
-                            </ng-template>
-                        </ngx-datatable-column>
+                <ngx-datatable-column [name]="'ItHelpdesk::Queue:ColumnStatus' | abpLocalization" prop="status" [width]="260" headerClass="align-center-col" cellClass="align-center-col">
+                    <ng-template let-row="row" ngx-datatable-cell-template>
+                        <span class="status-pill shadow-sm" [ngClass]="getStatusClass(row.status)">
+                            <i class="fas status-icon opacity-75" [ngClass]="getStatusIcon(row.status)"></i> 
+                            {{ getStatusLabel(row.status) }}
+                        </span>
+                    </ng-template>
+                </ngx-datatable-column>
 
-                        <!-- THAO TÁC PHÂN CÔNG -->
-                        <ngx-datatable-column [name]="'ItHelpdesk::Queue:ColumnDispatch' | abpLocalization"
-                            [sortable]="false" [width]="140" [minWidth]="130" headerClass="align-center-col"
-                            cellClass="align-center-col">
-                            <ng-template let-row="row" ngx-datatable-cell-template>
-                                <button *ngIf="row.status !== 7"
-                                    class="btn btn-sm btn-outline-info rounded-pill px-3 py-1 fw-semibold d-inline-flex align-items-center gap-1 shadow-sm"
-                                    (click)="openAssignModal(row)">
-                                    <i class="fas fa-user-plus"></i> {{ 'ItHelpdesk::Queue:ActionAssignBtn' |
-                                    abpLocalization }}
+                <ngx-datatable-column [name]="'ItHelpdesk::Queue:ColumnAssignee' | abpLocalization" prop="assigneeName" [width]="260" headerClass="align-center-col" cellClass="align-center-col">
+                    <ng-template let-row="row" ngx-datatable-cell-template>
+                        <div class="assignee-pill text-nowrap mx-auto" [ngClass]="row.assigneeId ? 'bg-info bg-opacity-10 border border-info border-opacity-50' : 'bg-transparent border border-secondary border-opacity-50'">
+                            <div class="avatar-sm rounded-circle d-flex align-items-center justify-content-center me-2 flex-shrink-0 shadow-sm"
+                                 [ngClass]="row.assigneeId ? 'bg-info text-dark' : 'bg-slate-700 text-slate-400'"
+                                 style="width: 26px; height: 26px; font-size: 0.75rem;">
+                                <i class="fas" [ngClass]="row.assigneeId ? 'fa-user-tie' : 'fa-user-slash'"></i>
+                            </div>
+                            <span class="text-truncate fw-semibold" [ngClass]="row.assigneeId ? 'text-info' : 'text-slate-400'">
+                                {{ row.assigneeName || ('ItHelpdesk::Ticket:Unassigned' | abpLocalization) }}
+                            </span>
+                        </div>
+                    </ng-template>
+                </ngx-datatable-column>
+
+                <ngx-datatable-column [name]="'ItHelpdesk::Queue:ColumnCreationTime' | abpLocalization" prop="targetResolutionTime" [width]="240" headerClass="align-center-col" cellClass="align-center-col">
+                    <ng-template let-row="row" ngx-datatable-cell-template>
+                        <div class="d-flex flex-column align-items-center" *ngIf="row.targetResolutionTime && row.status !== 6 && row.status !== 7">
+                            <span class="fw-bold mb-1" [ngClass]="{'text-danger': getSlaStatus(row.targetResolutionTime) === 'overdue', 'text-warning': getSlaStatus(row.targetResolutionTime) === 'warning', 'text-slate-300': getSlaStatus(row.targetResolutionTime) === 'normal'}">
+                                <i class="far fa-clock me-1 opacity-50"></i> {{ row.targetResolutionTime | date:'dd/MM/yyyy HH:mm' }}
+                            </span>
+                            <span *ngIf="getSlaStatus(row.targetResolutionTime) === 'overdue'" class="badge bg-danger text-white rounded-pill" style="font-size: 0.65rem;">{{ 'ItHelpdesk::Detail:SlaOverdueBadge' | abpLocalization }}</span>
+                        </div>
+                        <span class="text-success fw-bold" *ngIf="row.status === 6"><i class="fas fa-check-circle me-1"></i> {{ 'ItHelpdesk::Queue:CompletedBadge' | abpLocalization }}</span>
+                        <span class="text-slate-500" *ngIf="!row.targetResolutionTime && row.status !== 6 && row.status !== 7">--/--</span>
+                    </ng-template>
+                </ngx-datatable-column>
+
+                <ngx-datatable-column [name]="'ItHelpdesk::Queue:ColumnAction' | abpLocalization" [sortable]="false" [width]="180" headerClass="align-center-col" cellClass="align-center-col">
+                    <ng-template let-row="row" ngx-datatable-cell-template>
+                        <div class="d-flex align-items-center justify-content-center gap-2 flex-nowrap">
+                            <button class="btn btn-sm btn-cyber-outline-info rounded-pill shadow-sm" [routerLink]="['/tickets/detail', row.ticketNo]" [title]="'ItHelpdesk::Queue:ActionViewBtn' | abpLocalization">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            
+                            <ng-container *ngIf="row.status !== 6 && row.status !== 7">
+                                <button *ngIf="isAdmin" class="btn btn-sm shadow-sm btn-cyber-warning rounded-pill" (click)="openAssignModal(row)" [title]="'ItHelpdesk::Queue:ActionAssignBtn' | abpLocalization">
+                                    <i class="fas fa-hand-pointer"></i>
                                 </button>
-                                <span *ngIf="row.status === 7" class="text-muted small"><i class="fas fa-lock me-1"></i>
-                                    {{ 'ItHelpdesk::Queue:Locked' | abpLocalization }}</span>
-                            </ng-template>
-                        </ngx-datatable-column>
+                                <button *ngIf="isAdmin" class="btn btn-sm shadow-sm d-flex align-items-center justify-content-center btn-cyber-danger-circle rounded-circle" (click)="openForceCloseModal(row)" [title]="'ItHelpdesk::Queue:CancelTooltip' | abpLocalization">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </ng-container>
+                            <button *ngIf="row.status === 6 || row.status === 7" 
+                                    class="btn btn-sm btn-cyber-primary shadow-sm rounded-pill" 
+                                    (click)="createFollowUp(row)" 
+                                    [title]="'ItHelpdesk::Detail:CreateFollowUpBtn' | abpLocalization">
+                                <i class="fas fa-external-link-square-alt"></i>
+                            </button>
+                        </div>
+                    </ng-template>
+                </ngx-datatable-column>
+            </ngx-datatable>
+        </div>
+    </div>
+</div>
 
-                        <!-- CHI TIẾT -->
-                        <ngx-datatable-column [name]="'ItHelpdesk::Queue:ColumnAction' | abpLocalization"
-                            [sortable]="false" [width]="130" [minWidth]="120" headerClass="align-center-col"
-                            cellClass="align-center-col">
-                            <ng-template let-row="row" ngx-datatable-cell-template>
-                                <a [routerLink]="['/tickets/detail', row.id]"
-                                    [queryParams]="{ returnUrl: '/tickets/it-queue' }"
-                                    class="btn btn-sm rounded-pill px-3 py-1 fw-semibold d-inline-flex align-items-center gap-1 shadow-sm"
-                                    style="border: 1px solid #f472b6; color: #f472b6; background: rgba(244, 114, 182, 0.05);">
-                                    <i class="fas fa-arrow-right"></i> {{ 'ItHelpdesk::Queue:ActionViewBtn' |
-                                    abpLocalization }}
-                                </a>
-                            </ng-template>
-                        </ngx-datatable-column>
-
-                    </ngx-datatable>
+<!-- CÁC MODALS -->
+<div *ngIf="isAssignModalOpen" class="modal fade show d-block custom-modal-overlay" tabindex="-1">
+    <div class="custom-modal-dialog">
+        <div class="modal-content premium-glass-card border-0 text-light rounded-4 overflow-hidden">
+            <div class="modal-header border-bottom border-secondary border-opacity-25 py-4 px-4">
+                <h5 class="modal-title fw-bold text-white mb-0 text-nowrap"><i class="fas fa-users-cog text-info me-2"></i>{{ 'ItHelpdesk::Ticket:AssignModalTitle' | abpLocalization }}</h5>
+                <button type="button" class="btn-close btn-close-white" (click)="closeAssignModal()"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="mb-4 position-relative">
+                    <label class="form-label text-info small text-uppercase fw-bold mb-2 text-nowrap">1. {{ 'ItHelpdesk::Ticket:SelectTeam' | abpLocalization }} <span class="text-danger">*</span></label>
+                    <select class="form-select custom-dark-select rounded-pill px-4 py-2" [(ngModel)]="assignForm.teamId" (ngModelChange)="onTeamChange($event)">
+                        <option [ngValue]="undefined">{{ 'ItHelpdesk::Ticket:UnassignedTeamOption' | abpLocalization }}</option>
+                        <option *ngFor="let team of teams" [value]="team.id">{{ team.name }}</option>
+                    </select>
                 </div>
-
+                <div class="mb-4 position-relative">
+                    <label class="form-label text-info small text-uppercase fw-bold mb-2 text-nowrap">
+                        2. {{ 'ItHelpdesk::Ticket:SelectTechnician' | abpLocalization }}
+                        <i *ngIf="isAssignLoading" class="fas fa-circle-notch fa-spin ms-2 text-warning"></i>
+                    </label>
+                    <select class="form-select custom-dark-select rounded-pill px-4 py-2" [(ngModel)]="assignForm.assigneeId" [disabled]="!assignForm.teamId || isAssignLoading">
+                        <option [ngValue]="undefined">{{ 'ItHelpdesk::Ticket:UnassignedTechOption' | abpLocalization }}</option>
+                        <option *ngFor="let tech of filteredTechnicians" [value]="tech.id">{{ tech.name || tech.surname + ' ' + tech.name || tech.userName }}</option>
+                    </select>
+                    <small *ngIf="!assignForm.teamId" class="text-warning mt-2 d-block ms-2"><i class="fas fa-exclamation-triangle me-1"></i> {{ 'ItHelpdesk::TicketError:TeamRequiredForAssignee' | abpLocalization }}</small>
+                </div>
+            </div>
+            <div class="modal-footer border-top border-secondary border-opacity-25 py-3 px-4">
+                <button type="button" class="btn btn-outline-light rounded-pill px-4 hover-elevate text-nowrap" (click)="closeAssignModal()">{{ 'ItHelpdesk::Cancel' | abpLocalization }}</button>
+                <button type="button" class="btn btn-info text-dark rounded-pill px-5 fw-bold shadow-lg text-nowrap" (click)="submitAssign()" [disabled]="isSubmitting || isAssignLoading || (!assignForm.teamId && assignForm.assigneeId)">
+                    {{ 'ItHelpdesk::Confirm' | abpLocalization }}
+                </button>
             </div>
         </div>
     </div>
 </div>
 
-<!-- MODAL PHÂN CÔNG KÈM CHỌN THỜI GIAN DEADLINE -->
-<div *ngIf="isAssignModalOpen" class="modal fade show d-block" tabindex="-1"
-    style="background: rgba(0,0,0,0.7); backdrop-filter: blur(6px);">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-secondary border-opacity-25 text-white shadow-2xl rounded-4 overflow-hidden"
-            style="background: rgba(23, 28, 48, 0.95) !important; backdrop-filter: blur(20px);">
-            <div class="modal-header border-bottom border-secondary border-opacity-25 px-4 py-3">
-                <h5 class="modal-title fw-bold text-pink">
-                    <i class="fas fa-tasks me-2"></i> {{ 'ItHelpdesk::Queue:ModalDispatchTitle' | abpLocalization:
-                    (selectedTicket?.ticketNo || '') }}
-                </h5>
-                <button type="button" class="btn-close btn-close-white" (click)="closeAssignModal()"></button>
+<div *ngIf="isForceCloseModalOpen" class="modal fade show d-block custom-modal-overlay" tabindex="-1">
+    <div class="custom-modal-dialog">
+        <div class="modal-content premium-glass-card border-0 text-light rounded-4 overflow-hidden" style="border: 1px solid rgba(239, 68, 68, 0.3) !important;">
+            <div class="modal-header border-bottom border-danger border-opacity-50 py-4 px-4 bg-danger bg-opacity-10">
+                <h5 class="modal-title fw-bold text-danger mb-0 text-nowrap"><i class="fas fa-exclamation-triangle me-2"></i>{{ 'ItHelpdesk::Queue:ColumnCancel' | abpLocalization }}</h5>
+                <button type="button" class="btn-close btn-close-white opacity-50" (click)="closeForceCloseModal()"></button>
             </div>
             <div class="modal-body p-4">
-                <div class="mb-3">
-                    <label class="form-label text-light fw-bold small text-uppercase">{{
-                        'ItHelpdesk::Queue:ModalTeamLabel' | abpLocalization }}</label>
-                    <select class="form-select bg-dark text-white border-secondary rounded-pill shadow-none px-3 py-2"
-                        [(ngModel)]="assignForm.teamId">
-                        <option [ngValue]="undefined">{{ 'ItHelpdesk::Ticket:UnassignedTeamOption' | abpLocalization }}
-                        </option>
-                        <option *ngFor="let team of teams" [value]="team.id">{{ team.name }}</option>
-                    </select>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label text-light fw-bold small text-uppercase">{{
-                        'ItHelpdesk::Queue:ModalTechLabel' | abpLocalization }}</label>
-                    <select class="form-select bg-dark text-white border-secondary rounded-pill shadow-none px-3 py-2"
-                        [(ngModel)]="assignForm.assigneeId">
-                        <option [ngValue]="undefined">{{ 'ItHelpdesk::Ticket:UnassignedTechOption' | abpLocalization }}
-                        </option>
-                        <option *ngFor="let tech of technicians" [value]="tech.id">{{ tech.surname }} {{ tech.name }}
-                            ({{ tech.userName }})</option>
-                    </select>
-                </div>
-                <div class="mb-2">
-                    <label class="form-label text-light fw-bold small text-uppercase">{{
-                        'ItHelpdesk::Queue:ModalDeadlineLabel' | abpLocalization }}</label>
-                    <input type="datetime-local"
-                        class="form-control bg-dark text-white border-secondary rounded-pill shadow-none px-3 py-2"
-                        [(ngModel)]="assignForm.targetResolutionTime">
-                    <small class="text-muted mt-1 d-block">{{ 'ItHelpdesk::Queue:ModalDeadlineDesc' | abpLocalization
-                        }}</small>
+                <div class="mb-3 position-relative">
+                    <label class="form-label text-danger small text-uppercase fw-bold mb-2 text-nowrap">{{ 'ItHelpdesk::Queue:ModalCancelReasonLabel' | abpLocalization }} <span class="text-danger">*</span></label>
+                    <textarea class="form-control custom-dark-input rounded-4 p-3" rows="3" [(ngModel)]="cancelReason"></textarea>
                 </div>
             </div>
-            <div class="modal-footer border-top border-secondary border-opacity-25 px-4 py-3">
-                <button type="button" class="btn btn-outline-light rounded-pill px-4" (click)="closeAssignModal()">{{
-                    'ItHelpdesk::Cancel' | abpLocalization }}</button>
-                <button type="button" class="btn btn-primary rounded-pill px-4" [disabled]="isSavingAssign"
-                    (click)="saveAssignment()">
-                    <span *ngIf="isSavingAssign" class="spinner-border spinner-border-sm me-1"></span>
-                    <i *ngIf="!isSavingAssign" class="fas fa-check me-1"></i> {{ 'ItHelpdesk::Confirm' |
-                    abpLocalization }}
+            <div class="modal-footer border-top border-danger border-opacity-50 py-3 px-4 bg-danger bg-opacity-10">
+                <button type="button" class="btn btn-outline-light rounded-pill px-4 hover-elevate text-nowrap" (click)="closeForceCloseModal()">{{ 'ItHelpdesk::Cancel' | abpLocalization }}</button>
+                <button type="button" class="btn btn-danger rounded-pill px-5 fw-bold shadow-lg text-nowrap" (click)="submitForceClose()" [disabled]="isSavingCancel || !cancelReason.trim()">
+                    {{ 'ItHelpdesk::Detail:ConfirmCancelBtn' | abpLocalization }}
                 </button>
             </div>
         </div>

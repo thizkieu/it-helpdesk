@@ -58,18 +58,15 @@ public class ItHelpdeskDbContext :
     public DbSet<TicketActivity> TicketActivities { get; set; }
     public DbSet<TicketAttachment> TicketAttachments { get; set; }
 
-    // Tiện ích mở rộng (Đã chuyển FaqItems về đúng khu vực)
+    // Tiện ích mở rộng
     public DbSet<FaqItem> FaqItems { get; set; }
     public DbSet<ItHelpdesk.Notifications.AppNotification> AppNotifications { get; set; }
     public DbSet<SecurityAlertLog> SecurityAlertLogs { get; set; }
-
 
     /* =========================================================
        2. CÁC BẢNG MẶC ĐỊNH CỦA ABP (KHÔNG ĐƯỢC XÓA HOẶC SỬA)
        ========================================================= */
     #region Entities from the modules
-
-    // Identity (Quản lý người dùng, quyền hạn)
     public DbSet<IdentityUser> Users { get; set; }
     public DbSet<IdentityRole> Roles { get; set; }
     public DbSet<IdentityClaimType> ClaimTypes { get; set; }
@@ -79,10 +76,8 @@ public class ItHelpdeskDbContext :
     public DbSet<IdentityUserDelegation> UserDelegations { get; set; }
     public DbSet<IdentitySession> Sessions { get; set; }
 
-    // Tenant Management (Đa người thuê)
     public DbSet<Tenant> Tenants { get; set; }
     public DbSet<TenantConnectionString> TenantConnectionStrings { get; set; }
-
     #endregion
 
     public ItHelpdeskDbContext(DbContextOptions<ItHelpdeskDbContext> options)
@@ -107,11 +102,9 @@ public class ItHelpdeskDbContext :
         builder.ConfigureTenantManagement();
         builder.ConfigureBlobStoring();
 
-
         /* =========================================================
-           B. CẤU HÌNH FLUENT API CHO CÁC BẢNG CUSTOM
-           ========================================================= */
-
+                   B. CẤU HÌNH FLUENT API CHO CÁC BẢNG CUSTOM
+        ========================================================= */
         // --- 1. Master Data & Helpdesk Core ---
         builder.Entity<Book>(b =>
         {
@@ -124,39 +117,60 @@ public class ItHelpdeskDbContext :
         {
             b.ToTable(ItHelpdeskConsts.DbTablePrefix + "Categories", ItHelpdeskConsts.DbSchema);
             b.ConfigureByConvention();
+            b.Property(x => x.Code).IsRequired().HasMaxLength(50);
+            b.Property(x => x.Name_Vi).IsRequired().HasMaxLength(128);
+            b.Property(x => x.Name_En).HasMaxLength(128);
         });
 
         builder.Entity<Priorities.Priority>(b =>
         {
             b.ToTable(ItHelpdeskConsts.DbTablePrefix + "Priorities", ItHelpdeskConsts.DbSchema);
             b.ConfigureByConvention();
+            b.Property(x => x.Code).IsRequired().HasMaxLength(50);
+            b.Property(x => x.Name_Vi).IsRequired().HasMaxLength(128);
+            b.Property(x => x.Name_En).HasMaxLength(128);
+            b.Property(x => x.Color).HasMaxLength(50);
         });
 
         builder.Entity<Services.Service>(b =>
         {
             b.ToTable(ItHelpdeskConsts.DbTablePrefix + "Services", ItHelpdeskConsts.DbSchema);
             b.ConfigureByConvention();
+            b.Property(x => x.Code).IsRequired().HasMaxLength(50);
+            b.Property(x => x.Name_Vi).IsRequired().HasMaxLength(128);
+            b.Property(x => x.Name_En).HasMaxLength(128);
+            b.Property(x => x.Description_Vi).HasMaxLength(1000);
+            b.Property(x => x.Description_En).HasMaxLength(1000);
         });
 
         builder.Entity<Teams.Team>(b =>
         {
             b.ToTable(ItHelpdeskConsts.DbTablePrefix + "Teams", ItHelpdeskConsts.DbSchema);
             b.ConfigureByConvention();
+            b.Property(x => x.Code).IsRequired().HasMaxLength(50);
+            b.Property(x => x.Name_Vi).IsRequired().HasMaxLength(128);
+            b.Property(x => x.Name_En).HasMaxLength(128);
         });
 
-        // --- 2. Ticket & Activity ---
+        // --- 2. Ticket & Activity (Đã tích hợp đa ngôn ngữ và Ignore thuộc tính cũ) ---
         builder.Entity<Ticket>(b =>
         {
             b.ToTable(ItHelpdeskConsts.DbTablePrefix + "Tickets", ItHelpdeskConsts.DbSchema);
             b.ConfigureByConvention();
-
             b.Property(x => x.TicketNo).IsRequired().HasMaxLength(50);
-            b.Property(x => x.Title).IsRequired().HasMaxLength(255);
-            b.Property(x => x.Description).IsRequired();
+
+            // Đa ngôn ngữ Ticket
+            b.Property(x => x.Title_Vi).IsRequired().HasMaxLength(255);
+            b.Property(x => x.Title_En).HasMaxLength(255);
+            b.Property(x => x.Description_Vi).IsRequired();
+            b.Property(x => x.Description_En);
+
+            // Bỏ qua thuộc tính ảo tương thích ngược
+            b.Ignore(x => x.Title);
+            b.Ignore(x => x.Description);
 
             b.HasIndex(x => x.TicketNo).IsUnique();
 
-            // Cấu hình lại Khóa ngoại và Tắt Cascade Delete để tránh lỗi vòng lặp
             b.HasOne(x => x.Category)
              .WithMany()
              .HasForeignKey(x => x.CategoryId)
@@ -174,12 +188,24 @@ public class ItHelpdeskDbContext :
              .HasForeignKey(x => x.ServiceId)
              .IsRequired()
              .OnDelete(DeleteBehavior.NoAction);
+
+            b.Property(x => x.ParentTicketId).IsRequired(false);
+            b.HasOne<Ticket>()
+             .WithMany()
+             .HasForeignKey(x => x.ParentTicketId)
+             .OnDelete(DeleteBehavior.NoAction);
         });
 
         builder.Entity<TicketComment>(b =>
         {
             b.ToTable(ItHelpdeskConsts.DbTablePrefix + "TicketComments", ItHelpdeskConsts.DbSchema);
             b.ConfigureByConvention();
+
+            // Đa ngôn ngữ Comment
+            b.Property(x => x.Content_Vi).IsRequired();
+            b.Property(x => x.Content_En);
+            b.Ignore(x => x.Content);
+
             b.HasOne<Ticket>().WithMany().HasForeignKey(x => x.TicketId).IsRequired();
         });
 
@@ -187,12 +213,15 @@ public class ItHelpdeskDbContext :
         {
             b.ToTable(ItHelpdeskConsts.DbTablePrefix + "TicketActivities", ItHelpdeskConsts.DbSchema);
             b.ConfigureByConvention();
-
             b.Property(x => x.ActivityType).IsRequired().HasMaxLength(128);
-            b.Property(x => x.Description).IsRequired().HasMaxLength(2000);
+
+            // Đa ngôn ngữ Activity Description
+            b.Property(x => x.Description_Vi).IsRequired().HasMaxLength(2000);
+            b.Property(x => x.Description_En).HasMaxLength(2000);
+            b.Ignore(x => x.Description);
+
             b.Property(x => x.OldValue).HasMaxLength(1000);
             b.Property(x => x.NewValue).HasMaxLength(1000);
-
             b.HasIndex(x => x.TicketId);
         });
 
@@ -200,11 +229,9 @@ public class ItHelpdeskDbContext :
         {
             b.ToTable(ItHelpdeskConsts.DbTablePrefix + "TicketAttachments", ItHelpdeskConsts.DbSchema);
             b.ConfigureByConvention();
-
             b.Property(x => x.FileName).IsRequired().HasMaxLength(255);
             b.Property(x => x.BlobName).IsRequired().HasMaxLength(255);
             b.Property(x => x.ContentType).HasMaxLength(128);
-
             b.HasOne<Ticket>().WithMany().HasForeignKey(x => x.TicketId).IsRequired();
         });
 
@@ -213,9 +240,10 @@ public class ItHelpdeskDbContext :
         {
             b.ToTable(ItHelpdeskConsts.DbTablePrefix + "FaqItems", ItHelpdeskConsts.DbSchema);
             b.ConfigureByConvention();
-
-            b.Property(x => x.Question).IsRequired().HasMaxLength(500);
-            b.Property(x => x.Answer).IsRequired();
+            b.Property(x => x.Question_Vi).IsRequired().HasMaxLength(500);
+            b.Property(x => x.Question_En).HasMaxLength(500);
+            b.Property(x => x.Answer_Vi).IsRequired();
+            b.Property(x => x.Answer_En);
             b.Property(x => x.Category).HasMaxLength(128);
             b.Property(x => x.Icon).HasMaxLength(50);
         });
@@ -223,14 +251,16 @@ public class ItHelpdeskDbContext :
         // --- 4. Notifications & Security Logs ---
         builder.Entity<ItHelpdesk.Notifications.AppNotification>(b =>
         {
-            b.ToTable(ItHelpdeskConsts.DbTablePrefix + "AppNotifications", ItHelpdeskConsts.DbSchema);
+            b.ToTable("AppNotifications", ItHelpdeskConsts.DbSchema);
             b.ConfigureByConvention();
-
-            b.Property(x => x.Title).IsRequired().HasMaxLength(255);
-            b.Property(x => x.Message).IsRequired().HasMaxLength(1000);
+            b.Property(x => x.Title_Vi).IsRequired().HasMaxLength(255);
+            b.Property(x => x.Title_En).HasMaxLength(255);
+            b.Property(x => x.Message_Vi).IsRequired().HasMaxLength(1000);
+            b.Property(x => x.Message_En).HasMaxLength(1000);
             b.Property(x => x.Type).IsRequired().HasMaxLength(50);
             b.Property(x => x.LinkUrl).HasMaxLength(500);
-
+            b.Ignore(x => x.Title);
+            b.Ignore(x => x.Message);
             b.HasIndex(x => x.UserId);
         });
 
@@ -238,17 +268,14 @@ public class ItHelpdeskDbContext :
         {
             b.ToTable(ItHelpdeskConsts.DbTablePrefix + "SecurityAlertLogs", ItHelpdeskConsts.DbSchema);
             b.ConfigureByConvention();
-
             b.Property(x => x.AlertType).IsRequired().HasMaxLength(50);
             b.Property(x => x.TargetUserName).HasMaxLength(128);
             b.Property(x => x.ResourceName).HasMaxLength(255);
             b.Property(x => x.IpAddress).HasMaxLength(45);
             b.Property(x => x.Description).HasMaxLength(1000);
-
             b.HasIndex(x => x.AlertType);
             b.HasIndex(x => x.CreationTime);
         });
-
 
         /* =========================================================
            C. MAPPING CONFIGURATIONS QUA LỚP RIÊNG

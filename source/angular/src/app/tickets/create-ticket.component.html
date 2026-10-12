@@ -4,9 +4,10 @@
             <div class="col-12 col-xl-10">
 
                 <!-- HEADER TRANG -->
-                <div class="text-center mb-4">
-                    <span class="badge cute-badge-pill mb-3 px-3 py-2">
+                <div class="text-center mb-4 position-relative">
+                    <span class="badge cute-badge-pill mb-3 px-3 py-2 position-relative">
                         <i class="fas fa-desktop me-1"></i> {{ 'ItHelpdesk::Ticket:HeaderBadge' | abpLocalization }}
+                        <i class="fas fa-star blink-star star-top-right"></i>
                     </span>
                     <h2 class="fw-bold page-title mb-2 text-white">{{ 'ItHelpdesk::Ticket:CreateTitle' | abpLocalization
                         }}</h2>
@@ -19,6 +20,22 @@
                     <div class="card-body p-0">
                         <form [formGroup]="ticketForm" (ngSubmit)="submitTicket()">
 
+                            <!-- BANNER YÊU CẦU NỐI TIẾP -->
+                            <div *ngIf="parentTicketId"
+                                class="alert d-flex align-items-center rounded-4 p-3 mb-4 shadow-sm border border-info border-opacity-25"
+                                style="background: rgba(14, 165, 233, 0.1);">
+                                <div class="bg-info bg-opacity-25 text-info rounded-circle d-flex align-items-center justify-content-center me-3 flex-shrink-0"
+                                    style="width: 48px; height: 48px;">
+                                    <i class="fas fa-link fs-5"></i>
+                                </div>
+                                <div>
+                                    <h6 class="fw-bold text-info mb-1">{{ 'ItHelpdesk::Ticket:FollowUpBannerTitle' |
+                                        abpLocalization: parentTicketNo }}</h6>
+                                    <p class="mb-0 text-light small opacity-75">{{
+                                        'ItHelpdesk::Ticket:FollowUpBannerDesc' | abpLocalization }}</p>
+                                </div>
+                            </div>
+
                             <!-- TIÊU ĐỀ YÊU CẦU -->
                             <div class="mb-4">
                                 <label class="form-label fw-bold cute-label text-light">
@@ -26,7 +43,6 @@
                                         class="text-danger">*</span>
                                 </label>
 
-                                <!-- Lắng nghe sự kiện input để bắt quả tang hành vi gõ lố -->
                                 <input type="text"
                                     class="form-control form-control-lg premium-input shadow-none text-white rounded-pill bg-dark bg-opacity-50 px-4 py-3"
                                     [class.border-danger]="(ticketForm.get('title')?.touched && ticketForm.get('title')?.invalid) || isTitleLimitReached"
@@ -34,33 +50,25 @@
                                     formControlName="title" (input)="onTitleInput($event)"
                                     [placeholder]="'ItHelpdesk::Ticket:TitlePlaceholder' | abpLocalization" />
 
-                                <!-- Dòng thông báo lỗi và Đếm số lượng ký tự -->
-                                <div class="d-flex justify-content-between align-items-start mt-1 px-3">
-                                    <!-- Bật vùng báo đỏ nếu Angular báo lỗi form HOẶC cờ vượt giới hạn bị bật -->
-                                    <div class="text-danger small fw-medium"
-                                        *ngIf="(ticketForm.get('title')?.touched && ticketForm.get('title')?.invalid) || isTitleLimitReached">
+                                <div class="d-flex justify-content-between align-items-center mt-2 px-3">
+                                    <div class="text-danger small fw-medium">
                                         <span
-                                            *ngIf="ticketForm.get('title')?.hasError('required') && !isTitleLimitReached">
+                                            *ngIf="ticketForm.get('title')?.touched && ticketForm.get('title')?.hasError('required') && !isTitleLimitReached">
                                             <i class="fas fa-exclamation-circle me-1"></i> {{
                                             'ItHelpdesk::Ticket:ErrorTitleEmpty' | abpLocalization }}
                                         </span>
                                         <span
-                                            *ngIf="ticketForm.get('title')?.hasError('whitespace') && !ticketForm.get('title')?.hasError('required') && !isTitleLimitReached">
+                                            *ngIf="ticketForm.get('title')?.touched && ticketForm.get('title')?.hasError('whitespace') && !ticketForm.get('title')?.hasError('required') && !isTitleLimitReached">
                                             <i class="fas fa-exclamation-circle me-1"></i> {{
                                             'ItHelpdesk::Ticket:ErrorTitleWhitespace' | abpLocalization }}
                                         </span>
-                                        <!-- Xuất hiện ngay lập tức khi họ gõ hoặc paste ký tự thứ 256 -->
                                         <span *ngIf="isTitleLimitReached">
                                             <i class="fas fa-exclamation-circle me-1"></i> {{
                                             'ItHelpdesk::Ticket:TitleMaxLength' | abpLocalization }}
                                         </span>
                                     </div>
-                                    <div
-                                        *ngIf="!((ticketForm.get('title')?.touched && ticketForm.get('title')?.invalid) || isTitleLimitReached)">
-                                    </div>
-
-                                    <!-- Báo đỏ luôn cả số đếm khi chạm mốc 255 -->
-                                    <small class="text-muted fw-medium" [class.text-danger]="titleLength >= 255">
+                                    <small class="text-muted fw-medium ms-auto"
+                                        [class.text-danger]="titleLength >= 255">
                                         {{ titleLength }} / 255
                                     </small>
                                 </div>
@@ -68,7 +76,6 @@
 
                             <!-- DANH MỤC - DỊCH VỤ - MỨC ĐỘ -->
                             <div class="row mb-4 g-4">
-                                <!-- Danh mục -->
                                 <div class="col-md-4">
                                     <label class="form-label fw-bold cute-label text-light">
                                         {{ 'ItHelpdesk::Ticket:Category' | abpLocalization }} <span
@@ -90,7 +97,6 @@
                                     </div>
                                 </div>
 
-                                <!-- Dịch vụ -->
                                 <div class="col-md-4">
                                     <label class="form-label fw-bold cute-label text-light">
                                         {{ 'ItHelpdesk::Ticket:Service' | abpLocalization }} <span
@@ -112,7 +118,6 @@
                                     </div>
                                 </div>
 
-                                <!-- Mức độ -->
                                 <div class="col-md-4">
                                     <label class="form-label fw-bold cute-label text-light">
                                         {{ 'ItHelpdesk::Ticket:Priority' | abpLocalization }} <span
@@ -149,7 +154,6 @@
                                     formControlName="description" rows="5"
                                     [placeholder]="'ItHelpdesk::Ticket:DescriptionPlaceholder' | abpLocalization"></textarea>
 
-                                <!-- Báo lỗi phần mô tả -->
                                 <div class="text-danger small mt-1 ms-3 fw-medium"
                                     *ngIf="ticketForm.get('description')?.touched && ticketForm.get('description')?.invalid">
                                     <span *ngIf="ticketForm.get('description')?.hasError('required')">
@@ -169,12 +173,17 @@
                                 <label class="form-label fw-bold cute-label text-light">{{
                                     'ItHelpdesk::Ticket:AttachmentLabel' | abpLocalization }}</label>
                                 <div
-                                    class="upload-zone rounded-4 p-4 text-center position-relative cursor-pointer border border-secondary border-opacity-25 bg-dark bg-opacity-25 hover-shadow transition-all">
+                                    class="upload-zone rounded-4 p-4 text-center position-relative cursor-pointer border border-secondary border-opacity-25 bg-dark bg-opacity-25 hover-shadow transition-all overflow-hidden">
                                     <input type="file"
                                         class="upload-input position-absolute top-0 start-0 w-100 h-100 opacity-0 cursor-pointer"
                                         (change)="onFilesSelected($event)" multiple
                                         accept=".png,.jpg,.jpeg,.pdf,.log" />
-                                    <div class="upload-icon-circle mx-auto mb-2 text-pink">
+
+                                    <i class="fas fa-star blink-star star-1"></i>
+                                    <i class="fas fa-star blink-star star-2"></i>
+                                    <i class="fas fa-star blink-star star-3"></i>
+
+                                    <div class="upload-icon-circle mx-auto mb-2 text-cyan">
                                         <i class="fas fa-cat fa-2x bounce-icon"></i>
                                     </div>
                                     <p class="mb-1 text-white small fw-medium">{{
@@ -190,7 +199,7 @@
                                     <div class="d-flex flex-wrap gap-2">
                                         <div *ngFor="let file of selectedFiles; let i = index"
                                             class="badge bg-dark bg-opacity-50 text-light border border-secondary border-opacity-50 p-2 rounded-pill d-flex align-items-center gap-2">
-                                            <i class="fas fa-file-alt text-pink"></i>
+                                            <i class="fas fa-file-alt text-cyan"></i>
                                             <span class="text-truncate" style="max-width: 180px;">{{ file.name }}</span>
                                             <button type="button" class="btn-close btn-close-white btn-sm ms-1"
                                                 style="font-size: 0.6rem;" (click)="removeFile(i)"></button>
@@ -205,18 +214,19 @@
                                 <a routerLink="/tickets/my-tickets" class="btn btn-outline-light rounded-pill px-4">{{
                                     'ItHelpdesk::Cancel' | abpLocalization }}</a>
 
-                                <!-- Nút Gửi: Khóa mờ không thể bấm nếu Form chưa điền đủ hoặc đang trong quá trình Submit chống Click đúp -->
                                 <button type="submit"
-                                    class="btn premium-btn-submit btn-lg px-5 rounded-pill shadow fw-bold text-white transition-all hover-elevate"
+                                    class="btn premium-btn-submit position-relative overflow-hidden btn-lg px-5 rounded-pill shadow fw-bold text-white transition-all hover-elevate"
                                     [disabled]="ticketForm.invalid || isSubmitting"
                                     [ngStyle]="{'opacity': (ticketForm.invalid || isSubmitting) ? '0.5' : '1', 'cursor': (ticketForm.invalid || isSubmitting) ? 'not-allowed' : 'pointer'}">
-                                    <span *ngIf="isSubmitting">
+                                    <span *ngIf="isSubmitting" class="position-relative z-1">
                                         <span class="spinner-border spinner-border-sm me-2" role="status"
                                             aria-hidden="true"></span>
                                         {{ 'ItHelpdesk::Ticket:Submitting' | abpLocalization }}
                                     </span>
-                                    <span *ngIf="!isSubmitting"><i class="fas fa-paper-plane me-2"></i>{{
-                                        'ItHelpdesk::Ticket:SubmitButton' | abpLocalization }}</span>
+                                    <span *ngIf="!isSubmitting" class="position-relative z-1">
+                                        <i class="fas fa-paper-plane me-2"></i>{{ 'ItHelpdesk::Ticket:SubmitButton' |
+                                        abpLocalization }}
+                                    </span>
                                 </button>
                             </div>
 

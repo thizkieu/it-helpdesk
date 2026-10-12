@@ -15,9 +15,11 @@ namespace ItHelpdesk.ExtendedUsers
     public class GetExtendedUserListInput : PagedAndSortedResultRequestDto
     {
         public string? Filter { get; set; }
-        public Guid? RoleId { get; set; }
 
-        //  Đón tham số lọc trạng thái hoạt động từ Angular
+        // Đã sửa lại thành string Role để đồng bộ với Angular
+        public string? Role { get; set; }
+
+        // Đón tham số lọc trạng thái hoạt động từ Angular
         public bool? IsActive { get; set; }
     }
 }

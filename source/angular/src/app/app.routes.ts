@@ -84,13 +84,18 @@ export const APP_ROUTES: Routes = [
     canActivate: [authGuard, permissionGuard],
   },
   {
+    path: 'tickets/dashboard/tech-detail/:id',
+    loadComponent: () => import('./tickets/dashboard/tech-kpi-detail/tech-kpi-detail.component').then(c => c.TechKpiDetailComponent),
+    canActivate: [authGuard, permissionGuard],
+  },
+  {
     path: 'tickets/knowledge-base',
     loadComponent: () => import('./tickets/knowledge-base/knowledge-base.component').then(c => c.KnowledgeBaseComponent),
     canActivate: [authGuard, permissionGuard],
   },
   {
     path: 'tickets/knowledge-base/:id',
-    loadComponent: () => import('./tickets/knowledge-detail/knowledge-detail.component').then(c => c.KnowledgeDetailComponent),
+    loadComponent: () => import('./tickets/knowledge-base/knowledge-detail/knowledge-detail.component').then(c => c.KnowledgeDetailComponent),
     canActivate: [authGuard, permissionGuard],
   },
   {
@@ -98,16 +103,32 @@ export const APP_ROUTES: Routes = [
     loadComponent: () => import('./account/avatar-upload/avatar-upload.component').then(c => c.AvatarUploadComponent),
     canActivate: [authGuard],
   },
-  // THÊM ĐƯỜNG DẪN TRANG THÔNG BÁO RIÊNG
   {
     path: 'notifications',
     loadComponent: () => import('./notifications/notification-list/notification-list.component').then(c => c.NotificationListComponent),
     canActivate: [authGuard],
   },
+  
+  // TRANG QUẢN LÝ NGƯỜI DÙNG (Yêu cầu quyền UserManagement)
   {
     path: 'user-management',
     loadComponent: () => import('./users/users.component').then(c => c.UsersComponent),
     canActivate: [authGuard, permissionGuard], 
     data: { requiredPolicy: 'ItHelpdesk.UserManagement' }
+  },
+  
+  // TRANG CHI TIẾT DÀNH CHO QUẢN LÝ / ADMIN XEM (Yêu cầu quyền UserManagement)
+  {
+    path: 'user-management/detail/:id',
+    loadComponent: () => import('./users/user-cv-detail/user-cv-detail.component').then(c => c.UserCvDetailComponent),
+    canActivate: [authGuard, permissionGuard],
+    data: { requiredPolicy: 'ItHelpdesk.UserManagement' } 
+  },
+  
+  // TRANG CÁ NHÂN DÀNH CHO MỌI NGƯỜI DÙNG (Bao gồm End_User, Không yêu cầu Permission Guard)
+  {
+    path: 'my-profile',
+    loadComponent: () => import('./users/user-cv-detail/user-cv-detail.component').then(c => c.UserCvDetailComponent),
+    canActivate: [authGuard] 
   }
 ];

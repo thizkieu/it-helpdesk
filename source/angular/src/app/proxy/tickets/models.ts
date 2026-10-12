@@ -7,10 +7,9 @@ export interface AssignTicketDto {
   teamId?: number;
 }
 
-export interface ChangeTicketStatusInput {
-  ticketId: number;
-  newStatus?: TicketStatus;
-  comment?: string;
+export interface ChartItemDto {
+  name?: string;
+  value: number;
 }
 
 export interface CreateTicketCommentDto {
@@ -26,6 +25,7 @@ export interface CreateUpdateTicketDto {
   categoryId: number;
   priorityId: number;
   serviceId: number;
+  parentTicketId?: number;
 }
 
 export interface DashboardStatsDto {
@@ -35,6 +35,16 @@ export interface DashboardStatsDto {
   resolvedTickets: number;
   overdueTickets: number;
   slaComplianceRate: number;
+  smartInsights: string[];
+  statusDistribution: ChartItemDto[];
+}
+
+export interface GetDashboardStatsInput {
+  startDate?: string;
+  endDate?: string;
+  assigneeId?: string;
+  status?: TicketStatus;
+  teamId?: number;
 }
 
 export interface GetTicketListDto extends PagedAndSortedResultRequestDto {
@@ -45,6 +55,36 @@ export interface GetTicketListDto extends PagedAndSortedResultRequestDto {
   unassigned?: boolean;
   isMyTickets?: boolean;
   isOverdue?: boolean;
+}
+
+export interface SlaGaugeCalculationExplanationDto {
+  finalScore: number;
+  totalCompletedTickets: number;
+  onTimeCount: number;
+  overdueCount: number;
+  rawComplianceRate: number;
+  formulaDescription?: string;
+  breakdownLogs: string[];
+}
+
+export interface TechnicianKpiDto {
+  id?: string;
+  name?: string;
+  userName?: string;
+  email?: string;
+  phoneNumber?: string;
+  roleName?: string;
+  teamName?: string;
+  totalAssigned: number;
+  inProgressTickets: number;
+  resolvedOnTime: number;
+  overdueTickets: number;
+  onTimeRate: number;
+  overdueRate: number;
+  baseSalary: number;
+  bonusAmount: number;
+  penaltyAmount: number;
+  netSalary: number;
 }
 
 export interface TicketCommentDto extends AuditedEntityDto<number> {
@@ -70,6 +110,7 @@ export interface TicketDto extends FullAuditedEntityDto<number> {
   serviceName?: string;
   status?: TicketStatus;
   assigneeId?: string;
+  assigneeName?: string;
   teamId?: number;
   dueDate?: string;
   resolvedAt?: string;
@@ -77,6 +118,7 @@ export interface TicketDto extends FullAuditedEntityDto<number> {
   targetResolutionTime?: string;
   isOverdue: boolean;
   creatorName?: string;
+  parentTicketId?: number;
 }
 
 export interface TicketTimelineDto {
@@ -88,6 +130,7 @@ export interface TicketTimelineDto {
   creationTime?: string;
   creatorId?: string;
   creatorName?: string;
+  creatorAvatar?: string;
   replies: TicketTimelineDto[];
 }
 

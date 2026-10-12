@@ -1,274 +1,261 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, HostListener, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormGroup, FormBuilder, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgxDatatableModule } from '@swimlane/ngx-datatable';
+import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
 import {
-  ListService,
-  PagedResultDto,
-  LocalizationPipe,
-  LocalizationService,
-  PermissionDirective,
-  AutofocusDirective
+  ListService, PagedResultDto, LocalizationService, RestService, LocalizationPipe, ConfigStateService
 } from '@abp/ng.core';
-import {
-  ConfirmationService,
-  Confirmation,
-  NgxDatatableDefaultDirective,
-  NgxDatatableListDirective,
-  ModalCloseDirective,
-  ModalComponent,
-  ToasterService
-} from '@abp/ng.theme.shared';
-
+import { ConfirmationService, Confirmation, ToasterService, ThemeSharedModule } from '@abp/ng.theme.shared';
 import { CategoryDto, CategoryService } from '../proxy/categories';
 import { AdminBaseComponent } from '../shared/base/admin-base.component';
+import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-category',
   templateUrl: './category.component.html',
   styleUrls: ['./category.component.scss'],
   standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    ReactiveFormsModule,
-    NgxDatatableModule,
-    NgbDropdownModule,
-    ModalComponent,
-    AutofocusDirective,
-    NgxDatatableListDirective,
-    NgxDatatableDefaultDirective,
-    PermissionDirective,
-    ModalCloseDirective,
-    LocalizationPipe
-  ],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, NgxDatatableModule, NgbDropdownModule, LocalizationPipe, ThemeSharedModule],
   providers: [ListService],
 })
-export class CategoryComponent extends AdminBaseComponent implements OnInit {
+export class CategoryComponent extends AdminBaseComponent implements OnInit, OnDestroy {
   private categoryService = inject(CategoryService);
+  private restService = inject(RestService);
   private fb = inject(FormBuilder);
   private confirmation = inject(ConfirmationService);
   private toaster = inject(ToasterService);
-  private localizationService = inject(LocalizationService);
-
-  protected storageKey = 'category_search_history';
-
+  public localizationService = inject(LocalizationService);
+  private config = inject(ConfigStateService);
+  
+  protected override storageKey = 'category_search_history';
   category = { items: [], totalCount: 0 } as PagedResultDto<CategoryDto>;
   selectedCategory = {} as CategoryDto;
   form!: FormGroup;
   isModalOpen = false;
   isSubmitting = false;
-
-  searchFilter = '';
-  showSearchSuggestions = false;
-  recentSearches: string[] = [];
-
-  parentCategories: CategoryDto[] = [];
-  teams: { id: string; name: string }[] = [
-    { id: 'team-1', name: 'IT Support L1' },
-    { id: 'team-2', name: 'Infrastructure Team' },
-    { id: 'team-3', name: 'Software Development' }
-  ];
-
-  // --- BIẾN PHỤC VỤ NGHIỆP VỤ RÀNG BUỘC & RE-MAPPING ---
+  isLoading = false;
+  isEditing = false;
+  override searchFilter = '';
+  selectedStatus: boolean | null = null;
+  parentCategories: any[] = [];
+  showStatusDropdown = false;
+  
+  teams: { id: number; name: string; icon: string; color: string }[] = [];
   isReassignModalOpen = false;
   categoryToDelete: any = null;
   targetReplacementCategoryId: number | null = null;
-  availableReplacementCategories: CategoryDto[] = [];
+  availableReplacementCategories: any[] = [];
+  skipCount = 0;
+  maxResultCount = 10;
 
-  ngOnInit(): void {
+  @HostListener('document:click', ['$event'])
+  override onDocumentClick(event: MouseEvent): void {
+    super.onDocumentClick(event);
+    const target = event.target as Element;
+    if (!target.closest('.status-dropdown-wrapper')) {
+      this.showStatusDropdown = false;
+    }
+  }
+
+  override ngOnInit(): void {
     super.ngOnInit();
-    this.loadSearchHistory();
-    this.toaster.info(this.localizationService.instant('ItHelpdesk::CategorySpaceLoaded'));
+    this.loadInitialDictionaries();
+  }
 
-    const categoryStreamCreator = (query: any) =>
-      this.categoryService.getList({ ...query, filter: this.searchFilter });
+  loadInitialDictionaries(): void {
+    this.isLoading = true;
+    forkJoin({
+      teamsRes: this.restService.request<any, any>({ method: 'GET', url: '/api/app/team', params: { maxResultCount: 1000 } }),
+      catsRes: this.categoryService.getList({ maxResultCount: 1000 } as any)
+    }).subscribe({
+      next: ({ teamsRes, catsRes }) => {
+        const icons = ['fa-headset', 'fa-network-wired', 'fa-server', 'fa-shield-alt', 'fa-code', 'fa-users', 'fa-database', 'fa-laptop-code'];
+        const colors = ['text-info', 'text-success', 'text-warning', 'text-danger', 'text-purple', 'text-primary', 'text-pink', 'text-teal'];
+        
+        const lang = this.config.getDeep('localization.currentCulture.cultureName') || 'vi';
+        const isEn = lang.toLowerCase().includes('en');
+        
+        this.teams = (teamsRes?.items || []).map((t: any, index: number) => ({
+          id: t.id,
+          name: isEn ? (t.name_En || t.name_Vi || t.name) : (t.name_Vi || t.name_En || t.name), 
+          icon: icons[index % icons.length],
+          color: colors[index % colors.length]
+        }));
+
+        this.parentCategories = (catsRes?.items || []).map((c: any) => ({
+          ...c,
+          displayName: isEn ? (c.name_En || c.name_Vi || c.name) : (c.name_Vi || c.name_En || c.name)
+        }));
+        
+        this.initCategoryStream();
+      },
+      error: () => this.initCategoryStream()
+    });
+  }
+
+  override ngOnDestroy(): void { super.ngOnDestroy(); }
+
+  initCategoryStream(): void {
+    const categoryStreamCreator = (query: any) => {
+      this.isLoading = true;
+      return this.categoryService.getList({ ...query, filter: this.searchFilter, isActive: this.selectedStatus });
+    };
 
     this.list.hookToQuery(categoryStreamCreator).subscribe((response: PagedResultDto<CategoryDto>) => {
-      this.category = response;
-      this.parentCategories = response.items || [];
-    });
-  }
-
-  loadSearchHistory(): void {
-    const saved = localStorage.getItem(this.storageKey);
-    if (saved) {
-      try { this.recentSearches = JSON.parse(saved); } catch (e) { this.recentSearches = []; }
-    }
-  }
-
-  saveSearchHistory(keyword: string): void {
-    if (!keyword.trim()) return;
-    const index = this.recentSearches.indexOf(keyword);
-    if (index > -1) this.recentSearches.splice(index, 1);
-    this.recentSearches.unshift(keyword);
-    if (this.recentSearches.length > 5) this.recentSearches.pop();
-    localStorage.setItem(this.storageKey, JSON.stringify(this.recentSearches));
-  }
-
-  onSearchInput(): void {}
-
-performSearch(): void {
-    if (this.searchFilter) {
-      this.saveSearchHistory(this.searchFilter.trim());
-      this.toaster.success(this.localizationService.instant('ItHelpdesk::SearchFilteredSuccess', this.searchFilter || ''));
-    }
-    this.showSearchSuggestions = false;
-    this.list.page = 0; 
-    this.list.get();
-  }
-
-  clearSearch(): void {
-    this.searchFilter = '';
-    this.list.page = 0;
-    this.list.get();
-    this.toaster.info(this.localizationService.instant('ItHelpdesk::SearchCleared'));
-  }
-
-  selectSearchSuggestion(item: string): void {
-    this.searchFilter = item;
-    this.performSearch();
-  }
-
-  removeSearchHistoryItem(item: string, event: Event): void {
-    event.stopPropagation();
-    this.recentSearches = this.recentSearches.filter(s => s !== item);
-    localStorage.setItem(this.storageKey, JSON.stringify(this.recentSearches));
-    this.toaster.success(this.localizationService.instant('ItHelpdesk::HistoryItemRemoved'));
-  }
-
-  clearAllSearchHistory(event: Event): void {
-    event.stopPropagation();
-    this.recentSearches = [];
-    localStorage.removeItem(this.storageKey);
-    this.toaster.success(this.localizationService.instant('ItHelpdesk::HistoryClearedAll'));
-  }
-
-  createCategory(): void {
-    this.selectedCategory = {} as CategoryDto;
-    this.buildForm();
-    this.isSubmitting = false;
-    this.isModalOpen = true;
-    this.toaster.info(this.localizationService.instant('ItHelpdesk::OpeningCreateCategoryModal'));
-  }
-
-  editCategory(id: number | string): void {
-    this.categoryService.get(Number(id)).subscribe((category: CategoryDto) => {
-      this.selectedCategory = category;
-      this.buildForm();
-      this.isSubmitting = false;
-      this.isModalOpen = true;
-      this.toaster.info(this.localizationService.instant('ItHelpdesk::EditingCategory', category.name || ''));
-    });
-  }
-
-  // --- NGHIỆP VỤ RÀNG BUỘC AN TOÀN KHI XÓA / VÔ HIỆU HÓA ---
-  delete(id: number | string, name: string): void {
-    const hasActiveTicketsLinked = false; // Thay thế bằng API check thực tế từ backend nếu có
-
-    if (hasActiveTicketsLinked) {
-      this.categoryToDelete = { id, name };
-      this.availableReplacementCategories = this.categoryCategoriesExcluding(Number(id));
-      this.isReassignModalOpen = true;
-      this.toaster.warn(this.localizationService.instant('ItHelpdesk::CategoryHasLinkedTicketsWarning', name));
-      return;
-    }
-
-    const confirmMsg = this.localizationService.instant('::CategoryDeleteConfirmMessage', name);
-    const confirmTitle = this.localizationService.instant('::AreYouSure');
-
-    this.confirmation.warn(confirmMsg, confirmTitle).subscribe((status: Confirmation.Status) => {
-      if (status === Confirmation.Status.confirm) {
-        this.categoryService.delete(Number(id)).subscribe({
-          next: () => {
-            this.list.get();
-            this.toaster.success(this.localizationService.instant('::CategoryDeleteSuccess'));
-          },
-          error: (err) => {
-            console.error('Lỗi khi xóa danh mục:', err);
-            this.toaster.error(this.localizationService.instant('::CategoryDeleteError'));
-          }
-        });
-      }
-    });
-  }
-
-  categoryCategoriesExcluding(excludeId: number): CategoryDto[] {
-    return (this.category.items || []).filter((c: any) => c.id !== excludeId && c.isActive);
-  }
-
-  confirmReassignAndDelete(): void {
-    if (!this.targetReplacementCategoryId) {
-      this.toaster.error(this.localizationService.instant('ItHelpdesk::SelectReplacementCategoryRequired'));
-      return;
-    }
-
-    this.isSubmitting = true;
-    setTimeout(() => {
-      this.categoryService.delete(Number(this.categoryToDelete.id)).subscribe({
-        next: () => {
-          this.isReassignModalOpen = false;
-          this.isSubmitting = false;
-          this.list.get();
-          this.toaster.success(this.localizationService.instant('ItHelpdesk::CategoryReassignAndDeleteSuccess'));
-        },
-        error: () => {
-          this.isSubmitting = false;
-          this.toaster.error(this.localizationService.instant('ItHelpdesk::CategoryReassignAndDeleteError'));
+      const lang = this.config.getDeep('localization.currentCulture.cultureName') || 'vi';
+      const isEn = lang.toLowerCase().includes('en');
+      const unnamedText = this.localizationService.instant('ItHelpdesk::Unnamed');
+      
+      const mappedItems = (response.items || []).map((item: any) => {
+        const localizedName = isEn ? (item.name_En || item.name_Vi) : (item.name_Vi || item.name_En);
+        const dName = localizedName ? localizedName : (item.name || `[${unnamedText}]`);
+        
+        let pName = '---'; 
+        if (item.parentId) {
+          const parentObj = this.parentCategories.find(x => x.id === item.parentId);
+          if (parentObj) pName = parentObj.displayName;
         }
+        
+        let teamInfo = this.teams.find(x => x.id === Number(item.defaultTeamId));
+        
+        return {
+          ...item,
+          displayName: dName, 
+          displayParentName: pName,
+          displayTeamName: teamInfo ? teamInfo.name : (item.defaultTeamName || '---'),
+          teamIcon: teamInfo ? teamInfo.icon : 'fa-users',
+          teamColor: teamInfo ? teamInfo.color : 'text-slate-400'
+        };
       });
-    }, 600);
+
+      this.category = { ...response, items: mappedItems } as any;
+      this.isLoading = false;
+    });
   }
 
+  onPageChange(event: any): void { this.skipCount = event.offset * this.maxResultCount; this.list.page = event.offset; this.list.get(); }
+  triggerDataLoad(): void { this.skipCount = 0; this.list.page = 0; this.list.get(); }
+  refreshList(): void { 
+    this.isLoading = true;
+    this.categoryService.getList({ maxResultCount: 1000 } as any).subscribe(res => {
+        const lang = this.config.getDeep('localization.currentCulture.cultureName') || 'vi';
+        const isEn = lang.toLowerCase().includes('en');
+        this.parentCategories = (res?.items || []).map((c: any) => ({
+            ...c, displayName: isEn ? (c.name_En || c.name_Vi || c.name) : (c.name_Vi || c.name_En || c.name)
+        }));
+        this.triggerDataLoad();
+    });
+  }
+  override performSearch(keyword?: string): void { if (keyword !== undefined) this.searchFilter = keyword; super.performSearch(); this.triggerDataLoad(); }
+  override clearSearch(): void { if (!this.searchFilter && this.selectedStatus === null) return; this.selectedStatus = null; super.clearSearch(); this.triggerDataLoad(); }
+  
+  toggleStatusDropdown(event: MouseEvent): void { event.stopPropagation(); this.showStatusDropdown = !this.showStatusDropdown; this.showSearchSuggestions = false; }
+  selectStatusFilter(status: boolean | null): void { this.selectedStatus = status; this.showStatusDropdown = false; this.triggerDataLoad(); }
+  getStatusName(status: boolean | null): string { return status === null ? this.localizationService.instant('ItHelpdesk::AllStatuses') : (status ? this.localizationService.instant('ItHelpdesk::Active') : this.localizationService.instant('ItHelpdesk::Inactive')); }
+  
   buildForm(): void {
     this.form = this.fb.group({
       code: [this.selectedCategory.code || '', [Validators.required, Validators.maxLength(50)]],
-      name: [this.selectedCategory.name || '', [Validators.required, Validators.maxLength(255)]],
+      name_Vi: [(this.selectedCategory as any).name_Vi || '', [Validators.required, Validators.maxLength(255)]],
+      name_En: [(this.selectedCategory as any).name_En || '', [Validators.maxLength(255)]],
       isActive: [this.selectedCategory.isActive ?? true],
       parentId: [this.selectedCategory.parentId || null],
       defaultTeamId: [this.selectedCategory.defaultTeamId || null],
     });
   }
 
+  openCreateModal(): void { this.isEditing = false; this.selectedCategory = {} as CategoryDto; this.buildForm(); this.isSubmitting = false; this.isModalOpen = true; }
+  
+  editCategory(id: number | string): void {
+    this.isEditing = true; this.isLoading = true;
+    this.categoryService.get(Number(id)).subscribe({
+      next: (category: CategoryDto) => { this.selectedCategory = category; this.buildForm(); this.isSubmitting = false; this.isLoading = false; this.isModalOpen = true; },
+      error: () => this.isLoading = false
+    });
+  }
+
+  closeModal(): void { this.isModalOpen = false; }
+
   save(): void {
     const codeVal = this.form.get('code')?.value?.trim() || '';
-    const nameVal = this.form.get('name')?.value?.trim() || '';
-
-    if (this.form.invalid || !codeVal || !nameVal || this.isSubmitting) {
+    const nameViVal = this.form.get('name_Vi')?.value?.trim() || '';
+    if (this.form.invalid || !codeVal || !nameViVal || this.isSubmitting) {
       this.form.markAllAsTouched();
-      this.toaster.error(this.localizationService.instant('::FormValidationRequired'));
+      this.toaster.error(this.localizationService.instant('ItHelpdesk::FormValidationRequired'));
       return;
     }
-
     this.isSubmitting = true;
-
     const formValues = this.form.value;
     const requestData = {
-      ...formValues,
-      code: codeVal,
-      name: nameVal,
+      ...formValues, code: codeVal, name_Vi: nameViVal, name: nameViVal,
       parentId: formValues.parentId ? formValues.parentId : null,
       defaultTeamId: formValues.defaultTeamId ? formValues.defaultTeamId : null
     };
-
-    const request = this.selectedCategory.id
-      ? this.categoryService.update(Number(this.selectedCategory.id), requestData)
-      : this.categoryService.create(requestData);
-
+    
+    const request = this.selectedCategory.id ? this.categoryService.update(Number(this.selectedCategory.id), requestData) : this.categoryService.create(requestData);
     request.subscribe({
-      next: () => {
-        this.isModalOpen = false;
-        this.form.reset();
-        this.isSubmitting = false;
-        this.list.get();
-        this.toaster.success(this.localizationService.instant('::CategorySaveSuccess'));
+      next: () => { 
+          this.isModalOpen = false; this.form.reset(); this.isSubmitting = false; 
+          this.toaster.success(this.localizationService.instant('ItHelpdesk::CategorySaveSuccess'));
+          this.refreshList(); 
       },
-      error: (err) => {
-        console.error('Lỗi lưu danh mục:', err);
-        this.toaster.error(this.localizationService.instant('::CategorySaveError'));
-        this.isSubmitting = false;
+      error: (err: any) => { this.toaster.error(err.error?.message || this.localizationService.instant('ItHelpdesk::CategorySaveError')); this.isSubmitting = false; }
+    });
+  }
+
+  toggleStatus(row: any): void {
+    const updatedStatus = !row.isActive;
+    this.confirmation.warn(this.localizationService.instant('ItHelpdesk::ConfirmChangeStatusMessage', row.displayName), this.localizationService.instant('ItHelpdesk::ConfirmAction')).subscribe((status: Confirmation.Status) => {
+      if (status === Confirmation.Status.confirm) {
+        const requestData = {
+          code: row.code, name_Vi: row.name_Vi || row.name, name_En: row.name_En,
+          isActive: updatedStatus, parentId: row.parentId, defaultTeamId: row.defaultTeamId
+        };
+        this.categoryService.update(Number(row.id), requestData).subscribe({
+          next: () => { row.isActive = updatedStatus; this.list.get(); this.toaster.success(this.localizationService.instant('ItHelpdesk::StatusUpdateSuccess')); },
+          error: (err: any) => this.toaster.error(err.error?.message || this.localizationService.instant('ItHelpdesk::Error:Generic'))
+        });
       }
+    });
+  }
+
+  delete(id: number | string, name: string): void {
+    this.confirmation.warn(this.localizationService.instant('ItHelpdesk::CategoryDeleteConfirmMessage', name), this.localizationService.instant('ItHelpdesk::ConfirmAction')).subscribe((status: Confirmation.Status) => {
+      if (status === Confirmation.Status.confirm) {
+        this.categoryService.delete(Number(id)).subscribe({
+          next: () => { 
+              this.toaster.success(this.localizationService.instant('ItHelpdesk::CategoryDeleteSuccess')); 
+              this.refreshList(); 
+          },
+          error: (err: any) => {
+            if (err.error && err.error.code === 'CategoryHasConstraints') {
+              this.categoryToDelete = { id, name };
+              this.availableReplacementCategories = this.parentCategories.filter((c: any) => c.id !== Number(id) && c.isActive);
+              this.targetReplacementCategoryId = null;
+              this.isReassignModalOpen = true;
+            } else {
+              this.toaster.error(err.error?.message || this.localizationService.instant('ItHelpdesk::CategoryDeleteError'));
+            }
+          }
+        });
+      }
+    });
+  }
+
+  confirmReassignAndDelete(): void {
+    if (!this.targetReplacementCategoryId) { this.toaster.error(this.localizationService.instant('ItHelpdesk::SelectReplacementCategoryRequired')); return; }
+    this.isSubmitting = true;
+    this.restService.request<void, void>({
+      method: 'DELETE', url: `/api/app/category/${this.categoryToDelete.id}/reassign-and-delete`,
+      params: { replacementId: this.targetReplacementCategoryId }
+    }).subscribe({
+      next: () => { 
+          this.isReassignModalOpen = false; this.isSubmitting = false; 
+          this.toaster.success(this.localizationService.instant('ItHelpdesk::CategoryReassignAndDeleteSuccess')); 
+          this.refreshList();
+      },
+      error: (err: any) => { this.isSubmitting = false; this.toaster.error(err.error?.message || this.localizationService.instant('ItHelpdesk::CategoryReassignAndDeleteError')); }
     });
   }
 }

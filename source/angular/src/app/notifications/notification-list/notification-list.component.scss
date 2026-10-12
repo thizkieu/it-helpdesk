@@ -1,67 +1,183 @@
-.notification-page-wrapper {
-    background: radial-gradient(circle at 50% 10%, #1e1b4b 0%, #0c0f1d 100%) !important;
-    min-height: calc(100vh - 60px);
+/* =========================================================================
+   NOTIFICATION HUB (DARK GLASSMORPHISM) - ĐỘ TƯƠNG PHẢN CAO
+   ========================================================================= */
+:host {
+    display: block; width: 100%; min-height: 100vh;
+    background-color: #0f172a !important; 
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+.notification-timeline-wrapper { background-color: transparent; }
+.tracking-wide { letter-spacing: 0.05em; }
+.text-slate-200 { color: #e2e8f0 !important; }
+.text-slate-300 { color: #cbd5e1 !important; }
+.text-slate-400 { color: #94a3b8 !important; }
+.text-slate-500 { color: #64748b !important; }
+.bg-zinc-900 { background-color: #18181b !important; }
 
-    .premium-glass-card {
-        background: rgba(23, 28, 48, 0.85) !important;
-        backdrop-filter: blur(20px) !important;
-        -webkit-backdrop-filter: blur(20px) !important;
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        border-radius: 24px !important;
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6) !important;
+/* =========================================================================
+   HEADER PANEL CHỐNG MÓP MÉO
+   ========================================================================= */
+.hub-header-card {
+    background: #171c2b; 
+    border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px; padding: 24px !important;
+}
+
+/* KHÓA CỨNG KÍCH THƯỚC ICON ĐỂ KHÔNG BỊ HÌNH BẦU DỤC */
+.radar-icon-box {
+    width: 48px; height: 48px; 
+    min-width: 48px; min-height: 48px; /* Khóa kích thước nhỏ nhất */
+    flex-shrink: 0; /* Tuyệt đối không cho phép thu nhỏ */
+    border-radius: 50%;
+    background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.2);
+    display: flex; align-items: center; justify-content: center; i { font-size: 1.4rem; color: #38bdf8; }
+}
+
+.cyber-toggle-wrapper {
+    background: #1e2436; border: 1px solid rgba(255, 255, 255, 0.03); border-radius: 50px; padding: 6px; gap: 4px;
+}
+.cyber-toggle-btn {
+    background: transparent; border: none; color: #94a3b8; font-weight: 600; font-size: 0.9rem;
+    padding: 8px 24px; border-radius: 50px; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; outline: none; white-space: nowrap;
+    .badge-count { font-size: 0.7rem; font-weight: 700; padding: 2px 6px; border-radius: 50px; }
+    .badge-red { background: #e11d48; color: #fff; }
+    .badge-purple { background: #8b5cf6; color: #fff; }
+    &.active {
+        background: linear-gradient(135deg, #38bdf8 0%, #3b82f6 100%); color: #ffffff; box-shadow: 0 4px 15px rgba(56, 189, 248, 0.4);
+        .badge-purple { background: rgba(255,255,255,0.25); color: #fff; }
     }
+    &:not(.active):hover { color: #fff; background: rgba(255,255,255,0.05); }
+}
 
-    .list-group-item {
-        background: transparent !important;
-        transition: background 0.2s ease;
+.cyber-action-btn {
+    background: #1e2436; border: 1px solid rgba(255,255,255,0.05); color: #94a3b8;
+    border-radius: 50px; padding: 8px 20px; font-size: 0.9rem; font-weight: 600;
+    transition: all 0.3s ease; display: inline-flex; align-items: center; justify-content: center; outline: none; height: 42px;
+    
+    &.btn-read-all:hover:not(:disabled) {
+        background: rgba(56, 189, 248, 0.15); color: #38bdf8; border-color: rgba(56, 189, 248, 0.4); box-shadow: 0 0 15px rgba(56, 189, 248, 0.3); transform: translateY(-2px);
+    }
+    &.btn-clear-all {
+        color: rgba(244, 63, 94, 0.8); 
+        &:hover:not(:disabled) {
+            background: linear-gradient(135deg, #ef4444 0%, #f43f5e 100%); color: #fff; border-color: #f43f5e; box-shadow: 0 0 20px rgba(244, 63, 94, 0.5); transform: translateY(-2px) scale(1.05);
+        }
+    }
+    &:disabled { opacity: 0.35; cursor: not-allowed; }
+}
 
-        &:hover {
-            background: rgba(255, 255, 255, 0.03) !important;
+/* =========================================================================
+   HỘP THƯ TRỐNG BÍ ẨN
+   ========================================================================= */
+.empty-state-icon {
+    width: 100px; height: 100px; border-radius: 50%; 
+    background: rgba(99, 102, 241, 0.1); border: 2px dashed rgba(99, 102, 241, 0.3); 
+    color: #818cf8; display: flex; align-items: center; justify-content: center; font-size: 3.5rem;
+    box-shadow: inset 0 0 25px rgba(99, 102, 241, 0.15); transition: all 0.5s ease;
+    &:hover { transform: scale(1.05) rotate(5deg); box-shadow: inset 0 0 30px rgba(99, 102, 241, 0.3), 0 0 20px rgba(99, 102, 241, 0.2); border-color: #818cf8; }
+}
+
+/* =========================================================================
+   TIMELINE TRACK
+   ========================================================================= */
+.timeline-container { padding: 10px 0; }
+.timeline-track {
+    position: relative;
+    &::before {
+        content: ''; position: absolute; top: 0; bottom: 0; left: 28px; width: 2px;
+        background: rgba(255, 255, 255, 0.12); border-radius: 2px; z-index: 1;
+    }
+}
+.timeline-date-header {
+    position: relative; z-index: 2; margin: 1.75rem 0 1.25rem 0;
+    .date-badge { background: #0f172a; color: #e2e8f0; padding: 6px 20px; border-radius: 20px; font-size: 0.85rem; font-weight: 700; border: 1px solid rgba(56, 189, 248, 0.3); }
+}
+
+/* =========================================================================
+   THẺ THÔNG BÁO VÀ CHỮ TRẮNG (GLOW & NORMAL)
+   ========================================================================= */
+.notif-card {
+    background-color: #1e293b; 
+    border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.05); border-left: 4px solid transparent; 
+    margin-bottom: 1rem; position: relative; transition: all 0.3s ease;
+
+    &.theme-danger { border-left-color: #ef4444; }
+    &.theme-warning { border-left-color: #f59e0b; }
+    &.theme-info { border-left-color: #38bdf8; }
+    &.theme-success { border-left-color: #10b981; }
+    &.theme-primary { border-left-color: #8b5cf6; }
+
+    &.is-unread {
+        background-color: rgba(30, 41, 59, 0.95);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        
+        .badge-new { background-color: #e11d48; color: #fff; padding: 4px 10px; font-size: 0.7rem; }
+        .title-text { 
+            color: #ffffff; font-weight: 700; font-size: 1.15rem; 
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.8), 0 0 20px rgba(255, 255, 255, 0.4);
         }
     }
 
-    .cute-outline-btn {
-        color: #c084fc !important;
-        border: 1px solid rgba(192, 132, 252, 0.4) !important;
-        background: rgba(192, 132, 252, 0.05) !important;
-        transition: all 0.2s ease;
+    &.is-read {
+        background-color: rgba(15, 23, 42, 0.6); 
+        border-left-color: rgba(255, 255, 255, 0.1) !important; 
+        
+        .title-text { color: #ffffff !important; font-weight: 600; font-size: 1.15rem; text-shadow: none; }
+    }
 
+    .desc-text { color: #cbd5e1 !important; line-height: 1.6; font-size: 0.95rem; }
+
+    &.is-clickable {
+        cursor: pointer;
         &:hover {
-            background: linear-gradient(135deg, #c084fc 0%, #ec4899 100%) !important;
-            border-color: transparent !important;
-            color: white !important;
-            box-shadow: 0 4px 12px rgba(236, 72, 153, 0.3) !important;
+            transform: translateY(-2px); background-color: rgba(30, 41, 59, 0.8) !important;
+            border-color: rgba(255, 255, 255, 0.15) !important; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
         }
     }
+}
 
-    .premium-btn-submit {
-        background: linear-gradient(135deg, #c084fc 0%, #ec4899 100%) !important;
-        border: none !important;
-        color: white !important;
-        box-shadow: 0 4px 15px rgba(236, 72, 153, 0.3) !important;
-        transition: all 0.3s ease;
+/* =========================================================================
+   MENU 3 CHẤM
+   ========================================================================= */
+.menu-anchor { z-index: 100; }
+.btn-icon-dark {
+    background: #334155; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;
+    border-radius: 50%; color: #cbd5e1; transition: all 0.2s ease; cursor: pointer;
+    &:hover { background: #475569; color: #ffffff; }
+}
 
-        &:hover {
-            filter: brightness(1.1);
-            transform: translateY(-1px);
-        }
+.custom-dropdown-menu {
+    position: absolute; top: calc(100% + 4px); right: 0; 
+    background-color: #1e293b; 
+    border: 1px solid rgba(255, 255, 255, 0.08); 
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+    border-radius: 12px; padding: 8px; min-width: 240px; z-index: 1050;
+    
+    button.dropdown-item {
+        border-radius: 8px; padding: 10px 16px; font-size: 0.9rem; font-weight: 500; transition: all 0.2s ease;
+        background: transparent; border: none; width: 100%; text-align: left; color: #f1f5f9; display: flex; align-items: center; cursor: pointer;
+        
+        &:hover:not(:disabled) { background-color: rgba(255, 255, 255, 0.05); color: #ffffff; }
+        &.text-danger:hover:not(:disabled) { background-color: rgba(239, 68, 68, 0.1); color: #fca5a5 !important; }
+        
+        &:disabled { opacity: 0.5; cursor: not-allowed; background: transparent !important; color: #64748b !important; }
     }
+    .dropdown-divider-custom { height: 1px; margin: 6px 0; background-color: rgba(255, 255, 255, 0.08); }
+}
 
-    @keyframes bounceCat {
-        0%, 100% { transform: translateY(0); }
-        50% { transform: translateY(-4px); }
-    }
+.animate-fade-in { animation: dropIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+@keyframes dropIn { from { opacity: 0; transform: translateY(-8px) scale(0.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
 
-    .bounce-icon {
-        display: inline-block;
-        animation: bounceCat 2s infinite ease-in-out;
-    }
+/* =========================================================================
+   MODAL XEM NHANH
+   ========================================================================= */
+.custom-modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+    background: rgba(9, 9, 11, 0.85); backdrop-filter: blur(8px); z-index: 1060; display: flex; justify-content: center; align-items: center;
+    .custom-modal-dialog { width: 100%; max-width: 650px; animation: modalFadeIn 0.3s ease-out forwards; }
+}
+.glass-modal { border: 1px solid rgba(255,255,255,0.15) !important; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8); }
 
-    .text-pink {
-        color: #f472b6 !important;
-    }
-
-    .text-purple-accent {
-        color: #c084fc !important;
-    }
+@media (max-width: 768px) {
+    .hub-header-card { padding: 1.25rem !important; flex-direction: column; align-items: stretch !important; gap: 1.25rem; }
+    .cyber-toggle-wrapper { width: 100%; justify-content: space-between; .cyber-toggle-btn { flex: 1; justify-content: center; } }
 }

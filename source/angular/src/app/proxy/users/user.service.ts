@@ -15,7 +15,7 @@ export class UserService {
     this.restService.request<any, PagedResultDto<UserDto>>({
       method: 'GET',
       url: '/api/app/user',
-      params: { filter: input.filter, role: input.role, sorting: input.sorting, skipCount: input.skipCount, maxResultCount: input.maxResultCount },
+      params: { filter: input.filter, role: input.role, isActive: input.isActive, sorting: input.sorting, skipCount: input.skipCount, maxResultCount: input.maxResultCount },
     },
     { apiName: this.apiName,...config });
 }

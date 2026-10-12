@@ -3,6 +3,8 @@ import type { FullAuditedEntityDto, PagedAndSortedResultRequestDto } from '@abp/
 export interface CategoryDto extends FullAuditedEntityDto<number> {
   code?: string;
   name?: string;
+  name_Vi?: string;
+  name_En?: string;
   parentId?: number;
   isActive: boolean;
   defaultTeamId?: number;
@@ -10,7 +12,8 @@ export interface CategoryDto extends FullAuditedEntityDto<number> {
 
 export interface CreateUpdateCategoryDto {
   code: string;
-  name: string;
+  name_Vi: string;
+  name_En?: string;
   parentId?: number;
   isActive: boolean;
   defaultTeamId?: number;
@@ -18,4 +21,5 @@ export interface CreateUpdateCategoryDto {
 
 export interface GetCategoryListInput extends PagedAndSortedResultRequestDto {
   filter?: string;
+  isActive?: boolean;
 }

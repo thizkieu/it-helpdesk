@@ -5,5 +5,6 @@ namespace ItHelpdesk.Categories
     public class GetCategoryListInput : PagedAndSortedResultRequestDto
     {
         public string? Filter { get; set; }
+        public bool? IsActive { get; set; } 
     }
 }

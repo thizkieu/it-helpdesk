@@ -1,10 +1,14 @@
-﻿using Volo.Abp.Application.Dtos;
+﻿using System;
+using Volo.Abp.Application.Dtos;
 
 namespace ItHelpdesk.Users
 {
     public class GetUsersInput : PagedAndSortedResultRequestDto
     {
         public string? Filter { get; set; }
+
         public string? Role { get; set; }
+
+        public bool? IsActive { get; set; }
     }
 }

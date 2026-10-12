@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Localization;
-using ItHelpdesk.Localization;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.Ui.Branding;
+using ItHelpdesk.Localization;
 
 namespace ItHelpdesk;
 

@@ -10,6 +10,22 @@ export class NotificationService {
   apiName = 'Default';
   
 
+  delete = (id: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'DELETE',
+      url: `/api/app/notification/${id}`,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  deleteAllMyNotifications = (config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'DELETE',
+      url: '/api/app/notification/all-my-notifications',
+    },
+    { apiName: this.apiName,...config });
+  
+
   getMyNotifications = (config?: Partial<Rest.Config>) =>
     this.restService.request<any, AppNotificationDto[]>({
       method: 'GET',
@@ -51,146 +67,29 @@ export class NotificationService {
     { apiName: this.apiName,...config });
   
 
-  notifyCategoryChanged = (adminId: string, action: string, categoryName: string, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, void>({
-      method: 'POST',
-      url: `/api/app/notification/notify-category-changed/${adminId}`,
-      params: { action, categoryName },
-    },
-    { apiName: this.apiName,...config });
-  
-
-  notifyCategoryMappingAlert = (adminId: string, deletedCategory: string, affectedTickets: number, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, void>({
-      method: 'POST',
-      url: `/api/app/notification/notify-category-mapping-alert/${adminId}`,
-      params: { deletedCategory, affectedTickets },
-    },
-    { apiName: this.apiName,...config });
-  
-
-  notifyFailedLoginAttempts = (violatorId: string, email: string, attemptCount: number, ipAddress?: string, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, void>({
-      method: 'POST',
-      url: `/api/app/notification/notify-failed-login-attempts/${violatorId}`,
-      params: { email, attemptCount, ipAddress },
-    },
-    { apiName: this.apiName,...config });
-  
-
-  notifyKbArticlePublished = (articleTitle: string, category: string, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, void>({
-      method: 'POST',
-      url: '/api/app/notification/notify-kb-article-published',
-      params: { articleTitle, category },
-    },
-    { apiName: this.apiName,...config });
-  
-
-  notifyMassDataExport = (adminId: string, userId: string, userName: string, moduleName: string, recordCount: number, ipAddress?: string, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, void>({
-      method: 'POST',
-      url: '/api/app/notification/notify-mass-data-export',
-      params: { adminId, userId, userName, moduleName, recordCount, ipAddress },
-    },
-    { apiName: this.apiName,...config });
-  
-
-  notifyMemberAddedToTeam = (memberId: string, teamName: string, assignerName: string, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, void>({
-      method: 'POST',
-      url: `/api/app/notification/notify-member-added-to-team/${memberId}`,
-      params: { teamName, assignerName },
-    },
-    { apiName: this.apiName,...config });
-  
-
-  notifyMemberRemovedFromTeam = (memberId: string, teamName: string, removerName: string, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, void>({
-      method: 'POST',
-      url: `/api/app/notification/notify-member-removed-from-team/${memberId}`,
-      params: { teamName, removerName },
-    },
-    { apiName: this.apiName,...config });
-  
-
-  notifyNewComment = (targetUserId: string, ticketNo: string, commenterName: string, config?: Partial<Rest.Config>) =>
+  notifyNewComment = (targetUserId: string, ticketNo: string, commenterName: string, isInternal: boolean, config?: Partial<Rest.Config>) =>
     this.restService.request<any, void>({
       method: 'POST',
       url: `/api/app/notification/notify-new-comment/${targetUserId}`,
-      params: { ticketNo, commenterName },
+      params: { ticketNo, commenterName, isInternal },
     },
     { apiName: this.apiName,...config });
   
 
-  notifyNewTicketCreated = (managerId: string, ticketNo: string, creatorName: string, config?: Partial<Rest.Config>) =>
+  notifyNewTicketCreated = (ticketNo: string, creatorName: string, serviceName: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, void>({
       method: 'POST',
-      url: `/api/app/notification/notify-new-ticket-created/${managerId}`,
-      params: { ticketNo, creatorName },
+      url: '/api/app/notification/notify-new-ticket-created',
+      params: { ticketNo, creatorName, serviceName },
     },
     { apiName: this.apiName,...config });
   
 
-  notifyPriorityChanged = (adminId: string, action: string, priorityName: string, config?: Partial<Rest.Config>) =>
+  notifySlaOverdue = (assigneeId: string, ticketNo: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, void>({
       method: 'POST',
-      url: `/api/app/notification/notify-priority-changed/${adminId}`,
-      params: { action, priorityName },
-    },
-    { apiName: this.apiName,...config });
-  
-
-  notifyPrioritySlaChanged = (teamManagerId: string, priorityName: string, newResponseMinutes: number, newResolutionMinutes: number, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, void>({
-      method: 'POST',
-      url: `/api/app/notification/notify-priority-sla-changed/${teamManagerId}`,
-      params: { priorityName, newResponseMinutes, newResolutionMinutes },
-    },
-    { apiName: this.apiName,...config });
-  
-
-  notifyPrivilegeEscalationAttempt = (adminId: string, userId: string, userName: string, action: string, ipAddress?: string, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, void>({
-      method: 'POST',
-      url: '/api/app/notification/notify-privilege-escalation-attempt',
-      params: { adminId, userId, userName, action, ipAddress },
-    },
-    { apiName: this.apiName,...config });
-  
-
-  notifyProfileUpdated = (userId: string, isPassword?: boolean, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, void>({
-      method: 'POST',
-      url: `/api/app/notification/notify-profile-updated/${userId}`,
-      params: { isPassword },
-    },
-    { apiName: this.apiName,...config });
-  
-
-  notifyRoleChanged = (userId: string, newRole: string, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, void>({
-      method: 'POST',
-      url: `/api/app/notification/notify-role-changed/${userId}`,
-      params: { newRole },
-    },
-    { apiName: this.apiName,...config });
-  
-
-  notifyServiceChanged = (adminId: string, action: string, serviceName: string, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, void>({
-      method: 'POST',
-      url: `/api/app/notification/notify-service-changed/${adminId}`,
-      params: { action, serviceName },
-    },
-    { apiName: this.apiName,...config });
-  
-
-  notifySlaOverdue = (managerId: string, assigneeId: string, ticketNo: string, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, void>({
-      method: 'POST',
-      url: '/api/app/notification/notify-sla-overdue',
-      params: { managerId, assigneeId, ticketNo },
+      url: `/api/app/notification/notify-sla-overdue/${assigneeId}`,
+      params: { ticketNo },
     },
     { apiName: this.apiName,...config });
   
@@ -213,24 +112,6 @@ export class NotificationService {
     { apiName: this.apiName,...config });
   
 
-  notifySystemReportReady = (adminId: string, month: string, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, void>({
-      method: 'POST',
-      url: `/api/app/notification/notify-system-report-ready/${adminId}`,
-      params: { month },
-    },
-    { apiName: this.apiName,...config });
-  
-
-  notifyTeamCreated = (managerId: string, teamName: string, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, void>({
-      method: 'POST',
-      url: `/api/app/notification/notify-team-created/${managerId}`,
-      params: { teamName },
-    },
-    { apiName: this.apiName,...config });
-  
-
   notifyTicketAssigned = (assigneeId: string, ticketNo: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, void>({
       method: 'POST',
@@ -249,20 +130,11 @@ export class NotificationService {
     { apiName: this.apiName,...config });
   
 
-  notifyUnauthorizedAccessAttempt = (adminId: string, violatorId: string, userName: string, resourceName: string, ipAddress?: string, config?: Partial<Rest.Config>) =>
+  notifyUnauthorizedAccessAttempt = (violatorId: string, userName: string, resourceName: string, ipAddress?: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, void>({
       method: 'POST',
-      url: '/api/app/notification/notify-unauthorized-access-attempt',
-      params: { adminId, violatorId, userName, resourceName, ipAddress },
-    },
-    { apiName: this.apiName,...config });
-  
-
-  notifyUnrecognizedDeviceLogin = (userId: string, deviceName: string, ipAddress: string, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, void>({
-      method: 'POST',
-      url: `/api/app/notification/notify-unrecognized-device-login/${userId}`,
-      params: { deviceName, ipAddress },
+      url: `/api/app/notification/notify-unauthorized-access-attempt/${violatorId}`,
+      params: { userName, resourceName, ipAddress },
     },
     { apiName: this.apiName,...config });
   

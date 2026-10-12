@@ -10,8 +10,8 @@ namespace ItHelpdesk.Profile
 {
     public class UploadAvatarDto
     {
-        public string Base64Content { get; set; }
-        public string ContentType { get; set; }
+        public string Base64Content { get; set; } = string.Empty;
+        public string ContentType { get; set; } = string.Empty;
     }
 
     public class ProfileAppService : ApplicationService
@@ -39,11 +39,20 @@ namespace ItHelpdesk.Profile
                 _ => ".jpg"
             };
 
-            var blobName = $"avatar_{CurrentUser.Id}_{DateTime.Now.Ticks}{extension}";
+            var user = await _userManager.GetByIdAsync(CurrentUser.Id.Value);
+            var oldBlobName = user.GetProperty<string>("AvatarBlobName");
 
+            // TỐI ƯU: Xóa file avatar cũ khỏi hệ thống lưu trữ trước khi ghi file mới
+            if (!string.IsNullOrWhiteSpace(oldBlobName))
+            {
+                await _blobContainer.DeleteAsync(oldBlobName);
+            }
+
+            // Tạo tên file mới và lưu
+            var blobName = $"avatar_{CurrentUser.Id}_{DateTime.Now.Ticks}{extension}";
             await _blobContainer.SaveAsync(blobName, bytes, overrideExisting: true);
 
-            var user = await _userManager.GetByIdAsync(CurrentUser.Id.Value);
+            // Cập nhật thuộc tính cho user
             user.SetProperty("AvatarBlobName", blobName);
             await _userManager.UpdateAsync(user);
         }

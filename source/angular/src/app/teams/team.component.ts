@@ -1,255 +1,289 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, ElementRef, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormGroup, FormBuilder, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { RestService, LocalizationService, LocalizationPipe, ConfigStateService } from '@abp/ng.core';
+import { ThemeSharedModule, ConfirmationService, Confirmation } from '@abp/ng.theme.shared';
 import { NgxDatatableModule } from '@swimlane/ngx-datatable';
-import {
-  ListService,
-  PagedResultDto,
-  LocalizationPipe,
-  LocalizationService,
-  PermissionDirective,
-  AutofocusDirective
-} from '@abp/ng.core';
-import {
-  ConfirmationService,
-  Confirmation,
-  NgxDatatableDefaultDirective,
-  NgxDatatableListDirective,
-  ModalCloseDirective,
-  ModalComponent,
-  ToasterService
-} from '@abp/ng.theme.shared';
-
-import { TeamDto, TeamService } from '../proxy/teams';
-import { AdminBaseComponent } from '../shared/base/admin-base.component';
+import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
+import { CustomToastService } from '../shared/services/custom-toast.service';
+import { Subject, Subscription } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { Router, ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-team',
-  templateUrl: './team.component.html',
-  styleUrls: ['./team.component.scss'],
   standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    ReactiveFormsModule,
-    NgxDatatableModule,
-    NgbDropdownModule,
-    ModalComponent,
-    AutofocusDirective,
-    NgxDatatableListDirective,
-    NgxDatatableDefaultDirective,
-    PermissionDirective,
-    ModalCloseDirective,
-    LocalizationPipe
-  ],
-  providers: [ListService],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, NgxDatatableModule, LocalizationPipe, ThemeSharedModule, NgbDropdownModule],
+  templateUrl: './team.component.html',
+  styleUrls: ['./team.component.scss']
 })
-export class TeamComponent extends AdminBaseComponent implements OnInit {
-  private teamService = inject(TeamService) as any;
-  private fb = inject(FormBuilder);
+export class TeamComponent implements OnInit, OnDestroy {
+  private restService = inject(RestService);
+  private customToast = inject(CustomToastService);
   private confirmation = inject(ConfirmationService);
-  private toaster = inject(ToasterService);
-  private localizationService = inject(LocalizationService);
-
-  protected storageKey = 'team_search_history';
-
-  team = { items: [], totalCount: 0 } as PagedResultDto<TeamDto>;
-  selectedTeam = {} as TeamDto;
-  form!: FormGroup;
-  isModalOpen = false;
+  public localizationService = inject(LocalizationService);
+  private elementRef = inject(ElementRef);
+  private fb = inject(FormBuilder);
+  private router = inject(Router);
+  private route = inject(ActivatedRoute);
+  private config = inject(ConfigStateService);
+  
+  teamList: { items: any[], totalCount: number } = { items: [], totalCount: 0 };
+  isLoading = false;
   isSubmitting = false;
-
+  
   searchFilter = '';
+  selectedStatus: boolean | null = null;
+  skipCount = 0;
+  maxResultCount = 10;
+  
+  showStatusDropdown = false;
   showSearchSuggestions = false;
+  
+  private readonly storageKey = 'teams_search_history';
   recentSearches: string[] = [];
-
+  private searchSubject = new Subject<string>();
+  private searchSubscription?: Subscription;
+  
+  isModalOpen = false;
+  isEditing = false;
+  form!: FormGroup;
+  
+  isMembersModalOpen = false;
+  selectedTeamForMembers: any = null;
+  mockLeadProfile: any = null;
+  membersList: any[] = []; 
+  
   isReassignModalOpen = false;
   teamToDelete: any = null;
-  targetReplacementTeamId: any = null;
-  availableReplacementTeams: TeamDto[] = [];
+  availableReplacementTeams: any[] = [];
+  targetReplacementTeamId: number | null = null;
 
-  ngOnInit(): void {
-    super.ngOnInit();
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    if (!this.elementRef.nativeElement.querySelector('.search-wrapper')?.contains(event.target)) this.showSearchSuggestions = false;
+    if (!this.elementRef.nativeElement.querySelector('.status-dropdown-wrapper')?.contains(event.target)) this.showStatusDropdown = false;
+  }
+
+  ngOnInit() {
+    const savedState = sessionStorage.getItem('teams_page_state');
+    if (savedState) {
+        const parsed = JSON.parse(savedState);
+        this.searchFilter = parsed.searchFilter;
+        this.selectedStatus = parsed.selectedStatus;
+        this.skipCount = parsed.skipCount;
+    }
+    
+    this.route.queryParams.subscribe(params => {
+        const openTeamId = params['openTeamId'];
+        if (openTeamId && this.teamList.items.length > 0) {
+            const targetTeam = this.teamList.items.find(t => t.id == openTeamId);
+            if (targetTeam && !this.isMembersModalOpen) {
+                this.openMembersModal(targetTeam);
+            }
+        }
+    });
+
+    this.getTeams();
     this.loadSearchHistory();
-    this.toaster.info(this.localizationService.instant('ItHelpdesk::TeamSpaceLoaded'));
-
-    const streamCreator = (query: any) =>
-      this.teamService.getList({ ...query, filter: this.searchFilter });
-
-    this.list.hookToQuery(streamCreator).subscribe((response: any) => {
-      this.team = response;
+    this.searchSubscription = this.searchSubject.pipe(debounceTime(400), distinctUntilChanged()).subscribe((keyword: string) => {
+      if (keyword.trim().length >= 2) this.saveSearchHistory(keyword.trim());
+      this.triggerDataLoad();
     });
   }
 
-  loadSearchHistory(): void {
-    const saved = localStorage.getItem(this.storageKey);
-    if (saved) {
-      try { this.recentSearches = JSON.parse(saved); } catch (e) { this.recentSearches = []; }
-    }
+  ngOnDestroy(): void { 
+    const state = { searchFilter: this.searchFilter, selectedStatus: this.selectedStatus, skipCount: this.skipCount };
+    sessionStorage.setItem('teams_page_state', JSON.stringify(state));
+    this.searchSubscription?.unsubscribe(); 
   }
 
-  saveSearchHistory(keyword: string): void {
-    if (!keyword.trim()) return;
-    const index = this.recentSearches.indexOf(keyword);
-    if (index > -1) this.recentSearches.splice(index, 1);
-    this.recentSearches.unshift(keyword);
-    if (this.recentSearches.length > 5) this.recentSearches.pop();
-    localStorage.setItem(this.storageKey, JSON.stringify(this.recentSearches));
+  onPageChange(event: any): void {
+    const newSkipCount = event.offset * this.maxResultCount;
+    if (this.skipCount !== newSkipCount) { this.skipCount = newSkipCount; this.getTeams(); }
   }
 
-  onSearchInput(): void { }
+  private triggerDataLoad() { this.skipCount = 0; this.getTeams(); }
 
-  performSearch(): void {
-    if (this.searchFilter) {
-      this.saveSearchHistory(this.searchFilter.trim());
-      this.toaster.success(this.localizationService.instant('ItHelpdesk::TeamSearchFilteredSuccess', this.searchFilter || ''));
-    }
-    this.showSearchSuggestions = false;
-    this.list.page = 0;
-    this.list.get();
-  }
-
-  clearSearch(): void {
-    this.searchFilter = '';
-    this.list.page = 0;
-    this.list.get();
-    this.toaster.info(this.localizationService.instant('ItHelpdesk::TeamSearchCleared'));
-  }
-
-  selectSearchSuggestion(item: string): void {
-    this.searchFilter = item;
-    this.performSearch();
-  }
-
-  removeSearchHistoryItem(item: string, event: Event): void {
-    event.stopPropagation();
-    this.recentSearches = this.recentSearches.filter(s => s !== item);
-    localStorage.setItem(this.storageKey, JSON.stringify(this.recentSearches));
-    this.toaster.success(this.localizationService.instant('ItHelpdesk::HistoryItemRemoved'));
-  }
-
-  clearAllSearchHistory(event: Event): void {
-    event.stopPropagation();
-    this.recentSearches = [];
-    localStorage.removeItem(this.storageKey);
-    this.toaster.success(this.localizationService.instant('ItHelpdesk::HistoryClearedAll'));
-  }
-
-  createTeam(): void {
-    this.selectedTeam = {} as TeamDto;
-    this.buildForm();
-    this.isSubmitting = false;
-    this.isModalOpen = true;
-    this.toaster.info(this.localizationService.instant('ItHelpdesk::OpeningCreateTeamModal'));
-  }
-
-  editTeam(id: string): void {
-    this.teamService.get(id).subscribe((data: any) => {
-      this.selectedTeam = data;
-      this.buildForm();
-      this.isSubmitting = false;
-      this.isModalOpen = true;
-      this.toaster.info(this.localizationService.instant('ItHelpdesk::EditingTeam', data.name || ''));
+  getTeams() {
+    this.isLoading = true;
+    const queryParams: any = { skipCount: this.skipCount, maxResultCount: this.maxResultCount };
+    if (this.searchFilter && this.searchFilter.trim() !== '') queryParams.filter = this.searchFilter.trim();
+    if (this.selectedStatus !== null) queryParams.isActive = this.selectedStatus;
+    
+    this.restService.request<any, any>({ method: 'GET', url: '/api/app/team', params: queryParams }).subscribe({
+      next: (res: any) => { 
+          const lang = this.config.getDeep('localization.currentCulture.cultureName') || 'vi';
+          const isEn = lang.toLowerCase().includes('en');
+          
+          const mappedItems = (res.items || []).map((item: any) => {
+              const localizedName = isEn ? (item.name_En || item.name_Vi) : (item.name_Vi || item.name_En);
+              const dName = localizedName ? localizedName : (item.code || '---');
+              return { ...item, displayName: dName };
+          });
+          this.teamList = { ...res, items: mappedItems }; 
+          this.isLoading = false; 
+          
+          const openTeamId = this.route.snapshot.queryParamMap.get('openTeamId');
+          if (openTeamId && !this.isMembersModalOpen) {
+              const targetTeam = this.teamList.items.find(t => t.id == openTeamId);
+              if (targetTeam) {
+                  this.openMembersModal(targetTeam);
+              }
+          }
+      },
+      error: () => { this.customToast.show(this.localizationService.instant('ItHelpdesk::Error:Generic'), 'error'); this.isLoading = false; }
     });
   }
 
-  delete(id: string, name: string): void {
-    const hasActiveTicketsOrMembersLinked = false;
-
-    if (hasActiveTicketsOrMembersLinked) {
-      this.teamToDelete = { id, name };
-      this.availableReplacementTeams = (this.team.items || []).filter((t: any) => t.id !== id && t.isActive);
-      this.isReassignModalOpen = true;
-      this.toaster.warn(this.localizationService.instant('ItHelpdesk::TeamHasLinkedDataWarning', name));
+  toggleStatusDropdown(event: MouseEvent): void { event.stopPropagation(); this.showStatusDropdown = !this.showStatusDropdown; this.showSearchSuggestions = false; }
+  selectStatusFilter(status: boolean | null): void { this.selectedStatus = status; this.showStatusDropdown = false; this.triggerDataLoad(); }
+  getStatusName(status: boolean | null): string { return status === null ? this.localizationService.instant('ItHelpdesk::AllStatuses') : (status ? this.localizationService.instant('ItHelpdesk::Active') : this.localizationService.instant('ItHelpdesk::Inactive')); }
+  
+  onSearchInput(): void { this.showSearchSuggestions = true; this.searchSubject.next(this.searchFilter || ''); }
+  performSearch(keyword?: string): void { if (keyword !== undefined) this.searchFilter = keyword; const cleanKeyword = this.searchFilter?.trim(); this.showSearchSuggestions = false; if (cleanKeyword) this.saveSearchHistory(cleanKeyword); this.triggerDataLoad(); }
+  clearSearch(): void { this.searchFilter = ''; this.showSearchSuggestions = false; this.triggerDataLoad(); }
+  
+  private loadSearchHistory(): void { const saved = localStorage.getItem(this.storageKey); this.recentSearches = saved ? JSON.parse(saved) : []; }
+  private saveSearchHistory(keyword: string): void { if (!keyword.trim()) return; const clean = keyword.trim(); this.recentSearches = [clean, ...this.recentSearches.filter(x => x.toLowerCase() !== clean.toLowerCase())].slice(0, 5); localStorage.setItem(this.storageKey, JSON.stringify(this.recentSearches)); }
+  
+  refreshList(): void { this.triggerDataLoad(); }
+  buildForm() { this.form = this.fb.group({ id: [null], code: ['', Validators.required], name_Vi: ['', Validators.required], name_En: [''], isActive: [true] }); }
+  createTeam() { this.buildForm(); this.isEditing = false; this.isModalOpen = true; }
+  
+  editTeam(id: number) {
+    this.buildForm(); this.isEditing = true; this.isLoading = true;
+    this.restService.request<any, any>({ method: 'GET', url: `/api/app/team/${id}` }).subscribe({
+      next: (res) => { this.form.patchValue(res); this.isLoading = false; this.isModalOpen = true; },
+      error: () => this.isLoading = false
+    });
+  }
+  
+  closeModal() { this.isModalOpen = false; this.form.reset(); }
+  
+  save() {
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      this.customToast.show(this.localizationService.instant('ItHelpdesk::FormValidationRequired'), 'error');
       return;
     }
+    this.isSubmitting = true;
+    const formValue = this.form.value;
+    const reqBody = { ...formValue, name_En: formValue.name_En || formValue.name_Vi };
+    const req = this.isEditing 
+        ? this.restService.request<any, any>({ method: 'PUT', url: `/api/app/team/${this.form.value.id}`, body: reqBody })
+        : this.restService.request<any, any>({ method: 'POST', url: '/api/app/team', body: reqBody });
+    
+    req.subscribe({
+      next: () => { this.customToast.show(this.localizationService.instant('ItHelpdesk::TeamSaveSuccess'), 'success'); this.closeModal(); this.getTeams(); this.isSubmitting = false; },
+      error: (err: any) => { this.customToast.show(err?.error?.message || this.localizationService.instant('ItHelpdesk::TeamSaveError'), 'error'); this.isSubmitting = false; }
+    });
+  }
 
-    const confirmMsg = this.localizationService.instant('::TeamDeleteConfirmMessage', name);
-    const confirmTitle = this.localizationService.instant('::AreYouSure');
+  toggleStatus(team: any) {
+    const updated = { ...team, isActive: !team.isActive };
+    this.restService.request<any, any>({ method: 'PUT', url: `/api/app/team/${team.id}`, body: updated }).subscribe({
+      next: () => { this.customToast.show(this.localizationService.instant('ItHelpdesk::StatusUpdateSuccess'), 'success'); this.getTeams(); }
+    });
+  }
 
-    this.confirmation.warn(confirmMsg, confirmTitle).subscribe((status: any) => {
+  delete(id: number, name: string) {
+    this.confirmation.warn(this.localizationService.instant('ItHelpdesk::Team:DeleteConfirmMessage', name), this.localizationService.instant('ItHelpdesk::ConfirmAction')).subscribe((status: Confirmation.Status) => {
       if (status === Confirmation.Status.confirm) {
-        this.teamService.delete(id).subscribe({
-          next: () => {
-            this.list.get();
-            this.toaster.success(this.localizationService.instant('::TeamDeleteSuccess'));
-          },
-          error: (err: any) => {
-            console.error('Lỗi khi xóa nhóm:', err);
-            this.toaster.error(this.localizationService.instant('::TeamDeleteError'));
-          }
+        this.restService.request<any, any>({ method: 'GET', url: `/api/app/team/${id}/members-count` }).subscribe({
+            next: (countRes: number) => {
+                if (countRes > 0) {
+                    this.teamToDelete = { id, name };
+                    this.targetReplacementTeamId = null;
+                    this.loadAvailableTeamsForReplacement(id);
+                    this.isReassignModalOpen = true;
+                } else {
+                    this.executeDelete(id);
+                }
+            }
         });
       }
     });
   }
 
-  confirmReassignAndDelete(): void {
-    if (!this.targetReplacementTeamId) {
-      this.toaster.error(this.localizationService.instant('ItHelpdesk::SelectReplacementTeamRequired'));
-      return;
-    }
-
-    this.isSubmitting = true;
-    setTimeout(() => {
-      this.teamService.delete(this.teamToDelete.id).subscribe({
-        next: () => {
-          this.isReassignModalOpen = false;
-          this.isSubmitting = false;
-          this.list.get();
-          this.toaster.success(this.localizationService.instant('ItHelpdesk::TeamReassignAndDeleteSuccess'));
-        },
-        error: () => {
-          this.isSubmitting = false;
-          this.toaster.error(this.localizationService.instant('ItHelpdesk::TeamReassignAndDeleteError'));
-        }
+  loadAvailableTeamsForReplacement(excludeId: number) {
+      this.restService.request<any, any>({ method: 'GET', url: '/api/app/team', params: { skipCount: 0, maxResultCount: 100 } }).subscribe({
+          next: (res: any) => {
+              const lang = this.config.getDeep('localization.currentCulture.cultureName') || 'vi';
+              const isEn = lang.toLowerCase().includes('en');
+              this.availableReplacementTeams = res.items.filter((t: any) => t.id !== excludeId && t.isActive).map((t: any) => ({
+                  ...t,
+                  displayName: isEn ? (t.name_En || t.name_Vi) : (t.name_Vi || t.name_En)
+              }));
+          }
       });
-    }, 600);
   }
 
-  buildForm(): void {
-    this.form = this.fb.group({
-      code: [this.selectedTeam.code || '', [Validators.required, Validators.maxLength(50)]],
-      name: [this.selectedTeam.name || '', [Validators.required, Validators.maxLength(100)]],
-      isActive: [this.selectedTeam.isActive ?? true],
-    });
+  confirmReassignAndDelete() {
+      if(!this.targetReplacementTeamId || !this.teamToDelete) return;
+      this.isSubmitting = true;
+      this.restService.request<any, any>({ method: 'POST', url: `/api/app/team/${this.teamToDelete.id}/reassign-and-delete`, body: { newTeamId: this.targetReplacementTeamId } }).subscribe({
+          next: () => { this.customToast.show(this.localizationService.instant('ItHelpdesk::TeamDeleteSuccess'), 'success'); this.isReassignModalOpen = false; this.getTeams(); this.isSubmitting = false; },
+          error: (err: any) => { this.customToast.show(err?.error?.message || this.localizationService.instant('ItHelpdesk::TeamReassignAndDeleteError'), 'error'); this.isSubmitting = false; }
+      });
   }
 
-  save(): void {
-    const codeVal = this.form.get('code')?.value?.trim() || '';
-    const nameVal = this.form.get('name')?.value?.trim() || '';
+  executeDelete(id: number) {
+      this.restService.request<any, any>({ method: 'DELETE', url: `/api/app/team/${id}` }).subscribe({
+          next: () => { this.customToast.show(this.localizationService.instant('ItHelpdesk::TeamDeleteSuccess'), 'success'); this.getTeams(); },
+          error: (err: any) => { this.customToast.show(err?.error?.message || this.localizationService.instant('ItHelpdesk::TeamDeleteError'), 'error'); }
+      });
+  }
 
-    if (this.form.invalid || !codeVal || !nameVal || this.isSubmitting) {
-      this.form.markAllAsTouched();
-      this.toaster.error(this.localizationService.instant('::FormValidationRequired'));
-      return;
-    }
-
-    this.isSubmitting = true;
-
-    const requestData = {
-      ...this.form.value,
-      code: codeVal,
-      name: nameVal
-    };
-
-    let request = (this.selectedTeam as any).id
-      ? this.teamService.update((this.selectedTeam as any).id, requestData)
-      : this.teamService.create(requestData);
-
-    request.subscribe({
-      next: () => {
-        this.isModalOpen = false;
-        this.form.reset();
-        this.isSubmitting = false;
-        this.list.get();
-        this.toaster.success(this.localizationService.instant('::TeamSaveSuccess'));
-      },
-      error: (err: any) => {
-        console.error('Lỗi khi lưu nhóm:', err);
-        this.toaster.error(this.localizationService.instant('::TeamSaveError'));
-        this.isSubmitting = false;
-      }
-    });
+  openMembersModal(team: any): void {
+      this.selectedTeamForMembers = team;
+      this.membersList = [];
+      this.mockLeadProfile = null;
+      this.isMembersModalOpen = true;
+      
+      this.restService.request<any, any>({
+          method: 'GET',
+          url: '/api/app/extended-user', 
+          params: { teamId: team.id, maxResultCount: 100 } 
+      }).subscribe({
+          next: (res) => {
+              // 1. Chỉ lấy những người thuộc nhóm này
+              let allMembers = (res.items || []).filter((m: any) => m.teamId === team.id || (m.extraProperties && m.extraProperties.TeamId === team.id));
+              
+              // 2. Tìm ra người làm Nhóm trưởng
+              const leadIndex = allMembers.findIndex((m: any) => m.roleNames && (m.roleNames.includes('Trưởng nhóm') || m.roleNames.includes('Team Leader') || m.roleNames.includes('IT Manager')));
+              
+              if (leadIndex > -1) {
+                  const lead = allMembers[leadIndex];
+                  this.mockLeadProfile = { 
+                      id: lead.id,
+                      avatar: lead.name ? lead.name.charAt(0).toUpperCase() : 'L', 
+                      name: `${lead.surname || ''} ${lead.name || ''}`.trim() || lead.userName, 
+                      role: lead.roleNames[0] || this.localizationService.instant('ItHelpdesk::TeamLeaderRole'), 
+                      email: lead.email, 
+                      phone: lead.phoneNumber || '---' 
+                  };
+                  // Cắt Trưởng nhóm ra khỏi mảng
+                  allMembers.splice(leadIndex, 1);
+              }
+              
+              // 3. Gán những thành viên CÒN LẠI vào lưới
+              this.membersList = allMembers;
+          }
+      });
+  }
+  
+  closeMembersModal(): void { 
+      this.isMembersModalOpen = false; 
+      this.router.navigate([], { relativeTo: this.route, queryParams: { openTeamId: null }, queryParamsHandling: 'merge' });
+  }
+  
+  goToUserProfile(memberId: string): void {
+      if(!memberId) return;
+      const currentTeamId = this.selectedTeamForMembers?.id;
+      this.isMembersModalOpen = false; 
+      this.router.navigate(['/user-management/detail', memberId], {
+          queryParams: { returnUrl: '/teams', openTeamId: currentTeamId }
+      });
   }
 }

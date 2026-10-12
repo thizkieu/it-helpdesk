@@ -2,7 +2,8 @@ import type { AuditedEntityDto, PagedAndSortedResultRequestDto } from '@abp/ng.c
 
 export interface CreateUpdatePriorityDto {
   code: string;
-  name: string;
+  name_Vi: string;
+  name_En?: string;
   level: number;
   color?: string;
   isActive: boolean;
@@ -12,11 +13,14 @@ export interface CreateUpdatePriorityDto {
 
 export interface GetPriorityListInput extends PagedAndSortedResultRequestDto {
   filter?: string;
+  isActive?: boolean;
 }
 
 export interface PriorityDto extends AuditedEntityDto<number> {
   code?: string;
   name?: string;
+  name_Vi?: string;
+  name_En?: string;
   level: number;
   color?: string;
   isActive: boolean;

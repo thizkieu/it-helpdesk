@@ -40,7 +40,16 @@ export class ServiceService {
     this.restService.request<any, PagedResultDto<ServiceDto>>({
       method: 'GET',
       url: '/api/app/service',
-      params: { filter: input.filter, sorting: input.sorting, skipCount: input.skipCount, maxResultCount: input.maxResultCount },
+      params: { filter: input.filter, isActive: input.isActive, sorting: input.sorting, skipCount: input.skipCount, maxResultCount: input.maxResultCount },
+    },
+    { apiName: this.apiName,...config });
+  
+
+  reassignAndDelete = (id: number, replacementId: number, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'DELETE',
+      url: `/api/app/service/${id}/reassign-and-delete`,
+      params: { replacementId },
     },
     { apiName: this.apiName,...config });
   

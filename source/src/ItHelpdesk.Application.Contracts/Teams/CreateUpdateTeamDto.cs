@@ -10,8 +10,11 @@ namespace ItHelpdesk.Teams
         public string Code { get; set; }
 
         [Required]
-        [MaxLength(255)]
-        public string Name { get; set; }
+        [MaxLength(128)]
+        public string Name_Vi { get; set; }
+
+        [MaxLength(128)]
+        public string Name_En { get; set; }
 
         public Guid? ManagerId { get; set; }
 

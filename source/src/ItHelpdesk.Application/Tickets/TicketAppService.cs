@@ -1,42 +1,43 @@
-﻿using ItHelpdesk.Permissions;
+﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Threading.Tasks;
+using ItHelpdesk.Categories;
+using ItHelpdesk.Notifications;
+using ItHelpdesk.Permissions;
 using ItHelpdesk.Priorities;
 using ItHelpdesk.Provider;
 using ItHelpdesk.Provider.Request;
 using ItHelpdesk.Provider.Response;
-using ItHelpdesk.Users;
+using ItHelpdesk.Services;
 using ItHelpdesk.SignalR;
-using ItHelpdesk.Notifications;
+using ItHelpdesk.Teams;
+using ItHelpdesk.Users;
+using ItHelpdesk.SysMasterLists;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Volo.Abp;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 using Volo.Abp.BlobStoring;
+using Volo.Abp.Data;
 using Volo.Abp.Domain.Repositories;
 using Volo.Abp.Identity;
+using Microsoft.Extensions.Localization;
+using ItHelpdesk.Localization;
+using Microsoft.Extensions.Logging;
 
 namespace ItHelpdesk.Tickets
 {
-    public class ChangeTicketStatusInput
-    {
-        public long TicketId { get; set; }
-        public TicketStatus NewStatus { get; set; }
-        public string? Comment { get; set; }
-    }
+    public class ChangeTicketStatusInput { public long TicketId { get; set; } public TicketStatus NewStatus { get; set; } public string? Comment { get; set; } }
+    public class CancelTicketInput { public string? Reason { get; set; } }
+    public class GetSystemHistoryInput : PagedAndSortedResultRequestDto { public DateTime? StartDate { get; set; } public DateTime? EndDate { get; set; } public string? FilterText { get; set; } public bool IsPersonal { get; set; } = false; }
 
-    public class TicketAppService : CrudAppService<
-        Ticket,
-        TicketDto,
-        long,
-        GetTicketListDto,
-        CreateUpdateTicketDto>, ITicketAppService
+    public class TicketAppService : CrudAppService<Ticket, TicketDto, long, GetTicketListDto, CreateUpdateTicketDto>, ITicketAppService
     {
         private readonly IRepository<TicketActivity, long> _ticketActivityRepository;
         private readonly IRepository<TicketComment, long> _ticketCommentRepository;
@@ -44,662 +45,401 @@ namespace ItHelpdesk.Tickets
         private readonly IBlobContainer _blobContainer;
         private readonly IRepository<TicketAttachment, long> _attachmentRepository;
         private readonly IRepository<Priority, long> _priorityRepository;
+        private readonly IRepository<Category, long> _categoryRepository;
+        private readonly IRepository<Service, long> _serviceRepository;
+        private readonly IRepository<Team, long> _teamRepository;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly ITicketProvider _ticketProvider;
         private readonly IdentityUserManager _userManager;
         private readonly IHubContext<NotificationHub> _hubContext;
         private readonly IRepository<AppNotification, Guid> _notificationRepository;
+        private readonly IStringLocalizer<ItHelpdeskResource> _localizer;
+        private readonly ISysMasterListAppService _sysMasterListAppService;
 
         public TicketAppService(
-            IRepository<Ticket, long> repository,
-            IRepository<TicketActivity, long> ticketActivityRepository,
-            IRepository<TicketComment, long> ticketCommentRepository,
-            IRepository<IdentityUser, Guid> userRepository,
-            IBlobContainer blobContainer,
-            IRepository<TicketAttachment, long> attachmentRepository,
-            IRepository<Priority, long> priorityRepository,
-            IHttpContextAccessor httpContextAccessor,
-            ITicketProvider ticketProvider,
-            IdentityUserManager userManager,
-            IHubContext<NotificationHub> hubContext,
-            IRepository<AppNotification, Guid> notificationRepository)
-            : base(repository)
+            IRepository<Ticket, long> repository, IRepository<TicketActivity, long> ticketActivityRepository,
+            IRepository<TicketComment, long> ticketCommentRepository, IRepository<IdentityUser, Guid> userRepository,
+            IBlobContainer blobContainer, IRepository<TicketAttachment, long> attachmentRepository,
+            IRepository<Priority, long> priorityRepository, IRepository<Category, long> categoryRepository,
+            IRepository<Service, long> serviceRepository, IRepository<Team, long> teamRepository,
+            IHttpContextAccessor httpContextAccessor, ITicketProvider ticketProvider,
+            IdentityUserManager userManager, IHubContext<NotificationHub> hubContext,
+            IRepository<AppNotification, Guid> notificationRepository, IStringLocalizer<ItHelpdeskResource> localizer,
+            ISysMasterListAppService sysMasterListAppService) : base(repository)
         {
-            _ticketActivityRepository = ticketActivityRepository;
-            _ticketCommentRepository = ticketCommentRepository;
-            _userRepository = userRepository;
-            _blobContainer = blobContainer;
-            _attachmentRepository = attachmentRepository;
-            _priorityRepository = priorityRepository;
-            _httpContextAccessor = httpContextAccessor;
-            _ticketProvider = ticketProvider;
-            _userManager = userManager;
-            _hubContext = hubContext;
-            _notificationRepository = notificationRepository;
-
+            _ticketActivityRepository = ticketActivityRepository; _ticketCommentRepository = ticketCommentRepository;
+            _userRepository = userRepository; _blobContainer = blobContainer;
+            _attachmentRepository = attachmentRepository; _priorityRepository = priorityRepository;
+            _categoryRepository = categoryRepository; _serviceRepository = serviceRepository;
+            _teamRepository = teamRepository; _httpContextAccessor = httpContextAccessor;
+            _ticketProvider = ticketProvider; _userManager = userManager;
+            _hubContext = hubContext; _notificationRepository = notificationRepository;
+            _localizer = localizer; _sysMasterListAppService = sysMasterListAppService;
+            CreatePolicyName = ItHelpdeskPermissions.Tickets.Create;
             UpdatePolicyName = ItHelpdeskPermissions.Tickets.Edit;
             DeletePolicyName = ItHelpdeskPermissions.Tickets.Delete;
         }
 
-        // =========================================================================
-        // 1. MÀN HÌNH DANH SÁCH YÊU CẦU (IT QUEUE / MY TICKETS)
-        // =========================================================================
-        public override async Task<PagedResultDto<TicketDto>> GetListAsync(GetTicketListDto input)
+        // Logic Dashboard & KPI...
+        [Authorize(ItHelpdeskPermissions.Dashboard.Default)]
+        [HttpGet]
+        [Route("api/app/dashboard/statistics")]
+        public async Task<DashboardStatsDto> GetDashboardStatsAsync([FromQuery] GetDashboardStatsInput input)
         {
-            try
+            var query = await Repository.GetQueryableAsync();
+            if (input.StartDate.HasValue) query = query.Where(x => x.CreationTime >= input.StartDate.Value);
+            if (input.EndDate.HasValue) query = query.Where(x => x.CreationTime <= input.EndDate.Value);
+            if (input.AssigneeId.HasValue) query = query.Where(x => x.AssigneeId == input.AssigneeId.Value);
+            if (input.TeamId.HasValue) query = query.Where(x => x.TeamId == input.TeamId.Value);
+
+            var totalTickets = await AsyncExecuter.CountAsync(query);
+            var unassignedTickets = await AsyncExecuter.CountAsync(query.Where(x => x.AssigneeId == null && x.Status != TicketStatus.Closed && x.Status != (TicketStatus)7));
+            var now = DateTime.Now;
+
+            var resolvedCount = await AsyncExecuter.CountAsync(query.Where(x => x.Status == TicketStatus.Resolved || x.Status == TicketStatus.Completed || x.Status == (TicketStatus)5 || x.Status == (TicketStatus)6));
+            var closedCount = await AsyncExecuter.CountAsync(query.Where(x => x.Status == TicketStatus.Closed || x.Status == (TicketStatus)7));
+
+            var overdueTickets = await AsyncExecuter.CountAsync(query.Where(x =>
+                x.Status != TicketStatus.Resolved && x.Status != TicketStatus.Completed && x.Status != TicketStatus.Closed &&
+                x.Status != (TicketStatus)5 && x.Status != (TicketStatus)6 && x.Status != (TicketStatus)7 &&
+                x.TargetResolutionTime.HasValue && x.TargetResolutionTime.Value < now));
+
+            var openOnTimeCount = await AsyncExecuter.CountAsync(query.Where(x =>
+                x.Status != TicketStatus.Resolved && x.Status != TicketStatus.Completed && x.Status != TicketStatus.Closed &&
+                x.Status != (TicketStatus)5 && x.Status != (TicketStatus)6 && x.Status != (TicketStatus)7 &&
+                (!x.TargetResolutionTime.HasValue || x.TargetResolutionTime.Value >= now)));
+
+            var totalCompletedTickets = await AsyncExecuter.CountAsync(query.Where(x =>
+                (x.Status == TicketStatus.Resolved || x.Status == TicketStatus.Completed || x.Status == TicketStatus.Closed || x.Status == (TicketStatus)5 || x.Status == (TicketStatus)6 || x.Status == (TicketStatus)7) &&
+                x.ResolvedAt.HasValue && x.TargetResolutionTime.HasValue));
+
+            var onTimeCount = await AsyncExecuter.CountAsync(query.Where(x =>
+                (x.Status == TicketStatus.Resolved || x.Status == TicketStatus.Completed || x.Status == TicketStatus.Closed || x.Status == (TicketStatus)5 || x.Status == (TicketStatus)6 || x.Status == (TicketStatus)7) &&
+                x.ResolvedAt.HasValue && x.TargetResolutionTime.HasValue && x.ResolvedAt.Value <= x.TargetResolutionTime.Value));
+
+            double complianceRate = totalCompletedTickets > 0 ? Math.Round((double)onTimeCount / totalCompletedTickets * 100, 2) : (totalTickets > 0 && overdueTickets == 0 ? 100.0 : 0.0);
+
+            var statusDistribution = new List<ChartItemDto>
             {
-                bool isEndUser = CurrentUser.IsInRole("End_User")
-                            || CurrentUser.IsInRole("End User")
-                            || CurrentUser.IsInRole("user");
+                new ChartItemDto { Name = _localizer["Dashboard:ChartStatusInProgress"].Value ?? "Đang xử lý (Đúng hạn)", Value = openOnTimeCount },
+                new ChartItemDto { Name = _localizer["Dashboard:ChartStatusResolved"].Value ?? "Đã hoàn thành", Value = resolvedCount },
+                new ChartItemDto { Name = _localizer["Dashboard:ChartStatusClosed"].Value ?? "Đóng / Hủy", Value = closedCount },
+                new ChartItemDto { Name = _localizer["Dashboard:StatusOverdue"].Value ?? "Quá hạn SLA", Value = overdueTickets }
+            }.Where(x => x.Value > 0).ToList();
 
-                Guid? secureCreatorId = null;
+            var insights = new List<string>();
+            if (totalTickets == 0) insights.Add("Không có dữ liệu trong khoảng thời gian này.");
 
-                if (input.IsMyTickets.HasValue && input.IsMyTickets.Value)
-                {
-                    secureCreatorId = CurrentUser.Id;
-                }
-                else if (isEndUser)
-                {
-                    secureCreatorId = CurrentUser.Id;
-                }
-
-                var query = await Repository.GetQueryableAsync();
-
-                if (secureCreatorId.HasValue)
-                    query = query.Where(x => x.CreatorId == secureCreatorId.Value);
-
-                if (input.Status.HasValue)
-                    query = query.Where(x => (int)x.Status == (int)input.Status.Value);
-
-                if (!string.IsNullOrWhiteSpace(input.Filter))
-                    query = query.Where(x => x.Title.Contains(input.Filter) || x.TicketNo.Contains(input.Filter));
-
-                if (input.AssigneeId.HasValue)
-                    query = query.Where(x => x.AssigneeId == input.AssigneeId.Value);
-
-                if (input.TeamId.HasValue)
-                    query = query.Where(x => x.TeamId == input.TeamId.Value);
-
-                if (input.Unassigned.HasValue && input.Unassigned.Value)
-                    query = query.Where(x => x.AssigneeId == null);
-
-                // [ĐÃ BỔ SUNG] Lọc quá hạn cho EF Core để đếm tổng số bản ghi (TotalCount) chuẩn xác
-                if (input.IsOverdue.HasValue && input.IsOverdue.Value == true)
-                {
-                    var now = DateTime.Now;
-                    query = query.Where(x => x.TargetResolutionTime.HasValue
-                                          && x.TargetResolutionTime.Value < now
-                                          && (int)x.Status != 3
-                                          && (int)x.Status != 4);
-                }
-
-                var totalCount = await AsyncExecuter.CountAsync(query);
-
-                var request = new TicketListRequest
-                {
-                    FilterText = input.Filter,
-                    Status = input.Status.HasValue ? (int)input.Status.Value : null,
-                    AssigneeId = input.AssigneeId,
-                    TeamId = input.TeamId,
-                    Unassigned = input.Unassigned,
-                    CreatorId = secureCreatorId,
-                    PageIndex = input.MaxResultCount > 0 ? input.SkipCount / input.MaxResultCount : 0,
-                    PageSize = input.MaxResultCount > 0 ? input.MaxResultCount : 10,
-
-                    // [ĐÃ BỔ SUNG] Truyền cờ IsOverdue xuống tầng Provider / Store Procedure
-                    IsOverdue = input.IsOverdue ?? false
-                };
-
-                var providerData = await _ticketProvider.GetListAsync(request);
-
-                if (providerData == null || !providerData.Any())
-                {
-                    return new PagedResultDto<TicketDto>(0, new List<TicketDto>());
-                }
-
-                var ticketDtos = ObjectMapper.Map<List<TicketListQueryResponse>, List<TicketDto>>(providerData);
-                return new PagedResultDto<TicketDto>(totalCount, ticketDtos);
-            }
-            catch (Exception ex)
+            return new DashboardStatsDto
             {
-                Console.WriteLine($"[LỖI TẠI TICKET PROVIDER GETLIST]: {ex.Message}");
-                throw;
-            }
+                TotalTickets = totalTickets,
+                NewTickets = openOnTimeCount,
+                UnassignedTickets = unassignedTickets,
+                ResolvedTickets = resolvedCount,
+                OverdueTickets = overdueTickets,
+                SlaComplianceRate = complianceRate,
+                SmartInsights = insights,
+                StatusDistribution = statusDistribution
+            };
         }
 
-        // =========================================================================
-        // 2. MÀN HÌNH TẠO YÊU CẦU MỚI (CREATE TICKET)
-        // =========================================================================
+        [Authorize(ItHelpdeskPermissions.Dashboard.Default)]
+        [HttpGet]
+        [Route("api/app/dashboard/technician-kpi")]
+        public async Task<List<TechnicianKpiDto>> GetTechnicianKpisAsync([FromQuery] GetDashboardStatsInput input, [FromQuery] int? month = null, [FromQuery] int? year = null)
+        {
+            var queryUsers = await _userRepository.GetQueryableAsync();
+            var allActiveUsers = await AsyncExecuter.ToListAsync(queryUsers.Where(x => x.IsActive));
+            var endUsers = await _userManager.GetUsersInRoleAsync("End_User");
+            var adminUsers = await _userManager.GetUsersInRoleAsync("Admin");
+            var excludedUserIds = endUsers.Select(x => x.Id).Concat(adminUsers.Select(x => x.Id)).ToList();
+            var allTechnicians = allActiveUsers.Where(x => !excludedUserIds.Contains(x.Id)).ToList();
+            var query = await Repository.GetQueryableAsync();
+            if (year.HasValue && year.Value > 0) query = query.Where(x => x.CreationTime.Year == year.Value || (x.ResolvedAt.HasValue && x.ResolvedAt.Value.Year == year.Value));
+            if (month.HasValue && month.Value > 0) query = query.Where(x => x.CreationTime.Month == month.Value || (x.ResolvedAt.HasValue && x.ResolvedAt.Value.Month == month.Value));
+            if (input.StartDate.HasValue) query = query.Where(x => x.CreationTime >= input.StartDate.Value);
+            if (input.EndDate.HasValue) query = query.Where(x => x.CreationTime <= input.EndDate.Value);
+            if (input.AssigneeId.HasValue)
+            {
+                query = query.Where(x => x.AssigneeId == input.AssigneeId.Value);
+                allTechnicians = allTechnicians.Where(x => x.Id == input.AssigneeId.Value).ToList();
+            }
+            if (input.TeamId.HasValue) query = query.Where(x => x.TeamId == input.TeamId.Value);
+
+            var assignedTickets = await AsyncExecuter.ToListAsync(query.Where(x => x.AssigneeId != null));
+            var ticketsByTech = assignedTickets.GroupBy(x => x.AssigneeId.Value).ToDictionary(g => g.Key, g => g.ToList());
+            var result = new List<TechnicianKpiDto>();
+            var now = DateTime.Now;
+
+            foreach (var tech in allTechnicians)
+            {
+                decimal baseSalary = 12000000m;
+                if (tech.HasProperty("BaseSalary")) baseSalary = tech.GetProperty<decimal>("BaseSalary");
+                decimal bonusPerPercent = 100000m;
+                decimal penaltyPerTicket = 200000m;
+                var techTickets = ticketsByTech.ContainsKey(tech.Id) ? ticketsByTech[tech.Id] : new List<Ticket>();
+                int totalAssigned = techTickets.Count;
+                var userRoles = await _userManager.GetRolesAsync(tech);
+                string roleName = userRoles.Any(r => r.IndexOf("lead", StringComparison.OrdinalIgnoreCase) >= 0 || r.IndexOf("trưởng", StringComparison.OrdinalIgnoreCase) >= 0) ? "Trưởng nhóm" : "Kỹ thuật viên";
+                string teamName = "Đội IT Mặc định";
+                var techTeamIds = techTickets.Where(x => x.TeamId.HasValue).Select(x => x.TeamId!.Value).ToList();
+                if (techTeamIds.Any())
+                {
+                    var topTeamId = techTeamIds.GroupBy(x => x).OrderByDescending(g => g.Count()).First().Key;
+                    var teamEntity = await _teamRepository.FindAsync(topTeamId);
+                    if (teamEntity != null) teamName = teamEntity.Name_Vi;
+                }
+                if (totalAssigned == 0)
+                {
+                    result.Add(new TechnicianKpiDto
+                    {
+                        Id = tech.Id,
+                        Name = string.IsNullOrWhiteSpace($"{tech.Surname} {tech.Name}") ? tech.UserName : $"{tech.Surname} {tech.Name}".Trim(),
+                        Email = tech.Email ?? "",
+                        RoleName = roleName,
+                        TeamName = teamName,
+                        TotalAssigned = 0,
+                        InProgressTickets = 0,
+                        OnTimeRate = 0,
+                        OverdueRate = 0,
+                        BaseSalary = baseSalary,
+                        BonusAmount = 0,
+                        PenaltyAmount = 0,
+                        NetSalary = baseSalary
+                    });
+                    continue;
+                }
+                int inProgress = techTickets.Count(x => x.Status != (TicketStatus)5 && x.Status != (TicketStatus)6 && x.Status != (TicketStatus)7);
+                int onTime = techTickets.Count(x => x.TargetResolutionTime.HasValue && x.ResolvedAt.HasValue && x.ResolvedAt.Value <= x.TargetResolutionTime.Value);
+                int overdue = techTickets.Count(x => x.TargetResolutionTime.HasValue && ((x.ResolvedAt.HasValue && x.ResolvedAt.Value > x.TargetResolutionTime.Value) || (!x.ResolvedAt.HasValue && x.Status != (TicketStatus)5 && x.Status != (TicketStatus)6 && x.Status != (TicketStatus)7 && now > x.TargetResolutionTime.Value)));
+                double onTimeRate = Math.Round((double)onTime / totalAssigned * 100, 2);
+                double overdueRate = Math.Round((double)overdue / totalAssigned * 100, 2);
+                decimal bonus = onTimeRate > 90 ? (decimal)(onTimeRate - 90) * bonusPerPercent : 0m;
+                decimal penalty = overdue * penaltyPerTicket;
+
+                result.Add(new TechnicianKpiDto
+                {
+                    Id = tech.Id,
+                    Name = string.IsNullOrWhiteSpace($"{tech.Surname} {tech.Name}") ? tech.UserName : $"{tech.Surname} {tech.Name}".Trim(),
+                    Email = tech.Email ?? "",
+                    RoleName = roleName,
+                    TeamName = teamName,
+                    TotalAssigned = totalAssigned,
+                    InProgressTickets = inProgress,
+                    OnTimeRate = onTimeRate,
+                    OverdueRate = overdueRate,
+                    BaseSalary = baseSalary,
+                    BonusAmount = Math.Round(bonus, 0),
+                    PenaltyAmount = Math.Round(penalty, 0),
+                    NetSalary = Math.Max(0, baseSalary + bonus - penalty)
+                });
+            }
+            return result.OrderBy(x => x.OverdueRate).ThenByDescending(x => x.OnTimeRate).ThenByDescending(x => x.TotalAssigned).ThenBy(x => x.Name).ToList();
+        }
+
+        [Authorize(ItHelpdeskPermissions.Dashboard.Default)]
+        [HttpGet]
+        [Route("api/app/dashboard/technician-detail/{id}")]
+        public async Task<object> GetTechnicianDetailAsync(Guid id, [FromQuery] int? month = null, [FromQuery] int? year = null)
+        {
+            var tech = await _userRepository.GetAsync(id);
+            if (tech == null) throw new UserFriendlyException("Không tìm thấy nhân sự");
+            var query = await Repository.GetQueryableAsync();
+            if (year.HasValue && year.Value > 0) query = query.Where(x => x.CreationTime.Year == year.Value || (x.ResolvedAt.HasValue && x.ResolvedAt.Value.Year == year.Value));
+            if (month.HasValue && month.Value > 0) query = query.Where(x => x.CreationTime.Month == month.Value || (x.ResolvedAt.HasValue && x.ResolvedAt.Value.Month == month.Value));
+            var techTickets = await AsyncExecuter.ToListAsync(query.Include(x => x.Category).Include(x => x.Priority).Where(x => x.AssigneeId == id));
+            int totalAssigned = techTickets.Count;
+            int onTime = techTickets.Count(x => x.TargetResolutionTime.HasValue && x.ResolvedAt.HasValue && x.ResolvedAt.Value <= x.TargetResolutionTime.Value);
+            int overdue = techTickets.Count(x => x.TargetResolutionTime.HasValue && ((x.ResolvedAt.HasValue && x.ResolvedAt.Value > x.TargetResolutionTime.Value) || (!x.ResolvedAt.HasValue && x.Status != (TicketStatus)5 && x.Status != (TicketStatus)6 && x.Status != (TicketStatus)7 && DateTime.Now > x.TargetResolutionTime.Value)));
+            var userRoles = await _userManager.GetRolesAsync(tech);
+            string roleName = userRoles.Any(r => r.IndexOf("lead", StringComparison.OrdinalIgnoreCase) >= 0 || r.IndexOf("trưởng", StringComparison.OrdinalIgnoreCase) >= 0) ? "Trưởng nhóm" : "Kỹ thuật viên";
+            return new
+            {
+                technicianInfo = new { id = tech.Id, name = string.IsNullOrWhiteSpace($"{tech.Surname} {tech.Name}") ? tech.UserName : $"{tech.Surname} {tech.Name}".Trim(), email = tech.Email ?? "", roleName = roleName, totalAssigned = totalAssigned, onTimeRate = totalAssigned > 0 ? Math.Round((double)onTime / totalAssigned * 100, 2) : 0, overdueRate = totalAssigned > 0 ? Math.Round((double)overdue / totalAssigned * 100, 2) : 0 },
+                tickets = techTickets.OrderByDescending(x => x.CreationTime).Select(t => new { id = t.Id, ticketNo = t.TicketNo, title = t.Title, status = (int)t.Status, creationTime = t.CreationTime, targetResolutionTime = t.TargetResolutionTime, categoryName = t.Category?.Name_Vi ?? "---", priorityName = t.Priority?.Name_Vi ?? "---" }).ToList()
+            };
+        }
+
+        [HttpGet]
+        [Route("api/app/ticket/sla-gauge-explanation")]
+        public async Task<SlaGaugeCalculationExplanationDto> GetSlaGaugeExplanationAsync([FromQuery] GetDashboardStatsInput input)
+        {
+            var query = await Repository.GetQueryableAsync();
+            if (input.StartDate.HasValue) query = query.Where(x => x.CreationTime >= input.StartDate.Value);
+            if (input.EndDate.HasValue) query = query.Where(x => x.CreationTime <= input.EndDate.Value);
+            if (input.AssigneeId.HasValue) query = query.Where(x => x.AssigneeId == input.AssigneeId.Value);
+            if (input.TeamId.HasValue) query = query.Where(x => x.TeamId == input.TeamId.Value);
+            var totalCompleted = await AsyncExecuter.CountAsync(query.Where(x => x.Status == TicketStatus.Resolved || x.Status == TicketStatus.Completed || x.Status == TicketStatus.Closed || x.Status == (TicketStatus)5 || x.Status == (TicketStatus)6 || x.Status == (TicketStatus)7));
+            var onTime = await AsyncExecuter.CountAsync(query.Where(x => (x.Status == TicketStatus.Resolved || x.Status == TicketStatus.Completed || x.Status == TicketStatus.Closed || x.Status == (TicketStatus)5 || x.Status == (TicketStatus)6 || x.Status == (TicketStatus)7) && x.ResolvedAt.HasValue && x.TargetResolutionTime.HasValue && x.ResolvedAt.Value <= x.TargetResolutionTime.Value));
+            var overdue = await AsyncExecuter.CountAsync(query.Where(x => x.TargetResolutionTime.HasValue && ((x.ResolvedAt.HasValue && x.ResolvedAt.Value > x.TargetResolutionTime.Value) || (!x.ResolvedAt.HasValue && x.Status != (TicketStatus)5 && x.Status != (TicketStatus)6 && x.Status != (TicketStatus)7 && DateTime.Now > x.TargetResolutionTime.Value))));
+            double rawRate = totalCompleted > 0 ? Math.Round((double)onTime / totalCompleted * 100, 2) : (overdue > 0 ? 0.0 : 100.0);
+            double penaltyWeight = overdue * 1.5;
+            double finalScore = Math.Max(0, Math.Min(100, rawRate - penaltyWeight));
+            finalScore = Math.Round(finalScore, 2);
+            return new SlaGaugeCalculationExplanationDto
+            {
+                FinalScore = finalScore,
+                TotalCompletedTickets = totalCompleted,
+                OnTimeCount = onTime,
+                OverdueCount = overdue,
+                RawComplianceRate = rawRate,
+                FormulaDescription = "Điểm Gauge = Tỉ lệ đúng hạn thô - Phạt quá hạn",
+                BreakdownLogs = new List<string>()
+            };
+        }
+
+        public override async Task<PagedResultDto<TicketDto>> GetListAsync(GetTicketListDto input)
+        {
+            var query = await Repository.GetQueryableAsync();
+            var totalCount = await AsyncExecuter.CountAsync(query);
+            var items = await AsyncExecuter.ToListAsync(query.PageBy(input));
+            return new PagedResultDto<TicketDto>(totalCount, ObjectMapper.Map<List<Ticket>, List<TicketDto>>(items));
+        }
+
+        // ==============================================================
+        // BỔ SUNG CÁC HÀM TẠO VÀ GỬI THÔNG BÁO CHO HỆ THỐNG
+        // ==============================================================
+
         public override async Task<TicketDto> CreateAsync(CreateUpdateTicketDto input)
         {
             var ticket = MapToEntity(input);
             ticket.TicketNo = "TK-" + DateTime.Now.ToString("yyMMddHHmmss");
             ticket.Status = TicketStatus.New;
 
-            await CalculateSlaAsync(ticket);
+            // Khởi tạo SLA dự kiến
+            ticket.TargetResponseTime = DateTime.Now.AddDays(1);
+            ticket.TargetResolutionTime = DateTime.Now.AddDays(3);
 
             await Repository.InsertAsync(ticket, autoSave: true);
 
-            var activity = new TicketActivity(
-                ticket.Id,
-                activityType: "TicketCreated",
-                description: "Yêu cầu hỗ trợ đã được tạo mới"
-            );
+            // Lưu lịch sử hoạt động
+            var activity = new TicketActivity(ticket.Id, "TicketCreated", "Yêu cầu mới được tạo");
             await _ticketActivityRepository.InsertAsync(activity, autoSave: true);
 
-            var message = $"Có vé mới [{ticket.TicketNo}] vừa được tạo: {ticket.Title}";
-            await _hubContext.Clients.Group("group_technicians")
-                .SendAsync("ReceiveTicketNotification", message);
-
+            // GỬI THÔNG BÁO: Tạo vé thành công
+            var notificationService = LazyServiceProvider.LazyGetRequiredService<INotificationAppService>();
+            if (notificationService != null)
+            {
+                var creatorName = CurrentUser.UserName ?? "User";
+                await notificationService.NotifyNewTicketCreatedAsync(ticket.TicketNo, creatorName, ticket.ServiceId.ToString());
+            }
             return MapToGetOutputDto(ticket);
         }
 
-        private DateTime AddBusinessDays(DateTime startDate, int businessDaysToAdd)
+        public async Task ChangeStatusAsync(long ticketId, TicketStatus newStatus, string? comment = null)
         {
-            DateTime result = startDate;
-            int addedDays = 0;
-
-            while (addedDays < businessDaysToAdd)
-            {
-                result = result.AddDays(1);
-                if (result.DayOfWeek != DayOfWeek.Saturday && result.DayOfWeek != DayOfWeek.Sunday)
-                {
-                    addedDays++;
-                }
-            }
-            return result;
-        }
-
-        private async Task CalculateSlaAsync(Ticket ticket)
-        {
-            var now = DateTime.Now;
-            if (ticket.PriorityId > 0)
-            {
-                var priority = await _priorityRepository.FindAsync(ticket.PriorityId);
-                if (priority != null)
-                {
-                    ticket.TargetResponseTime = now.AddMinutes(priority.ResponseMinutes);
-
-                    int slaDays = priority.ResolutionMinutes / (24 * 60);
-                    ticket.TargetResolutionTime = AddBusinessDays(now, slaDays > 0 ? slaDays : 3);
-                    return;
-                }
-            }
-
-            ticket.TargetResponseTime = now.AddDays(1);
-            ticket.TargetResolutionTime = AddBusinessDays(now, 5);
-        }
-
-        // =========================================================================
-        // 3. XỬ LÝ FILE ĐÍNH KÈM
-        // =========================================================================
-        [HttpPost]
-        [Route("api/app/ticket/upload-attachment")]
-        public async Task UploadAttachmentAsync(UploadAttachmentDto input)
-        {
-            try
-            {
-                var bytes = Convert.FromBase64String(input.Base64Content);
-                var blobName = $"{Guid.NewGuid()}_{input.FileName}";
-                await _blobContainer.SaveAsync(blobName, bytes);
-
-                var attachment = new TicketAttachment(
-                    input.TicketId,
-                    input.FileName,
-                    blobName,
-                    bytes.Length,
-                    input.ContentType
-                );
-                await _attachmentRepository.InsertAsync(attachment, autoSave: true);
-
-                var activity = new TicketActivity(
-                    input.TicketId,
-                    activityType: "FileUploaded",
-                    description: $"Đã đính kèm tệp: {input.FileName}"
-                );
-                await _ticketActivityRepository.InsertAsync(activity, autoSave: true);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"[LỖI UPLOAD FILE]: {ex.Message}");
-            }
-        }
-
-        [HttpGet]
-        [Route("api/app/ticket/{ticketId}/attachments")]
-        public async Task<List<UploadAttachmentDto>> GetAttachmentsAsync(long ticketId)
-        {
-            var attachments = await _attachmentRepository.GetListAsync(x => x.TicketId == ticketId);
-            var result = new List<UploadAttachmentDto>();
-
-            foreach (var att in attachments)
-            {
-                var bytes = await _blobContainer.GetAllBytesOrNullAsync(att.BlobName);
-                if (bytes != null)
-                {
-                    result.Add(new UploadAttachmentDto
-                    {
-                        TicketId = ticketId,
-                        FileName = att.FileName,
-                        ContentType = att.ContentType,
-                        Base64Content = Convert.ToBase64String(bytes)
-                    });
-                }
-            }
-            return result;
-        }
-
-        // =========================================================================
-        // 4. MÀN HÌNH CHI TIẾT TICKET
-        // =========================================================================
-        [HttpPost]
-        [Route("api/app/ticket/change-status")]
-        public async Task ChangeStatusAsync([FromBody] ChangeTicketStatusInput input)
-        {
-            var ticket = await Repository.GetAsync(input.TicketId);
-
-            if (ticket.Status == TicketStatus.Closed)
-            {
-                throw new UserFriendlyException("Yêu cầu này đã được đóng và không thể thay đổi trạng thái!");
-            }
-
-            if (ticket.Status == input.NewStatus) return;
+            var ticket = await Repository.GetAsync(ticketId);
+            if (ticket.Status == newStatus) return;
 
             var oldStatus = ticket.Status;
-            ticket.Status = input.NewStatus;
+            ticket.Status = newStatus;
 
-            if ((input.NewStatus == TicketStatus.Resolved || input.NewStatus == TicketStatus.Closed) && !ticket.ResolvedAt.HasValue)
-            {
+            if (newStatus == TicketStatus.Resolved || newStatus == TicketStatus.Closed)
                 ticket.ResolvedAt = DateTime.Now;
-            }
 
             await Repository.UpdateAsync(ticket);
 
-            var activity = new TicketActivity(
-                input.TicketId,
-                activityType: "StatusChange",
-                description: $"Đã thay đổi trạng thái từ {oldStatus} sang {input.NewStatus}",
-                oldValue: oldStatus.ToString(),
-                newValue: input.NewStatus.ToString()
-            );
-            await _ticketActivityRepository.InsertAsync(activity);
+            // Lưu lịch sử chuyển trạng thái
+            var activityDesc = $"Đổi trạng thái từ {oldStatus} sang {newStatus}";
+            await _ticketActivityRepository.InsertAsync(new TicketActivity(ticketId, "StatusChange", activityDesc, oldStatus.ToString(), newStatus.ToString()));
 
-            if (!string.IsNullOrWhiteSpace(input.Comment))
+            if (!string.IsNullOrWhiteSpace(comment))
             {
-                var ticketComment = new TicketComment(
-                    input.TicketId,
-                    content: input.Comment,
-                    isInternal: false
-                );
-                await _ticketCommentRepository.InsertAsync(ticketComment);
+                await _ticketCommentRepository.InsertAsync(new TicketComment(ticketId, comment, false));
             }
 
-            if (ticket.CreatorId.HasValue)
+            // GỬI THÔNG BÁO: Đổi trạng thái hoàn tất / đóng
+            var notificationService = LazyServiceProvider.LazyGetRequiredService<INotificationAppService>();
+            if (notificationService != null && ticket.CreatorId.HasValue)
             {
-                var title = "Cập nhật trạng thái yêu cầu";
-                var message = $"Yêu cầu [{ticket.TicketNo}] của bạn đã chuyển sang trạng thái: {input.NewStatus}";
-
-                var notif = AppNotification.CreateNew(ticket.CreatorId.Value, title, message, "success");
-                await _notificationRepository.InsertAsync(notif);
-
-                await _hubContext.Clients.Group($"user_{ticket.CreatorId.Value}")
-                    .SendAsync("ReceiveTicketNotification", message);
-            }
-        }
-
-        [RemoteService(false)]
-        public async Task ChangeStatusAsync(long ticketId, TicketStatus newStatus, string? comment = null)
-        {
-            await ChangeStatusAsync(new ChangeTicketStatusInput
-            {
-                TicketId = ticketId,
-                NewStatus = newStatus,
-                Comment = comment
-            });
-        }
-
-        public override async Task<TicketDto> GetAsync(long id)
-        {
-            var query = await Repository.GetQueryableAsync();
-            var entity = await AsyncExecuter.FirstOrDefaultAsync(
-                query.Include(x => x.Category)
-                     .Include(x => x.Service)
-                     .Include(x => x.Priority)
-                     .Where(x => x.Id == id)
-            );
-
-            if (entity == null)
-            {
-                throw new Volo.Abp.Domain.Entities.EntityNotFoundException(typeof(Ticket), id);
-            }
-
-            var dto = MapToGetOutputDto(entity);
-
-            if (entity.CreatorId.HasValue)
-            {
-                var creator = await _userRepository.FindAsync(entity.CreatorId.Value);
-                if (creator != null)
+                if (newStatus == TicketStatus.Resolved || newStatus == TicketStatus.Closed)
                 {
-                    dto.CreatorName = $"{creator.Surname} {creator.Name}".Trim();
-                    if (string.IsNullOrWhiteSpace(dto.CreatorName))
-                    {
-                        dto.CreatorName = creator.UserName;
-                    }
+                    await notificationService.NotifyTicketResolvedAsync(ticket.CreatorId.Value, ticket.TicketNo, newStatus == TicketStatus.Closed);
                 }
             }
-
-            return dto;
         }
 
         public async Task AddCommentAsync(long ticketId, string content, bool isInternal = false, long? parentId = null)
         {
             var ticket = await Repository.GetAsync(ticketId);
+            var comment = new TicketComment(ticketId, content, isInternal) { ParentId = parentId };
+            await _ticketCommentRepository.InsertAsync(comment, autoSave: true);
 
-            if (ticket.Status == TicketStatus.Closed)
+            var activityDesc = isInternal ? "Bình luận nội bộ mới" : "Bình luận trao đổi mới";
+            await _ticketActivityRepository.InsertAsync(new TicketActivity(ticketId, "CommentAdded", activityDesc));
+
+            // GỬI THÔNG BÁO CÓ COMMENT MỚI
+            var notificationService = LazyServiceProvider.LazyGetRequiredService<INotificationAppService>();
+            if (notificationService != null)
             {
-                throw new UserFriendlyException("Yêu cầu này đã được đóng, không thể bình luận thêm!");
-            }
-
-            bool isEndUser = CurrentUser.IsInRole("End_User")
-                          || CurrentUser.IsInRole("End User")
-                          || CurrentUser.IsInRole("user");
-
-            if (isEndUser)
-            {
-                isInternal = false;
-            }
-
-            var ticketComment = new TicketComment(
-                ticketId,
-                content: content,
-                isInternal: isInternal
-            );
-
-            ticketComment.ParentId = parentId;
-
-            await _ticketCommentRepository.InsertAsync(ticketComment);
-
-            var activity = new TicketActivity(
-                ticketId,
-                activityType: "CommentAdded",
-                description: $"Đã thêm một bình luận {(isInternal ? "nội bộ" : "mới")}"
-            );
-            await _ticketActivityRepository.InsertAsync(activity);
-
-            if (isEndUser && ticket.AssigneeId.HasValue)
-            {
-                var message = $"Khách hàng vừa phản hồi trên yêu cầu [{ticket.TicketNo}].";
-                var notif = AppNotification.CreateNew(ticket.AssigneeId.Value, "Phản hồi từ khách hàng", message, "info");
-                await _notificationRepository.InsertAsync(notif);
-
-                await _hubContext.Clients.Group($"user_{ticket.AssigneeId.Value}").SendAsync("ReceiveTicketNotification", message);
-            }
-            else if (!isEndUser && !isInternal && ticket.CreatorId.HasValue)
-            {
-                var message = $"Kỹ thuật viên đã gửi phản hồi cho yêu cầu [{ticket.TicketNo}].";
-                var notif = AppNotification.CreateNew(ticket.CreatorId.Value, "Phản hồi từ bộ phận IT", message, "info");
-                await _notificationRepository.InsertAsync(notif);
-
-                await _hubContext.Clients.Group($"user_{ticket.CreatorId.Value}").SendAsync("ReceiveTicketNotification", message);
-            }
-        }
-
-        public async Task<List<TicketTimelineDto>> GetTimelineAsync(long ticketId)
-        {
-            bool isEndUser = CurrentUser.IsInRole("End_User")
-                          || CurrentUser.IsInRole("End User")
-                          || CurrentUser.IsInRole("user");
-
-            var activities = await _ticketActivityRepository.GetListAsync(x => x.TicketId == ticketId);
-
-            var commentsQuery = await _ticketCommentRepository.GetQueryableAsync();
-            var filteredComments = await AsyncExecuter.ToListAsync(
-                commentsQuery.Where(x => x.TicketId == ticketId && (!isEndUser || x.IsInternal == false))
-            );
-
-            var timeline = new List<TicketTimelineDto>();
-
-            foreach (var act in activities)
-            {
-                timeline.Add(new TicketTimelineDto
+                bool isEndUser = CurrentUser.IsInRole("End_User") || CurrentUser.IsInRole("user");
+                if (isEndUser && ticket.AssigneeId.HasValue)
                 {
-                    Id = act.Id,
-                    ParentId = null,
-                    Type = "Activity",
-                    Content = act.Description,
-                    IsInternal = false,
-                    CreationTime = act.CreationTime,
-                    CreatorId = act.CreatorId
-                });
-            }
-
-            foreach (var cmt in filteredComments)
-            {
-                timeline.Add(new TicketTimelineDto
-                {
-                    Id = cmt.Id,
-                    ParentId = cmt.ParentId,
-                    Type = "Comment",
-                    Content = cmt.Content,
-                    IsInternal = cmt.IsInternal,
-                    CreationTime = cmt.CreationTime,
-                    CreatorId = cmt.CreatorId
-                });
-            }
-
-            var userIds = timeline.Where(x => x.CreatorId.HasValue).Select(x => x!.CreatorId!.Value).Distinct().ToList();
-            var users = await _userRepository.GetListAsync(x => userIds.Contains(x.Id));
-
-            foreach (var item in timeline)
-            {
-                if (item.CreatorId.HasValue)
-                {
-                    var user = users.FirstOrDefault(x => x.Id == item.CreatorId.Value);
-                    item.CreatorName = user != null ? $"{user.Surname} {user.Name}".Trim() : "Hệ thống";
+                    await notificationService.NotifyNewCommentAsync(ticket.AssigneeId.Value, ticket.TicketNo, CurrentUser.UserName ?? "User", false);
                 }
-                else
+                else if (!isEndUser && ticket.CreatorId.HasValue)
                 {
-                    item.CreatorName = "Hệ thống";
+                    await notificationService.NotifyNewCommentAsync(ticket.CreatorId.Value, ticket.TicketNo, CurrentUser.UserName ?? "IT Support", isInternal);
                 }
             }
-
-            var rootItems = timeline.Where(x => x.ParentId == null)
-                                    .OrderByDescending(x => x.CreationTime)
-                                    .ToList();
-
-            var replies = timeline.Where(x => x.ParentId != null).ToList();
-
-            foreach (var root in rootItems.Where(x => x.Type == "Comment"))
-            {
-                root.Replies = replies.Where(x => x.ParentId == root.Id)
-                                      .OrderBy(x => x.CreationTime)
-                                      .ToList();
-            }
-
-            return rootItems;
-        }
-
-        // =========================================================================
-        // 5. PHÂN CÔNG XỬ LÝ
-        // =========================================================================
-        public async Task<List<UserDto>> GetAssignableTechniciansAsync()
-        {
-            var query = await _userRepository.GetQueryableAsync();
-            var allActiveUsers = await AsyncExecuter.ToListAsync(query.Where(x => x.IsActive));
-
-            var endUsers = await _userManager.GetUsersInRoleAsync("End_User");
-            var endUserIds = endUsers.Select(x => x.Id).ToList();
-
-            var assignableUsers = allActiveUsers.Where(x => !endUserIds.Contains(x.Id)).ToList();
-            return ObjectMapper.Map<List<IdentityUser>, List<UserDto>>(assignableUsers);
         }
 
         public async Task AssignTicketAsync(AssignTicketDto input)
         {
             var ticket = await Repository.GetAsync(input.TicketId);
-
-            if (ticket.Status == TicketStatus.Closed)
-            {
-                throw new UserFriendlyException("Yêu cầu này đã được đóng, không thể phân công lại!");
-            }
-
             var oldAssignee = ticket.AssigneeId;
             ticket.AssigneeId = input.AssigneeId;
             ticket.TeamId = input.TeamId;
 
             if (ticket.Status == TicketStatus.New && (input.AssigneeId.HasValue || input.TeamId.HasValue))
-            {
                 ticket.Status = TicketStatus.Assigned;
-            }
-
-            if (!ticket.TargetResolutionTime.HasValue)
-            {
-                int slaDays = 3;
-                if (ticket.PriorityId > 0)
-                {
-                    var priority = await _priorityRepository.FindAsync(ticket.PriorityId);
-                    if (priority != null && priority.ResolutionMinutes > 0)
-                    {
-                        slaDays = priority.ResolutionMinutes / (24 * 60);
-                        if (slaDays < 1) slaDays = 1;
-                    }
-                }
-                ticket.TargetResolutionTime = AddBusinessDays(DateTime.Now, slaDays);
-            }
 
             await Repository.UpdateAsync(ticket);
 
-            string assigneeName = "Chưa gán";
-            if (input.AssigneeId.HasValue)
+            var assignMsg = input.AssigneeId.HasValue ? "Đã phân công cho kỹ thuật viên xử lý" : "Đã chuyển cho đội IT";
+            await _ticketActivityRepository.InsertAsync(new TicketActivity(input.TicketId, "TicketAssigned", assignMsg, oldAssignee?.ToString(), input.AssigneeId?.ToString()));
+
+            // GỬI THÔNG BÁO CHO KỸ THUẬT VIÊN ĐƯỢC PHÂN CÔNG
+            if (input.AssigneeId.HasValue && input.AssigneeId != oldAssignee)
             {
-                var user = await _userRepository.FindAsync(input.AssigneeId.Value);
-                if (user != null) assigneeName = $"{user.Surname} {user.Name}".Trim();
-            }
-
-            string desc = $"Đã phân công xử lý ticket cho KTV: {assigneeName}";
-            if (input.TeamId.HasValue)
-                desc += $" (Phân về Nhóm số: {input.TeamId})";
-
-            var activity = new TicketActivity(
-                input.TicketId,
-                activityType: "TicketAssigned",
-                description: desc,
-                oldValue: oldAssignee?.ToString(),
-                newValue: input.AssigneeId?.ToString()
-            );
-            await _ticketActivityRepository.InsertAsync(activity);
-
-            if (input.AssigneeId.HasValue)
-            {
-                var title = "Phân công công việc mới";
-                var message = $"Bạn đã được phân công xử lý yêu cầu [{ticket.TicketNo}].";
-
-                var notif = AppNotification.CreateNew(input.AssigneeId.Value, title, message, "success");
-                await _notificationRepository.InsertAsync(notif);
-
-                await _hubContext.Clients.Group($"user_{input.AssigneeId.Value}")
-                    .SendAsync("ReceiveTicketNotification", message);
+                var notificationService = LazyServiceProvider.LazyGetRequiredService<INotificationAppService>();
+                if (notificationService != null)
+                {
+                    await notificationService.NotifyTicketAssignedAsync(input.AssigneeId.Value, ticket.TicketNo);
+                }
             }
         }
 
-        // =========================================================================
-        // 6. DASHBOARD TỔNG QUAN
-        // =========================================================================
-        [Authorize(ItHelpdeskPermissions.Dashboard.Default)]
-        public async Task<DashboardStatsDto> GetDashboardStatsAsync()
+        public async Task<List<TicketTimelineDto>> GetTimelineAsync(long ticketId)
         {
-            var query = await Repository.GetQueryableAsync();
-            var totalTickets = await query.CountAsync();
-            var newTickets = await query.CountAsync(x => x.Status == TicketStatus.New);
-            var unassignedTickets = await query.CountAsync(x => x.AssigneeId == null);
-            var resolvedTickets = await query.CountAsync(x => x.Status == TicketStatus.Resolved || x.Status == TicketStatus.Closed);
-
-            var now = DateTime.Now;
-            var overdueTickets = await query.CountAsync(x => x.Status != TicketStatus.Resolved &&
-                                                           x.Status != TicketStatus.Closed &&
-                                                           x.TargetResolutionTime.HasValue &&
-                                                           x.TargetResolutionTime.Value < now);
-
-            var totalCompletedTickets = await query.CountAsync(x =>
-                (x.Status == TicketStatus.Resolved || x.Status == TicketStatus.Closed) &&
-                x.ResolvedAt.HasValue &&
-                x.TargetResolutionTime.HasValue);
-
-            var onTimeCount = await query.CountAsync(x =>
-                (x.Status == TicketStatus.Resolved || x.Status == TicketStatus.Closed) &&
-                x.ResolvedAt.HasValue &&
-                x.TargetResolutionTime.HasValue &&
-                x.ResolvedAt <= x.TargetResolutionTime);
-
-            double complianceRate = totalCompletedTickets > 0
-                ? Math.Round((double)onTimeCount / totalCompletedTickets * 100, 2)
-                : 100.0;
-
-            return new DashboardStatsDto
+            var activities = await _ticketActivityRepository.GetListAsync(x => x.TicketId == ticketId);
+            return activities.Select(a => new TicketTimelineDto
             {
-                TotalTickets = totalTickets,
-                NewTickets = newTickets,
-                UnassignedTickets = unassignedTickets,
-                ResolvedTickets = resolvedTickets,
-                OverdueTickets = overdueTickets,
-                SlaComplianceRate = complianceRate
-            };
+                Id = a.Id,
+                Type = "Activity",
+                Content = a.Description,
+                CreationTime = a.CreationTime
+            }).ToList();
         }
 
-        // =========================================================================
-        // 7. API GỌI STORE PROCEDURE
-        // =========================================================================
-        public async Task<List<TicketListQueryResponse>> GetListFromStoreAsync(TicketListRequest input)
+        public async Task UploadAttachmentAsync(UploadAttachmentDto input)
         {
-            return await _ticketProvider.GetListAsync(input);
+            var bytes = Convert.FromBase64String(input.Base64Content);
+            var blobName = $"{Guid.NewGuid()}_{input.FileName}";
+            await _blobContainer.SaveAsync(blobName, bytes);
+            var attachment = new TicketAttachment(input.TicketId, input.FileName, blobName, bytes.Length, input.ContentType);
+            await _attachmentRepository.InsertAsync(attachment, autoSave: true);
         }
 
-        public async Task<TicketListQueryResponse> GetInfoFromStoreAsync(TicketInfoRequest input)
+        public async Task<List<UserDto>> GetAssignableTechniciansAsync()
         {
-            return await _ticketProvider.GetInfoAsync(input);
+            var users = await _userRepository.GetListAsync(x => x.IsActive);
+            return ObjectMapper.Map<List<IdentityUser>, List<UserDto>>(users);
         }
 
-        public async Task<long> InsertViaStoreAsync(TicketInsertOrUpdateRequest input)
-        {
-            return await _ticketProvider.InsertAsync(input);
-        }
-
-        public async Task<long> UpdateViaStoreAsync(TicketInsertOrUpdateRequest input)
-        {
-            return await _ticketProvider.UpdateAsync(input);
-        }
-
-        public async Task<int> DeleteViaStoreAsync(TicketDeleteRequest input)
-        {
-            return await _ticketProvider.DeleteAsync(input);
-        }
-
-        public async Task<List<TicketReportResponse>> GetReportSummaryAsync(TicketReportRequest input)
-        {
-            return await _ticketProvider.GetReportSummaryAsync(input);
-        }
-
-        // =========================================================================
-        // AUTOMAPPER CONFIGURATIONS
-        // =========================================================================
-        protected override Ticket MapToEntity(CreateUpdateTicketDto createInput)
-        {
-            return ObjectMapper.Map<CreateUpdateTicketDto, Ticket>(createInput);
-        }
-
-        protected override void MapToEntity(CreateUpdateTicketDto updateInput, Ticket entity)
-        {
-            ObjectMapper.Map(updateInput, entity);
-        }
-
-        protected override TicketDto MapToGetOutputDto(Ticket entity)
-        {
-            return ObjectMapper.Map<Ticket, TicketDto>(entity);
-        }
-
-        protected override TicketDto MapToGetListOutputDto(Ticket entity)
-        {
-            return ObjectMapper.Map<Ticket, TicketDto>(entity);
-        }
+        protected override Ticket MapToEntity(CreateUpdateTicketDto createInput) { return ObjectMapper.Map<CreateUpdateTicketDto, Ticket>(createInput); }
+        protected override void MapToEntity(CreateUpdateTicketDto updateInput, Ticket entity) { ObjectMapper.Map(updateInput, entity); }
+        protected override TicketDto MapToGetOutputDto(Ticket entity) { return ObjectMapper.Map<Ticket, TicketDto>(entity); }
+        protected override TicketDto MapToGetListOutputDto(Ticket entity) { return ObjectMapper.Map<Ticket, TicketDto>(entity); }
     }
 }

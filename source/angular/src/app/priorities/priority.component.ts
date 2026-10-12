@@ -1,26 +1,10 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, HostListener, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormGroup, FormBuilder, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgxDatatableModule } from '@swimlane/ngx-datatable';
-import {
-  ListService,
-  PagedResultDto,
-  LocalizationPipe,
-  LocalizationService,
-  PermissionDirective,
-  AutofocusDirective
-} from '@abp/ng.core';
-import {
-  ConfirmationService,
-  Confirmation,
-  NgxDatatableDefaultDirective,
-  NgxDatatableListDirective,
-  ModalCloseDirective,
-  ModalComponent,
-  ToasterService
-} from '@abp/ng.theme.shared';
-
+import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
+import { ListService, PagedResultDto, LocalizationService, RestService, LocalizationPipe, ConfigStateService } from '@abp/ng.core';
+import { ConfirmationService, Confirmation, ToasterService, ThemeSharedModule } from '@abp/ng.theme.shared';
 import { PriorityDto, PriorityService } from '../proxy/priorities';
 import { AdminBaseComponent } from '../shared/base/admin-base.component';
 
@@ -29,155 +13,157 @@ import { AdminBaseComponent } from '../shared/base/admin-base.component';
   templateUrl: './priority.component.html',
   styleUrls: ['./priority.component.scss'],
   standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    ReactiveFormsModule,
-    NgxDatatableModule,
-    NgbDropdownModule,
-    ModalComponent,
-    AutofocusDirective,
-    NgxDatatableListDirective,
-    NgxDatatableDefaultDirective,
-    PermissionDirective,
-    ModalCloseDirective,
-    LocalizationPipe
-  ],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, NgxDatatableModule, NgbDropdownModule, LocalizationPipe, ThemeSharedModule],
   providers: [ListService],
 })
-export class PriorityComponent extends AdminBaseComponent implements OnInit {
-  private priorityService = inject(PriorityService) as any;
+export class PriorityComponent extends AdminBaseComponent implements OnInit, OnDestroy {
+  private priorityService = inject(PriorityService);
   private fb = inject(FormBuilder);
   private confirmation = inject(ConfirmationService);
   private toaster = inject(ToasterService);
-  private localizationService = inject(LocalizationService);
-
-  protected storageKey = 'priority_search_history';
-
-  priority = { items: [], totalCount: 0 } as PagedResultDto<PriorityDto>;
+  public localizationService = inject(LocalizationService);
+  private restService = inject(RestService);
+  private config = inject(ConfigStateService);
+  
+  protected override storageKey = 'priority_search_history';
+  override searchFilter = '';
+  priorityList = { items: [], totalCount: 0 } as PagedResultDto<PriorityDto>;
   selectedPriority = {} as PriorityDto;
   form!: FormGroup;
   isModalOpen = false;
   isSubmitting = false;
-
-  searchFilter = '';
-  showSearchSuggestions = false;
-  recentSearches: string[] = [];
-
+  isLoading = false;
+  selectedStatus: boolean | null = null;
+  showStatusDropdown = false;
+  
   isReassignModalOpen = false;
   priorityToDelete: any = null;
-  targetReplacementPriorityId: any = null;
-  availableReplacementPriorities: PriorityDto[] = [];
+  targetReplacementPriorityId: number | null = null;
+  availableReplacementPriorities: any[] = [];
+  
+  skipCount = 0;
+  maxResultCount = 10;
 
-  ngOnInit(): void {
+  @HostListener('document:click', ['$event'])
+  override onDocumentClick(event: MouseEvent): void {
+    super.onDocumentClick(event);
+    const target = event.target as Element;
+    if (!target.closest('.status-dropdown-wrapper')) {
+      this.showStatusDropdown = false;
+    }
+  }
+
+  override ngOnInit(): void {
     super.ngOnInit();
-    this.loadSearchHistory();
-    this.toaster.info(this.localizationService.instant('ItHelpdesk::PrioritySpaceLoaded'));
+    const priorityStreamCreator = (query: any) => {
+      this.isLoading = true;
+      return this.priorityService.getList({ ...query, filter: this.searchFilter, isActive: this.selectedStatus });
+    };
+    
+    this.list.hookToQuery(priorityStreamCreator).subscribe((response: PagedResultDto<PriorityDto>) => {
+      const lang = this.config.getDeep('localization.currentCulture.cultureName') || 'vi';
+      const isEn = lang.toLowerCase().includes('en');
+      const unnamedText = this.localizationService.instant('ItHelpdesk::Unnamed');
 
-    const streamCreator = (query: any) =>
-      this.priorityService.getList({ ...query, filter: this.searchFilter });
-
-    this.list.hookToQuery(streamCreator).subscribe((response: any) => {
-      this.priority = response;
+      const rawItems = response.items || [];
+      const mappedItems = rawItems.map((item: any) => {
+        const localizedName = isEn ? (item.name_En || item.name_Vi) : (item.name_Vi || item.name_En);
+        const dName = localizedName ? localizedName : ((item.name && item.name.trim() !== '') ? item.name : (item.code ? `[${unnamedText}] - ${item.code}` : '---'));
+        return { ...item, displayName: dName };
+      });
+      this.priorityList = { ...response, items: mappedItems } as any;
+      this.isLoading = false;
     });
   }
 
-  loadSearchHistory(): void {
-    const saved = localStorage.getItem(this.storageKey);
-    if (saved) {
-      try { this.recentSearches = JSON.parse(saved); } catch (e) { this.recentSearches = []; }
-    }
-  }
-
-  saveSearchHistory(keyword: string): void {
-    if (!keyword.trim()) return;
-    const index = this.recentSearches.indexOf(keyword);
-    if (index > -1) this.recentSearches.splice(index, 1);
-    this.recentSearches.unshift(keyword);
-    if (this.recentSearches.length > 5) this.recentSearches.pop();
-    localStorage.setItem(this.storageKey, JSON.stringify(this.recentSearches));
-  }
-
-  onSearchInput(): void { }
-
-  performSearch(): void {
-    if (this.searchFilter) {
-      this.saveSearchHistory(this.searchFilter.trim());
-      this.toaster.success(this.localizationService.instant('ItHelpdesk::PrioritySearchFilteredSuccess', this.searchFilter || ''));
-    }
-    this.showSearchSuggestions = false;
-    this.list.page = 0;
-    this.list.get();
-  }
-
-  clearSearch(): void {
-    this.searchFilter = '';
-    this.list.page = 0;
-    this.list.get();
-    this.toaster.info(this.localizationService.instant('ItHelpdesk::PrioritySearchCleared'));
-  }
-
-  selectSearchSuggestion(item: string): void {
-    this.searchFilter = item;
-    this.performSearch();
-  }
-
-  removeSearchHistoryItem(item: string, event: Event): void {
-    event.stopPropagation();
-    this.recentSearches = this.recentSearches.filter(s => s !== item);
-    localStorage.setItem(this.storageKey, JSON.stringify(this.recentSearches));
-    this.toaster.success(this.localizationService.instant('ItHelpdesk::HistoryItemRemoved'));
-  }
-
-  clearAllSearchHistory(event: Event): void {
-    event.stopPropagation();
-    this.recentSearches = [];
-    localStorage.removeItem(this.storageKey);
-    this.toaster.success(this.localizationService.instant('ItHelpdesk::HistoryClearedAll'));
-  }
-
-  createPriority(): void {
-    this.selectedPriority = {} as PriorityDto;
-    this.buildForm();
-    this.isSubmitting = false;
-    this.isModalOpen = true;
-    this.toaster.info(this.localizationService.instant('ItHelpdesk::OpeningCreatePriorityModal'));
-  }
-
-  editPriority(id: string): void {
-    this.priorityService.get(id).subscribe((data: any) => {
-      this.selectedPriority = data;
-      this.buildForm();
-      this.isSubmitting = false;
-      this.isModalOpen = true;
-      this.toaster.info(this.localizationService.instant('ItHelpdesk::EditingPriority', data.name || ''));
+  override ngOnDestroy(): void { super.ngOnDestroy(); }
+  onPageChange(event: any): void { this.skipCount = event.offset * this.maxResultCount; this.list.page = event.offset; this.list.get(); }
+  triggerDataLoad(): void { this.skipCount = 0; this.list.page = 0; this.list.get(); }
+  refreshList(): void { this.triggerDataLoad(); }
+  override performSearch(keyword?: string): void { if (keyword !== undefined) this.searchFilter = keyword; super.performSearch(); this.triggerDataLoad(); }
+  override clearSearch(): void { if (!this.searchFilter && this.selectedStatus === null) return; this.selectedStatus = null; super.clearSearch(); this.triggerDataLoad(); }
+  
+  toggleStatusDropdown(event: MouseEvent): void { event.stopPropagation(); this.showStatusDropdown = !this.showStatusDropdown; this.showSearchSuggestions = false; }
+  selectStatusFilter(status: boolean | null): void { this.selectedStatus = status; this.showStatusDropdown = false; this.triggerDataLoad(); }
+  getStatusName(status: boolean | null): string { return status === null ? this.localizationService.instant('ItHelpdesk::AllStatuses') : (status ? this.localizationService.instant('ItHelpdesk::Active') : this.localizationService.instant('ItHelpdesk::Inactive')); }
+  
+  buildForm(): void {
+    this.form = this.fb.group({
+      code: [this.selectedPriority.code || '', [Validators.required, Validators.maxLength(50)]],
+      name_Vi: [(this.selectedPriority as any).name_Vi || '', [Validators.required, Validators.maxLength(255)]],
+      name_En: [(this.selectedPriority as any).name_En || '', [Validators.maxLength(255)]],
+      level: [this.selectedPriority.level || 1, [Validators.required, Validators.min(1)]],
+      responseMinutes: [this.selectedPriority.responseMinutes || null, [Validators.required, Validators.min(0)]],
+      resolutionMinutes: [this.selectedPriority.resolutionMinutes || null, [Validators.required, Validators.min(0)]],
+      isActive: [this.selectedPriority.isActive ?? true]
     });
   }
 
-  delete(id: string, name: string): void {
-    const hasActiveTicketsLinked = false;
+  createPriority(): void { this.selectedPriority = {} as PriorityDto; this.buildForm(); this.isSubmitting = false; this.isModalOpen = true; }
+  editPriority(id: number | string): void {
+    this.isLoading = true;
+    this.priorityService.get(Number(id)).subscribe({
+      next: (priority: PriorityDto) => { this.selectedPriority = priority; this.buildForm(); this.isSubmitting = false; this.isLoading = false; this.isModalOpen = true; },
+      error: () => this.isLoading = false
+    });
+  }
 
-    if (hasActiveTicketsLinked) {
-      this.priorityToDelete = { id, name };
-      this.availableReplacementPriorities = (this.priority.items || []).filter((p: any) => p.id !== id && p.isActive);
-      this.isReassignModalOpen = true;
-      this.toaster.warn(this.localizationService.instant('ItHelpdesk::PriorityHasLinkedTicketsWarning', name));
+  closeModal(): void { this.isModalOpen = false; }
+  save(): void {
+    const codeVal = this.form.get('code')?.value?.trim() || '';
+    const nameViVal = this.form.get('name_Vi')?.value?.trim() || '';
+    if (this.form.invalid || !codeVal || !nameViVal || this.isSubmitting) {
+      this.form.markAllAsTouched();
+      this.toaster.error(this.localizationService.instant('ItHelpdesk::FormValidationRequired'));
       return;
     }
+    this.isSubmitting = true;
+    const formValues = this.form.value;
+    const requestData = { ...formValues, code: codeVal, name_Vi: nameViVal, name: nameViVal };
+    const request = this.selectedPriority.id ? this.priorityService.update(Number(this.selectedPriority.id), requestData) : this.priorityService.create(requestData);
+    request.subscribe({
+      next: () => { this.isModalOpen = false; this.form.reset(); this.isSubmitting = false; this.list.get(); this.toaster.success(this.localizationService.instant('ItHelpdesk::PrioritySaveSuccess')); },
+      error: (err: any) => { this.toaster.error(err.error?.message || this.localizationService.instant('ItHelpdesk::PrioritySaveError')); this.isSubmitting = false; }
+    });
+  }
 
-    const confirmMsg = this.localizationService.instant('::PriorityDeleteConfirmMessage', name);
-    const confirmTitle = this.localizationService.instant('::AreYouSure');
-
-    this.confirmation.warn(confirmMsg, confirmTitle).subscribe((status: any) => {
+  toggleStatus(row: any): void {
+    const updatedStatus = !row.isActive;
+    this.confirmation.warn(this.localizationService.instant('ItHelpdesk::ConfirmChangeStatusMessage', row.displayName), this.localizationService.instant('ItHelpdesk::ConfirmAction')).subscribe((status: Confirmation.Status) => {
       if (status === Confirmation.Status.confirm) {
-        this.priorityService.delete(id).subscribe({
-          next: () => {
-            this.list.get();
-            this.toaster.success(this.localizationService.instant('::PriorityDeleteSuccess'));
-          },
+        const requestData = {
+          code: row.code, name_Vi: row.name_Vi || row.name, name_En: row.name_En,
+          level: row.level, responseMinutes: row.responseMinutes, resolutionMinutes: row.resolutionMinutes, isActive: updatedStatus
+        };
+        this.priorityService.update(Number(row.id), requestData).subscribe({
+          next: () => { row.isActive = updatedStatus; this.list.get(); this.toaster.success(this.localizationService.instant('ItHelpdesk::StatusUpdateSuccess')); },
+          error: (err: any) => this.toaster.error(err.error?.message || this.localizationService.instant('ItHelpdesk::Error:Generic'))
+        });
+      }
+    });
+  }
+
+  delete(id: number | string, name: string): void {
+    this.confirmation.warn(this.localizationService.instant('ItHelpdesk::PriorityDeleteConfirmMessage', name), this.localizationService.instant('ItHelpdesk::ConfirmAction')).subscribe((status: Confirmation.Status) => {
+      if (status === Confirmation.Status.confirm) {
+        this.priorityService.delete(Number(id)).subscribe({
+          next: () => { this.list.get(); this.toaster.success(this.localizationService.instant('ItHelpdesk::PriorityDeleteSuccess')); },
           error: (err: any) => {
-            console.error('Lỗi khi xóa độ ưu tiên:', err);
-            this.toaster.error(this.localizationService.instant('::PriorityDeleteError'));
+            if (err.error && err.error.code === 'PriorityHasConstraints') {
+              this.priorityToDelete = { id, name };
+              
+              const lang = this.config.getDeep('localization.currentCulture.cultureName') || 'vi';
+              const isEn = lang.toLowerCase().includes('en');
+
+              this.availableReplacementPriorities = (this.priorityList.items || []).filter((p: any) => p.id !== Number(id) && p.isActive).map((p: any) => ({
+                 ...p,
+                 displayName: isEn ? (p.name_En || p.name_Vi) : (p.name_Vi || p.name_En)
+              }));
+              this.targetReplacementPriorityId = null;
+              this.isReassignModalOpen = true;
+            } else {
+              this.toaster.error(err.error?.message || this.localizationService.instant('ItHelpdesk::PriorityDeleteError'));
+            }
           }
         });
       }
@@ -185,71 +171,14 @@ export class PriorityComponent extends AdminBaseComponent implements OnInit {
   }
 
   confirmReassignAndDelete(): void {
-    if (!this.targetReplacementPriorityId) {
-      this.toaster.error(this.localizationService.instant('ItHelpdesk::SelectReplacementPriorityRequired'));
-      return;
-    }
-
+    if (!this.targetReplacementPriorityId) { this.toaster.error(this.localizationService.instant('ItHelpdesk::SelectReplacementPriorityRequired')); return; }
     this.isSubmitting = true;
-    setTimeout(() => {
-      this.priorityService.delete(this.priorityToDelete.id).subscribe({
-        next: () => {
-          this.isReassignModalOpen = false;
-          this.isSubmitting = false;
-          this.list.get();
-          this.toaster.success(this.localizationService.instant('ItHelpdesk::PriorityReassignAndDeleteSuccess'));
-        },
-        error: () => {
-          this.isSubmitting = false;
-          this.toaster.error(this.localizationService.instant('ItHelpdesk::PriorityReassignAndDeleteError'));
-        }
-      });
-    }, 600);
-  }
-
-  buildForm(): void {
-    this.form = this.fb.group({
-      code: [this.selectedPriority.code || '', [Validators.required, Validators.maxLength(50)]],
-      name: [this.selectedPriority.name || '', [Validators.required, Validators.maxLength(100)]],
-      isActive: [this.selectedPriority.isActive ?? true],
-    });
-  }
-
-  save(): void {
-    const codeVal = this.form.get('code')?.value?.trim() || '';
-    const nameVal = this.form.get('name')?.value?.trim() || '';
-
-    if (this.form.invalid || !codeVal || !nameVal || this.isSubmitting) {
-      this.form.markAllAsTouched();
-      this.toaster.error(this.localizationService.instant('::FormValidationRequired'));
-      return;
-    }
-
-    this.isSubmitting = true;
-
-    const requestData = {
-      ...this.form.value,
-      code: codeVal,
-      name: nameVal
-    };
-
-    let request = (this.selectedPriority as any).id
-      ? this.priorityService.update((this.selectedPriority as any).id, requestData)
-      : this.priorityService.create(requestData);
-
-    request.subscribe({
-      next: () => {
-        this.isModalOpen = false;
-        this.form.reset();
-        this.isSubmitting = false;
-        this.list.get();
-        this.toaster.success(this.localizationService.instant('::PrioritySaveSuccess'));
-      },
-      error: (err: any) => {
-        console.error('Lỗi khi lưu độ ưu tiên:', err);
-        this.toaster.error(this.localizationService.instant('::PrioritySaveError'));
-        this.isSubmitting = false;
-      }
+    this.restService.request<void, void>({
+      method: 'DELETE', url: `/api/app/priority/${this.priorityToDelete.id}/reassign-and-delete`,
+      params: { replacementId: this.targetReplacementPriorityId }
+    }).subscribe({
+      next: () => { this.isReassignModalOpen = false; this.isSubmitting = false; this.list.get(); this.toaster.success(this.localizationService.instant('ItHelpdesk::PriorityReassignAndDeleteSuccess')); },
+      error: (err: any) => { this.isSubmitting = false; this.toaster.error(err.error?.message || this.localizationService.instant('ItHelpdesk::PriorityReassignAndDeleteError')); }
     });
   }
 }

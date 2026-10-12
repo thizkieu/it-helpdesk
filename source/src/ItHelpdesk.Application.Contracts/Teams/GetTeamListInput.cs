@@ -5,5 +5,7 @@ namespace ItHelpdesk.Teams
     public class GetTeamListInput : PagedAndSortedResultRequestDto
     {
         public string? Filter { get; set; }
+
+        public bool? IsActive { get; set; }
     }
 }

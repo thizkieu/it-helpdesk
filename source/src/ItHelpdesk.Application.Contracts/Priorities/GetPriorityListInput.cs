@@ -5,5 +5,6 @@ namespace ItHelpdesk.Priorities
     public class GetPriorityListInput : PagedAndSortedResultRequestDto
     {
         public string? Filter { get; set; }
+        public bool? IsActive { get; set; }
     }
 }
